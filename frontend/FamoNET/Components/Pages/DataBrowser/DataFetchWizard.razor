@@ -1,0 +1,37 @@
+﻿<EditForm class="row" Model="this" OnSubmit="@FetchData" FormName="FetchWizard">
+    <select class="form-select" aria-label="Choose data" disabled="@(TableNames==null ? "true" : "false")">
+        @if (TableNames == null)
+        {
+            <option>
+                <div class="spinner-border" role="status">
+                    <span class="sr-only"></span>
+                </div>
+            </option>
+        }
+        else
+        {
+            <option selected>Choose data</option>
+            @foreach (var tableName in TableNames)
+            {
+                <option value="@tableName">@tableName</option>
+            }
+        }
+    </select>
+    <div class="d-flex">
+        <label class="col-form-label me-2" for="title">Start MJD</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="@StartMjd" id="title" required />
+        </div>
+    </div>   
+    
+    <div class="d-flex">
+        <label class="col-form-label me-2" for="title">End MJD</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="@EndMjd" id="title" required />
+        </div>
+    </div>
+
+    <button type="submit" class="col-auto btn btn-primary">Fetch data</button>
+</EditForm>
+
+

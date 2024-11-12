@@ -1,0 +1,36 @@
+﻿<EditForm class="row" Model="Model" OnSubmit="HandleValidSubmit" FormName="ChartWizard">
+    <div class="d-flex">         
+        <label class="col-form-label me-2" for="title">Title</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@Model.Title" id="title" />
+        </div>        
+    </div>
+    
+    <div class="d-flex">
+        <label for="limit" class="col-form-label me-2">Limits X:</label>
+        
+        <div>
+            <InputNumber class="form-control" id="limit" @bind-Value="@Model.MinX" />
+        </div>
+        
+        <label class="col-form-label mx-2" for="limit">-</label>
+
+        <div>
+            <InputNumber class="form-control" id="limit" @bind-Value="@Model.MaxX" />
+        </div>        
+    </div>
+    
+    <div class="d-flex">
+        <label class="col-form-label me-2">Limits Y:</label>
+        <div>
+            <InputNumber class="form-control" @bind-Value="@Model.MinY" />
+        </div>
+        
+        <span class="col-form-label mx-2">-</span>
+        <div>
+            <InputNumber class="form-control" @bind-Value="@Model.MaxY" />
+        </div>        
+    </div>
+
+    <button type="submit" class="col-auto btn btn-primary">Update</button>
+</EditForm>
