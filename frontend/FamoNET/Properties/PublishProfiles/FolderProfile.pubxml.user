@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\Hofek\source\repos\FamoNET\FamoNET\bin\Release\net8.0\publish\</_PublishTargetUrl>
+    <History>True|2024-11-21T15:50:14.5199725Z||;True|2024-11-21T16:32:50.1357862+01:00||;True|2024-11-21T16:32:20.2918234+01:00||;False|2024-11-21T16:30:46.7130762+01:00||;True|2024-11-21T16:18:13.7247107+01:00||;True|2024-11-21T16:15:47.8650246+01:00||;True|2024-11-21T16:12:38.2401551+01:00||;True|2024-11-21T16:09:58.5858139+01:00||;True|2024-11-21T15:59:18.0209205+01:00||;True|2024-11-21T15:45:14.8443729+01:00||;True|2024-11-21T14:39:32.7234937+01:00||;True|2024-11-13T13:14:27.6243960+01:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

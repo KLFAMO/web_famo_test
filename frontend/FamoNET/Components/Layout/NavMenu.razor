@@ -1,35 +1,27 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@* <nav class="navbar navbar-dark bg-primary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">FamoNET</a>
+        <a class="navbar-brand" href="#">FamoNET</a>
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#">DataBrowser</a>
+            </li>
+            @* <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+            </li>   
+        </ul>
     </div>
-</div>
+</nav> *@
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+<nav class="navbar navbar-expand-lg navbar-light bg-light p-2">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link active" aria-current="page" href="/browser">Data Browser</a>
+            </div>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="browser">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Browser
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+    </div>
+</nav>

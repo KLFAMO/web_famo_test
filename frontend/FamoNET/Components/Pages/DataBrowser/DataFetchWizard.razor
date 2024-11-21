@@ -1,37 +1,140 @@
 ﻿<EditForm class="row" Model="this" OnSubmit="@FetchData" FormName="FetchWizard">
-    <select class="form-select" aria-label="Choose data" disabled="@(TableNames==null ? "true" : "false")">
-        @if (TableNames == null)
-        {
-            <option>
-                <div class="spinner-border" role="status">
-                    <span class="sr-only"></span>
-                </div>
-            </option>
-        }
-        else
-        {
+    <div class=" my-2 col-auto">
+        <select class="form-select" aria-label="Choose data" disabled=@IsUIDisabled @bind="@SelectedTableName">
             <option selected>Choose data</option>
-            @foreach (var tableName in TableNames)
-            {
-                <option value="@tableName">@tableName</option>
-            }
-        }
-    </select>
-    <div class="d-flex">
-        <label class="col-form-label me-2" for="title">Start MJD</label>
+            <option value="689_cav_temp_stab_I_TEC">689_cav_temp_stab_I_TEC</option>
+            <option value="689_cav_temp_stab_res">689_cav_temp_stab_res</option>
+            <option value="689_cav_temp_stab_temp">689_cav_temp_stab_temp</option>
+            <option value="Sr1_correction">Sr1_correction</option>
+            <option value="cav_dds698_dedrift_f">cav_dds698_dedrift_f</option>
+            <option value="cav_dds698_dedrift_slope">cav_dds698_dedrift_slope</option>
+            <option value="cav_slave689_PD_V">cav_slave689_PD_V</option>
+            <option value="cok_cav_stab_I_TEC">cok_cav_stab_I_TEC</option>
+            <option value="cok_cav_stab_res">cok_cav_stab_res</option>
+            <option value="cok_cav_stab_temp">cok_cav_stab_temp</option>
+            <option value="cok_cav_wm_f">cok_cav_wm_f</option>
+            <option value="comb2_beat_698">comb2_beat_698</option>
+            <option value="comb2_f_counter0">comb2_f_counter0</option>
+            <option value="comb2_f_counter1">comb2_f_counter1</option>
+            <option value="comb2_f_counter2">comb2_f_counter2</option>
+            <option value="comb2_f_counter3">comb2_f_counter3</option>
+            <option value="comb2_f_counter4">comb2_f_counter4</option>
+            <option value="comb2_f_counter5">comb2_f_counter5</option>
+            <option value="comb2_f_counter6">comb2_f_counter6</option>
+            <option value="comb2_f_counter7">comb2_f_counter7</option>
+            <option value="comb2_f_rep">comb2_f_rep</option>
+            <option value="comb2_f_zero">comb2_f_zero</option>
+            <option value="comb_beat_689">comb_beat_689</option>
+            <option value="comb_beat_698">comb_beat_698</option>
+            <option value="comb_beat_813">comb_beat_813</option>
+            <option value="comb_cok_f_counter2">comb_cok_f_counter2</option>
+            <option value="comb_cok_f_rep">comb_cok_f_rep</option>
+            <option value="comb_cok_f_zero">comb_cok_f_zero</option>
+            <option value="comb_f_beat">comb_f_beat</option>
+            <option value="comb_f_counter1">comb_f_counter1</option>
+            <option value="comb_f_counter2">comb_f_counter2</option>
+            <option value="comb_f_counter3">comb_f_counter3</option>
+            <option value="comb_f_counter4">comb_f_counter4</option>
+            <option value="comb_f_counter5">comb_f_counter5</option>
+            <option value="comb_f_counter6">comb_f_counter6</option>
+            <option value="comb_f_counter7">comb_f_counter7</option>
+            <option value="comb_f_rep">comb_f_rep</option>
+            <option value="comb_f_zero">comb_f_zero</option>
+            <option value="comb_signal_beat_698">comb_signal_beat_698</option>
+            <option value="log">log</option>
+            <option value="logs">logs</option>
+            <option value="logs_b">logs_b</option>
+            <option value="sa_beat_698_amplitude">sa_beat_698_amplitude</option>
+            <option value="sa_beat_698_f">sa_beat_698_f</option>
+            <option value="sr1_lock_atoms_exc">sr1_lock_atoms_exc</option>
+            <option value="sr1_lock_atoms_gnd">sr1_lock_atoms_gnd</option>
+            <option value="sr1_lock_atoms_left">sr1_lock_atoms_left</option>
+            <option value="sr1_lock_atoms_right">sr1_lock_atoms_right</option>
+            <option value="sr1_lock_f">sr1_lock_f</option>
+            <option value="sr1_lock_prob_left">sr1_lock_prob_left</option>
+            <option value="sr1_lock_prob_right">sr1_lock_prob_right</option>
+            <option value="sr1_ml1_atomsL">sr1_ml1_atomsL</option>
+            <option value="sr1_ml1_atomsR">sr1_ml1_atomsR</option>
+            <option value="sr1_ml1_f">sr1_ml1_f</option>
+            <option value="sr1_ml1_f_lock">sr1_ml1_f_lock</option>
+            <option value="sr1_ml1_probL">sr1_ml1_probL</option>
+            <option value="sr1_ml1_probR">sr1_ml1_probR</option>
+            <option value="sr1_ml2_atomsL">sr1_ml2_atomsL</option>
+            <option value="sr1_ml2_atomsR">sr1_ml2_atomsR</option>
+            <option value="sr1_ml2_f">sr1_ml2_f</option>
+            <option value="sr1_ml2_f_lock">sr1_ml2_f_lock</option>
+            <option value="sr1_ml2_probL">sr1_ml2_probL</option>
+            <option value="sr1_ml2_probR">sr1_ml2_probR</option>
+            <option value="sr1_ml3_atomsL">sr1_ml3_atomsL</option>
+            <option value="sr1_ml3_atomsR">sr1_ml3_atomsR</option>
+            <option value="sr1_ml3_f">sr1_ml3_f</option>
+            <option value="sr1_ml3_probL">sr1_ml3_probL</option>
+            <option value="sr1_ml3_probR">sr1_ml3_probR</option>
+            <option value="sr1_ml4_atomsL">sr1_ml4_atomsL</option>
+            <option value="sr1_ml4_atomsR">sr1_ml4_atomsR</option>
+            <option value="sr1_ml4_f">sr1_ml4_f</option>
+            <option value="sr1_ml4_probL">sr1_ml4_probL</option>
+            <option value="sr1_ml4_probR">sr1_ml4_probR</option>
+            <option value="sr1_multilock_atoms_left">sr1_multilock_atoms_left</option>
+            <option value="sr1_multilock_f">sr1_multilock_f</option>
+            <option value="sr1_multilock_param">sr1_multilock_param</option>
+            <option value="sr1_multilock_prob_left">sr1_multilock_prob_left</option>
+            <option value="sr1_multilock_prob_right">sr1_multilock_prob_right</option>
+            <option value="sr1_multilock_record">sr1_multilock_record</option>
+            <option value="sr1_scan1_atoms">sr1_scan1_atoms</option>
+            <option value="sr1_scan1_f">sr1_scan1_f</option>
+            <option value="sr1_scan1_index">sr1_scan1_index</option>
+            <option value="sr1_scan1_prob">sr1_scan1_prob</option>
+            <option value="sr1_scan2_atoms">sr1_scan2_atoms</option>
+            <option value="sr1_scan2_f">sr1_scan2_f</option>
+            <option value="sr1_scan2_index">sr1_scan2_index</option>
+            <option value="sr1_scan2_prob">sr1_scan2_prob</option>
+            <option value="sr1_scan3_atoms">sr1_scan3_atoms</option>
+            <option value="sr1_scan3_f">sr1_scan3_f</option>
+            <option value="sr1_scan3_index">sr1_scan3_index</option>
+            <option value="sr1_scan3_prob">sr1_scan3_prob</option>
+            <option value="sr2_lock_atoms_exc">sr2_lock_atoms_exc</option>
+            <option value="sr2_lock_atoms_gnd">sr2_lock_atoms_gnd</option>
+            <option value="sr2_lock_atoms_left">sr2_lock_atoms_left</option>
+            <option value="sr2_lock_atoms_right">sr2_lock_atoms_right</option>
+            <option value="sr2_lock_f">sr2_lock_f</option>
+            <option value="sr2_lock_prob_left">sr2_lock_prob_left</option>
+            <option value="sr2_lock_prob_right">sr2_lock_prob_right</option>
+            <option value="sr2_ml1_f_lock">sr2_ml1_f_lock</option>
+            <option value="sr2_multilock_f">sr2_multilock_f</option>
+            <option value="sr2_multilock_param">sr2_multilock_param</option>
+            <option value="sr2_multilock_prob_left">sr2_multilock_prob_left</option>
+            <option value="sr2_multilock_record">sr2_multilock_record</option>
+            <option value="test">test</option>
+            <option value="wm_679_f">wm_679_f</option>
+            <option value="wm_689_f">wm_689_f</option>
+            <option value="wm_698_f">wm_698_f</option>
+            <option value="wm_707_f">wm_707_f</option>
+            <option value="wm_813_f">wm_813_f</option>
+        </select>
+    </div>
+
+    <div class="d-flex ms-2">
+        <label class="col-form-label my-2" for="title">Start MJD</label>
         <div>
             <InputNumber class="form-control" @bind-Value="@StartMjd" id="title" required />
         </div>
-    </div>   
-    
-    <div class="d-flex">
-        <label class="col-form-label me-2" for="title">End MJD</label>
+    </div>
+
+    <div class="d-flex ms-2">
+        <label class="col-form-label" for="title">End MJD</label>
         <div>
             <InputNumber class="form-control" @bind-Value="@EndMjd" id="title" required />
         </div>
     </div>
 
-    <button type="submit" class="col-auto btn btn-primary">Fetch data</button>
+    <button type="submit" class="col-auto btn btn-primary my-2" disabled=@IsUIDisabled>Fetch data</button>
 </EditForm>
+
+@code {
+    private bool IsUIDisabled = false;
+
+    public void ToggleUI() => IsUIDisabled = !IsUIDisabled;
+}
 
 

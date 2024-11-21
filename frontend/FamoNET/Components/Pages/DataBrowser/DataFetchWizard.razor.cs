@@ -1,4 +1,4 @@
-﻿using FamoNET.Model;
+﻿using FamoNET.Services;
 using FamoNET.Services.DataServices;
 using Microsoft.AspNetCore.Components;
 
@@ -13,8 +13,10 @@ namespace FamoNET.Components.Pages.DataBrowser
 
         [Inject]
         private CounterDataService _counterDataService { get; set; }
+        [Inject]
+        private TimeService _timeService { get; set; }
         [Parameter]
-        public EventCallback<DataSet> DataReceived { get; set; }
+        public EventCallback<(decimal,decimal,string)> FetchRequested { get; set; }
         
         #region Properties
         public List<string> TableNames 
@@ -35,7 +37,9 @@ namespace FamoNET.Components.Pages.DataBrowser
             {
                 if ( _startMjd == value)
                     return;
+
                 _startMjd = value;
+                StateHasChanged();
             }
         }
         public decimal EndMjd
@@ -45,7 +49,9 @@ namespace FamoNET.Components.Pages.DataBrowser
             {
                 if ( value == _endMjd )
                     return;
+
                 _endMjd = value;
+                StateHasChanged();
             }
         }                
         public string SelectedTableName
@@ -55,6 +61,7 @@ namespace FamoNET.Components.Pages.DataBrowser
             {
                 if (value == _selectedTableName)
                     return;
+
                 _selectedTableName = value;                
             }
         }
@@ -66,13 +73,18 @@ namespace FamoNET.Components.Pages.DataBrowser
 
             if (firstRender)
             {
-                TableNames = await _counterDataService.GetTableNamesAsync();
+                var jdNumerical = TimeService.GetJulianDate(DateTime.UtcNow);
+                var mjd_now = Math.Floor(jdNumerical - 2400000.5);
+                _startMjd = Convert.ToDecimal(mjd_now - 1);
+                _endMjd = Convert.ToDecimal(mjd_now);
+                StateHasChanged();                              
             }
         }
         protected async Task FetchData()
         {
-            var result = await _counterDataService.GetDataAsync(_startMjd, _endMjd, _selectedTableName);
-            await DataReceived.InvokeAsync(new DataSet() { Data = result });
+            if (_selectedTableName == null)
+                return;
+            await FetchRequested.InvokeAsync((StartMjd, EndMjd, SelectedTableName));
         }
     }
 }

@@ -1,5 +1,10 @@
 ﻿<EditForm Model="this" OnSubmit="HandleValidSubmit" FormName="PythonConsoleForm">
-    <textarea id="pythonConsole" name="pythonConsole" rows="4" cols="50" @bind="Cmd" required></textarea>
-    <button type="submit" class="btn btn-primary">Execute</button>
+    <div class="row">
+        <h2>Command console</h2>
+        <div class="d-flex flex-column align-items-center">
+            <textarea id="pythonConsole" name="pythonConsole" rows="10" cols="200" @bind="Cmd" required></textarea>
+            <button type="submit" class="btn btn-primary my-2">Execute</button>
+        </div>
+    </div>    
 </EditForm>
 

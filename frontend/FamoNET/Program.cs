@@ -1,7 +1,10 @@
 using FamoNET.Components;
 using FamoNET.DataProviders;
+using FamoNET.Model;
 using FamoNET.Model.Interfaces;
+using FamoNET.Services;
 using FamoNET.Services.DataServices;
+using Microsoft.Extensions.Options;
 
 namespace FamoNET
 {
@@ -10,11 +13,18 @@ namespace FamoNET
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
 
-            builder.Services.AddScoped<MockDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
-            builder.Services.AddScoped<ICounterDataProvider>((s) => s.GetService<MockDataProvider>());
-            builder.Services.AddScoped<ICSVDataProvider>((s) => s.GetService<MockDataProvider>());
-            builder.Services.AddScoped<CounterDataService>((s) => new CounterDataService(s.GetService<ICounterDataProvider>()));
+            builder.Services.AddScoped((s) => new TimeService());
+            builder.Services.AddScoped<ICSVDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+
+#if (!DEBUG)
+            builder.Services.AddScoped<ICounterDataProvider>((s) => new CounterDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
+#else
+            builder.Services.AddScoped<ICounterDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+#endif
+
+            builder.Services.AddScoped((s) => new CounterDataService(s.GetService<ICounterDataProvider>()));
 
             // Add services to the container.
             builder.Services.AddRazorComponents()

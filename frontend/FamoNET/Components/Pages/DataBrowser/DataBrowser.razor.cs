@@ -11,6 +11,7 @@ namespace FamoNET.Components.Pages.DataBrowser
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private bool _isFetchingData = false;
+        private bool _isDataLoaded = false;
         private IJSObjectReference _module;        
 
         #region Injections
@@ -38,9 +39,24 @@ namespace FamoNET.Components.Pages.DataBrowser
                     return;
                 
                 _isFetchingData = value;
+                DataFetchWizardComponent.ToggleUI();
+
                 StateHasChanged();
             } 
-        }        
+        }
+
+        public bool IsDataLoaded
+        {
+            get => _isDataLoaded;
+            set
+            {
+                if (_isDataLoaded == value)
+                    return;
+
+                _isDataLoaded = value;
+                StateHasChanged();
+            }
+        }
         #endregion
 
         #region Handling inner component events
@@ -57,18 +73,50 @@ namespace FamoNET.Components.Pages.DataBrowser
             IsFetchingData = false;
         }
 
-        private async Task OnDataReceived(DataSet dataSet)
+        private async Task OnFetchRequested((decimal startMjd, decimal endMjd, string tableName) fetchParams)
         {
-            await _module.InvokeVoidAsync("AddDataSet", dataSet.Data);
+            IsFetchingData = true;
+            var data = await _counterDataService.GetDataAsync(fetchParams.startMjd, fetchParams.endMjd, fetchParams.tableName);
+
+            if (data == null)
+            {
+                IsFetchingData = false;
+                _logger.Info("Failed to fetch data");
+                return;
+            }
+
+            if (data.Count == 0)
+            {                
+                await _module.InvokeVoidAsync("RenderChart");
+                IsFetchingData= false;
+                return;
+            }
+
+            await _module.InvokeVoidAsync("AddDataSet", data);
             await _module.InvokeVoidAsync("RenderChart");
 
             var limits = await _module.InvokeAsync<List<decimal>>("GetChartParameters");
 
             if (limits != null)
-                ChartWizardComponent.SetParams(new ChartParams() { MinX = limits[0], MaxX = limits[1], MinY = limits[2], MaxY = limits[3] });           
+                ChartWizardComponent.SetParams(new ChartParams() { MinX = limits[0], MaxX = limits[1], MinY = limits[2], MaxY = limits[3] });
+            
+            IsFetchingData = false;
+            IsDataLoaded = true;
         }
         #endregion
 
+        protected async Task ClearChart()
+        {
+            await _module.InvokeVoidAsync("ClearDataSets");
+            await _module.InvokeVoidAsync("RenderChart");
+            IsDataLoaded = false;
+        }
+
+        protected async Task ToggleXLabels()
+        {
+            await _module.InvokeVoidAsync("ToggleXLabels");
+            await _module.InvokeVoidAsync("RenderChart");
+        }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
