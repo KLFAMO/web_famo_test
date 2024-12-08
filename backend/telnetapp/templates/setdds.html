@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCommunication</title>
+</head>
+<body>
+    <h1>Set dds</h1>
+    <form method="GET">
+        <label for="dds_list">dds:</label>
+        <select id="dds_list" name="dds"> 
+            {% for e in dds_list %}
+            <option value="{{e.name}}"> {{e.name}} </option>
+            {% endfor %}
+        </select>
+        <br>
+        mess<input type="text" name="mes"> <input type="submit" value="send"> <br>
+    </form>
+    <p>Answer:</p>
+    <p>{{ ans }}</p>
+</body>
+</html>

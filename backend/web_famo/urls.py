@@ -1,0 +1,40 @@
+"""web_famo URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/2.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+import telnetapp.views
+import sidebandfitapp.views
+import mainapp.views
+import lock689.views
+import anda.views
+import freq_monitor.views
+import time_converter.views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', mainapp.views.index),
+    path('telnet/', telnetapp.views.telnet_send),
+    path('setdds/', telnetapp.views.setdds),
+    path('sidebands/', sidebandfitapp.views.index),
+    path('lock689/', lock689.views.index),
+    path('lock689/get_data', lock689.views.get_data),
+    path('lock689/get_param', lock689.views.get_param),
+    path('lock689/set_param', lock689.views.set_param),
+    path('anda/', anda.views.index),
+    path('freq_monitor/', freq_monitor.views.index),
+    path('freq_monitor/get_data', freq_monitor.views.get_data),
+    path('time_converter/', time_converter.views.convert_date),
+]

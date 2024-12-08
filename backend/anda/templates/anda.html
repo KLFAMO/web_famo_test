@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+    <script>
+        function update_data(){
+            let x_tab = JSON.parse( '{{ mjd_tab_json|safe }}' ) ;
+            let y_tab = JSON.parse( '{{ val_tab_json|safe }}' ) ;
+            plot = document.getElementById('data_plot');
+            var plot_data = [{
+                x: x_tab,
+                y: y_tab,
+                type: 'scatter'
+            }]
+            var layout = {
+                title:"data to plot"
+            }
+	        Plotly.newPlot( plot, plot_data, layout );
+        }
+
+        function export_data_to_csv() {
+            let x_tab = JSON.parse( '{{ mjd_tab_json|safe }}' );
+            let y_tab = JSON.parse( '{{ val_tab_json|safe }}' );
+            
+            // Create csv headers
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "mjd,val\n";  // Column header
+
+            // add data to csv
+            x_tab.forEach((x_value, index) => {
+                let y_value = y_tab[index];
+                csvContent += `${x_value},${y_value}\n`;
+            });
+
+            // Create element to download
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "data_export.csv");
+
+            // simulate link click
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function calculate_allan_deviation(data, tau) {
+            let N = data.length;
+            let variances = [];
+            for (let i = 0; i < N - 2 * tau; i++) {
+                let avg1 = 0;
+                let avg2 = 0;
+                for (let j = 0; j < tau; j++) {
+                    avg1 += data[i + j];
+                    avg2 += data[i + tau + j];
+                }
+                avg1 /= tau;
+                avg2 /= tau;
+                let variance = (avg2 - avg1) ** 2;
+                variances.push(variance);
+            }
+            let allan_variance = (variances.reduce((a, b) => a + b, 0)) / (2 * (N - 2 * tau));
+            return Math.sqrt(allan_variance);  // ADEV = sqrt(variance)
+        }
+
+        function plot_allan_deviation() {
+            let x_tab = JSON.parse( '{{ mjd_tab_json|safe }}' );
+            let y_tab = JSON.parse( '{{ val_tab_json|safe }}' );
+            let abs_value = parseFloat(document.getElementById('abs_value').value);
+            let sampling_period = parseFloat(document.getElementById('sampling_period').value);  // Pobierz okres prďż˝bkowania od uďż˝ytkownika
+
+            let max_tau = Math.floor(y_tab.length / 2);  // Maksymalny tau
+            let tau_values = [];
+            let tau = 2;
+
+            // Generowanie wartoďż˝ci tau: 2, 5, 10, 20, 50, 100, 200, ...
+            while (tau <= max_tau) {
+                tau_values.push(tau);
+                tau = Math.ceil(tau * 2.5);  // Nastďż˝pne wartoďż˝ci to 2, 5, 10, 20, 50, ...
+            }
+
+            let allan_deviation_values = [];
+            let allan_times = [];
+
+            tau_values.forEach(tau => {
+                if (tau < y_tab.length / 2) {
+                    let adev = calculate_allan_deviation(y_tab, tau) / abs_value;  // Oblicz ADEV i podziel przez wartoďż˝ďż˝ absolutnďż˝
+                    allan_deviation_values.push(adev);
+                    allan_times.push(tau * sampling_period);  // Uďż˝ywaj okresu prďż˝bkowania do przeliczania na rzeczywisty czas
+                }
+            });
+
+            var plot_data = [{
+                x: allan_times,
+                y: allan_deviation_values,
+                type: 'scatter',
+                mode: 'markers'  // Rysuj punkty zamiast linii
+            }];
+            var layout = {
+                title: "Allan Deviation Plot",
+                xaxis: {
+                    title: 'Time (s)',
+                    type: 'log'  // Skala logarytmiczna na osi X
+                },
+                yaxis: {
+                    title: 'ADEV (Relative)',
+                    type: 'log',  // Skala logarytmiczna na osi Y
+                    exponentformat: 'e'  // Wyďż˝wietlaj wartoďż˝ci jako 10^n
+                }
+            };
+            Plotly.newPlot('allan_variance_plot', plot_data, layout);
+        }
+        
+    </script>
+</head>
+<body>
+    <h1>Anda</h1>
+    <form id="main_form">
+        <label for='tables_names_select'>Select parameter name: </label>
+        <select name="table_name" id="tables_names_select">
+            {% for table_name in tables_names %}
+                <option value="{{table_name}}" 
+                    {% if last_table_name == table_name %}selected{% endif %}
+                >{{table_name}}</option>
+            {% endfor %}
+        </select> <br><br>
+        <label for="from_mjd">From MJD: </label>
+        <input type="number" id="from_mjd" name="from_mjd" 
+            step="0.0000001" 
+            ondblclick="this.value=Math.round({{mjd_now}});"
+            value="{{last_from_mjd}}"
+        >
+        <br><br>
+        <label for="to_mjd">To MJD: </label>
+        <input type="number" id="to_mjd" name="to_mjd" 
+            step="0.0000001" 
+            ondblclick="this.value=Math.round({{mjd_now}});"
+            value="{{last_to_mjd}}"
+        >
+        <input type="submit" value="Plot">
+
+    </form>
+
+    <p>MJD Today: {{mjd_now}}</p>
+
+    <div id="data_plot" style="width:100%;height:500px;"></div>
+
+    <input id=btn_export type="button" value="Export to CSV" onclick="export_data_to_csv()">
+
+    <br><br>
+
+    <!-- Allan Deviation Section -->
+    <label for="abs_value">Absolute value: </label>
+    <input type="number" id="abs_value" name="abs_value" step="0.0000001" value="1.0">
+    <label for="sampling_period">Enter sampling period (seconds): </label>
+    <input type="number" id="sampling_period" name="sampling_period" step="0.0000001" value="1.0">
+    <br><br>
+    <input id="btn_allan" type="button" value="Plot Allan Deviation" onclick="plot_allan_deviation()">
+
+    <div id="allan_variance_plot" style="width:100%;height:500px;"></div>
+
+    <script>
+        document.getElementById('main_form').value="{{last_table_name}}";
+        update_data();
+    </script>
+</body>
+</html>

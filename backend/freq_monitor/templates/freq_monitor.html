@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Frequency monitor</title>
+
+    <script>
+
+        let data;
+        // let param;
+        // var is_input = 0;
+
+        function get_data(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    data = JSON.parse(xhttp.responseText);
+                    update_data();
+                }
+            };
+            xhttp.open("GET", 'get_data', true);
+            xhttp.send();
+        }
+        
+        // function get_param(){
+        //     var xhttp = new XMLHttpRequest();
+        //     xhttp.onreadystatechange = function() {
+        //         if (this.readyState == 4 && this.status == 200) {
+        //             param = JSON.parse(xhttp.responseText);
+        //             update_param();
+        //         }
+        //     };
+        //     xhttp.open("GET", 'get_param', true);
+        //     xhttp.send();
+        // }
+
+        // function set_param(param, val){
+        //     var xhttp = new XMLHttpRequest();
+        //     xhttp.onreadystatechange = function() {
+        //         if (this.readyState == 4 && this.status == 200) {
+        //             console.log(xhttp.responseText);
+        //         }
+        //     };
+        //     console.log(val)
+        //     xhttp.open("GET", 'set_param?'+param+'='+val, true);
+        //     xhttp.send();
+        // }
+        
+        function update_data(){
+            e = document.getElementById('data_text');
+            d = data['counters_comb2'];
+            par_text='Comb 2 (Hydrofornia)<br>';
+            for(i=0; i<8; i++){
+                par_text += 'Counter_'+i+' = '+d[i]+'<br/>';
+            }
+            par_text += 'reprate = '+d[8]+'<br>';
+            par_text += 'offset =  '+d[9]+'<br>';
+            e.innerHTML=par_text;
+        }
+
+        // function update_param(){
+        //     console.log(param)
+        //     if (is_input == 0) {
+        //         document.getElementById("I").value = param.I;
+        //         document.getElementById("max_error").value = param.max_error;
+        //     }
+        //     document.getElementById("onoff").checked = (param.run == 0) ? false : true;
+            
+        // }
+
+        function intervalFun(){
+            get_data();
+        //     get_param();
+        }
+
+        setInterval(intervalFun, 2000);
+    </script>
+</head>
+<body>
+    <p><a href='http://192.168.3.204:3333/'>Main</a></p>
+    <h1>Frequency monitor</h1>
+    <p id="data_text"></p>
+    
+</body>
+</html>

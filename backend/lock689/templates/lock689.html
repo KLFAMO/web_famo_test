@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lock 689</title>
+
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .1s;
+            transition: .1s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .1s;
+            transition: .1s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+
+    </style>
+
+    <script src="https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+
+    <script>
+
+        let data;
+        let param;
+        var is_input = 0;
+
+        function get_data(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    data = JSON.parse(xhttp.responseText);
+                    update_data();
+                }
+            };
+            xhttp.open("GET", 'get_data', true);
+            xhttp.send();
+        }
+        
+        function get_param(){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    param = JSON.parse(xhttp.responseText);
+                    update_param();
+                }
+            };
+            xhttp.open("GET", 'get_param', true);
+            xhttp.send();
+        }
+
+        function set_param(param, val){
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(xhttp.responseText);
+                }
+            };
+            console.log(val)
+            xhttp.open("GET", 'set_param?'+param+'='+val, true);
+            xhttp.send();
+        }
+        
+        function update_data(){
+            x_tab = Array.from({ length: data.error_Hz_tab.length }, (_, i) => i+1);
+            document.getElementById("aom").value = data.aom_corr_Hz*1e-6;
+            plot = document.getElementById('error_plot');
+            var plot_data = [{
+                x: x_tab,
+                y: data.error_Hz_tab,
+                type: 'scatter'
+            }]
+            var layout = {
+                margin: { t: 0 }
+            }
+	        Plotly.newPlot( plot, plot_data, layout );
+        }
+
+        function update_param(){
+            console.log(param)
+            if (is_input == 0) {
+                document.getElementById("I").value = param.I;
+                document.getElementById("max_error").value = param.max_error;
+            }
+            document.getElementById("onoff").checked = (param.run == 0) ? false : true;
+            
+        }
+
+        function intervalFun(){
+            get_data();
+            get_param();
+        }
+
+        setInterval(intervalFun, 2000);
+    </script>
+</head>
+<body>
+    <p><a href='http://192.168.3.204:3333/'>Main</a></p>
+    <h1>Lock 689</h1>
+    <label class="switch">
+        <input type="checkbox" id="onoff" onchange="set_param('run', (this.checked===true) ? 1 : 0)">
+        <span class="slider"></span>
+    </label><br><br>
+    <label>I </label> <input type="number" id="I" 
+        onchange="set_param('I', this.value); is_input=0" oninput="is_input = 1;">
+    <br>
+    <label>Max error Hz </label> <input type="number" id="max_error" 
+        onchange="set_param('max_error', this.value); is_input=0" oninput="is_input = 1">
+    <br>
+    <label>AOM MHz</label>
+    <input type="number" id="aom" >
+    <div id="error_plot" style="width:600px;height:250px;"></div>
+    <p id="param"></p> 
+</body>
+</html>

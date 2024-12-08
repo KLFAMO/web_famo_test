@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Date Converter</title>
+</head>
+<body>
+    <h1>Date Converter</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Pole do konwersji MJD na czas lokalny -->
+        <div>
+            <label for="mjd_date">MJD:</label>
+            {{ form.mjd_date }}
+            <button type="submit" name="convert_mjd">Convert</button>
+        </div>
+        <p>Local Time: {{ local_result }}</p>
+
+        <br/>
+
+        <!-- Pole do konwersji lokalnego czasu na MJD -->
+        <div>
+            <label for="local_date">Local (YYYY-MM-DD:HH-mm-ss):</label>
+            {{ form.local_date }}
+            <button type="submit" name="convert_local">Convert</button>
+        </div>
+        <p>MJD: {{ mjd_result }}</p>
+
+    </form>
+
+</body>
+</html>

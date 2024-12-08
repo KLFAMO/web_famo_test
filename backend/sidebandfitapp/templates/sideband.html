@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charser="UTF-8">
+    <title>Sideband fit</title>
+</head>
+
+<body>
+    <h1>Sidebands fitting</h1>
+    
+    <form method='GET'>
+        data folder (ex.: Sr1/2023_01_27) <br>
+        <input type='text' name='folder' value=''><br>
+        file name (ex.: 2023_01_27-17_36_29_plot.dat<br>
+        <input type='text' name='filename' size = 60
+                value=''> <br>
+        <input type='submit' name='sub' value='fit' size = 20>
+        <input type='submit' name='sub' value='svn_update' >
+    </form>
+    
+    <h2>Fit results</h2>
+    <p>
+    vz = {{ vz }} kHz <br>
+    Tr = {{ Tr }} uK <br>
+    Tz = {{ Tz }} uK <br>
+    </p>
+    
+    {% load static %}
+    <img src="{% static 'sidebandfitapp/fit.png' %}" alt="fit plot">
+</body>
+
+</html>
