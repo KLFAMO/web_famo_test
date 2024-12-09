@@ -22,6 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
+MYTOOLS_PATH = config('MYTOOLS_PATH')
 
 ALLOWED_HOSTS = ['192.168.3.{}'.format(i) for i in range(256)]
 ALLOWED_HOSTS.append('localhost')
