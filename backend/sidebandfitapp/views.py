@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import sys
-import pathlib as pa
+# import pathlib as pa
 from django.conf import settings
 
-progspath = pa.Path(__file__).absolute().parents[2]
+# progspath = pa.Path(__file__).absolute().parents[2]
 sys.path.append(settings.MYTOOLS_PATH)
 import sidebands as sb
 import os
