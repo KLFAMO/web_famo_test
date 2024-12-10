@@ -2,18 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevCommunication</title>
+    <title>Telnet Console</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        label {
+            margin-right: 10px;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-top: 10px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+        }
+        button {
+            padding: 5px 10px;
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-    <form method="GET">
-        IP <input type="text" name="ip"> <br>
-        PORT <input type="number" name="port"> <br>
-        <br>
-        mess<input type="text" name="mes"> <input type="submit" value="send"> <br>
-    </form>
-    <p>Answer:</p>
-    <p>{{ ans }}</p>
+    <h1>Telnet Console</h1>
+    <div>
+        <label for="ip">IP:</label>
+        <input type="text" id="ip" placeholder="192.168.3.19" />
+        <label for="port">Port:</label>
+        <input type="number" id="port" placeholder="10" />
+    </div>
+    <textarea id="console" placeholder="Enter commands here..."></textarea>
+    <button id="clear">Clear Console</button>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const ipInput = document.getElementById("ip");
+            const portInput = document.getElementById("port");
+            const consoleTextarea = document.getElementById("console");
+            const clearButton = document.getElementById("clear");
+
+            // Pobieranie dynamicznego URL-a widoku Django
+            const telnetCmdUrl = "{% url 'telnet_cmd' %}";
+
+            consoleTextarea.addEventListener("keydown", async (event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+
+                    const ip = ipInput.value.trim();
+                    const port = portInput.value.trim();
+                    const command = consoleTextarea.value.split("\n").pop().trim();
+
+                    if (!ip || !port || !command) {
+                        alert("Please provide valid IP, Port, and Command.");
+                        return;
+                    }
+
+                    try {
+                        const url = `${telnetCmdUrl}?ip=${encodeURIComponent(ip)}&port=${encodeURIComponent(port)}&mes=${encodeURIComponent(command)}`;
+                        const response = await fetch(url);
+                        const result = await response.text();
+
+                        consoleTextarea.value += `\nResponse: ${result}\n`;
+                        consoleTextarea.scrollTop = consoleTextarea.scrollHeight;
+                    } catch (error) {
+                        consoleTextarea.value += `\nError: ${error.message}\n`;
+                        consoleTextarea.scrollTop = consoleTextarea.scrollHeight;
+                    }
+                }
+            });
+
+            clearButton.addEventListener("click", () => {
+                consoleTextarea.value = "";
+            });
+        });
+    </script>
 </body>
 </html>

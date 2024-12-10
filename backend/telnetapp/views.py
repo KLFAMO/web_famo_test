@@ -23,10 +23,16 @@ def telnet_send(request):
     port = int(request.GET['port'])
     mes = request.GET['mes']
     ans = telnet.send(mes=mes, ip=ip, port=port)
-    print(ans)
     context=dict()
     context['ans'] = ans
     return render(request, "telnet.html", context)
+
+def telnet_cmd(request):
+    ip = request.GET['ip']
+    port = int(request.GET['port'])
+    mes = request.GET['mes']
+    ans = telnet.send(mes=mes, ip=ip, port=port)
+    return HttpResponse(ans)
 
 def setdds(request):
     context=dict()
