@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-import telnetapp.views
+import devices.views
 import sidebandfitapp.views
 import mainapp.views
 import lock689.views
@@ -26,9 +26,9 @@ import time_converter.views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', mainapp.views.index),
-    path('telnet/', telnetapp.views.telnet_send, name='telnet'),
-    path('telnet_cmd/', telnetapp.views.telnet_cmd, name='telnet_cmd'),
-    path('setdds/', telnetapp.views.setdds, name='setdds'),
+    path('telnet/', devices.views.telnet_send, name='telnet'),
+    path('telnet_cmd/', devices.views.telnet_cmd, name='telnet_cmd'),
+    path('setdds/', devices.views.setdds, name='setdds'),
     path('sidebands/', sidebandfitapp.views.index, name='sidebands'),
     path('lock689/', lock689.views.index, name='lock689'),
     path('lock689/get_data', lock689.views.get_data),

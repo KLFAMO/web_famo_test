@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sidebandfitapp',
     'mainapp',
-    'telnetapp',
+    'devices',
     'lock689',
     'anda',
     'freq_monitor',
