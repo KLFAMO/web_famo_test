@@ -28,6 +28,7 @@ urlpatterns = [
     path('', mainapp.views.index),
     path('telnet/', devices.views.telnet_send, name='telnet'),
     path('telnet_cmd/', devices.views.telnet_cmd, name='telnet_cmd'),
+    path('devices/', devices.views.device_list, name='device_list'),
     path('setdds/', devices.views.setdds, name='setdds'),
     path('sidebands/', sidebandfitapp.views.index, name='sidebands'),
     path('lock689/', lock689.views.index, name='lock689'),

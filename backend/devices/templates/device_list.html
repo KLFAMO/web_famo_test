@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Device List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>FAMO Network IP</th>
+                <th>IF Network IP</th>
+                <th>MAC Address</th>
+                <th>Device Type</th>
+                <th>Location</th>
+                <th>Description</th>
+                <th>Username</th>
+                <th>Additional Comment</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for device in devices %}
+            <tr>
+                <td>{{ device.name }}</td>
+                <td>{{ device.ip_famo }}</td>
+                <td>{{ device.ip_if }}</td>
+                <td>{{ device.mac }}</td>
+                <td>{{ device.device_type }}</td>
+                <td>{{ device.location }}</td>
+                <td>{{ device.description }}</td>
+                <td>{{ device.username }}</td>
+                <td>{{ device.comment }}</td>
+                <td>{{ device.created_at }}</td>
+                <td>{{ device.updated_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

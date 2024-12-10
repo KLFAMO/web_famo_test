@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from .models import Device
 import pathlib
 import sys
 
@@ -51,3 +52,8 @@ def setdds(request):
 
     context['ans'] = ans
     return render(request, "setdds.html", context)
+
+
+def device_list(request):
+    devices = Device.objects.all()
+    return render(request, 'device_list.html', {'devices': devices})
