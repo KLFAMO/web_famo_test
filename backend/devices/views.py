@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from .models import Device
 import pathlib
 import sys
+from django.conf import settings
 
-sys.path.append( str(pathlib.Path(__file__).absolute().parents[1] / 'tools') )
+sys.path.append(settings.MYTOOLS_PATH)
 import telnet
 
 dds_list = [
