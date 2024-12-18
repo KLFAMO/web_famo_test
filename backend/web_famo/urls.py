@@ -36,6 +36,7 @@ urlpatterns = [
     path('lock689/get_param', lock689.views.get_param),
     path('lock689/set_param', lock689.views.set_param),
     path('anda/', anda.views.index, name='anda'),
+    path('api/anda/tables_names/', anda.views.DataTablesNames.as_view(), name='anda_tables'),
     path('freq_monitor/', freq_monitor.views.index, name='freq_monitor'),
     path('freq_monitor/get_data', freq_monitor.views.get_data),
     path('time_converter/', time_converter.views.convert_date, name='time_converter'),

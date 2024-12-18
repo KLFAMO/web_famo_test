@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import json
 import sys
-sys.path.append("~/svnSr/progs/mytools")
+from django.conf import settings
+sys.path.append(settings.MYTOOLS_PATH)
 import sqldata as sqd
 import time_tools as tim
 
@@ -31,3 +34,9 @@ def index(request):
         'last_table_name': table_name,
     } 
     return render(request, "anda.html", context)
+
+
+class DataTablesNames(APIView):
+    def get(self, request, *args, **kwargs):
+        tables = sqd.gettables()
+        return Response(tables)
