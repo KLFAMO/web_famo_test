@@ -7,18 +7,19 @@ using NLog;
 
 namespace FamoNET.Components.Pages.DataBrowser
 {
-    public partial class DataBrowser : ComponentBase
+    public partial class DataBrowser : ComponentBase, IDisposable
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private bool _isFetchingData = false;
         private bool _isDataLoaded = false;
-        private IJSObjectReference _module;        
+        private IJSObjectReference _module;
+        private DotNetObjectReference<DataBrowser> objRef;
 
         #region Injections
         [Inject]
         private IJSRuntime _jsRuntime { get;set; }
         [Inject]
-        private CounterDataService _counterDataService { get; set; }
+        private AndaDataService _counterDataService { get; set; }
         [Inject]
         private ICSVDataProvider _csvDataProvider { get; set; }
         #endregion
@@ -111,6 +112,12 @@ namespace FamoNET.Components.Pages.DataBrowser
             await _module.InvokeVoidAsync("RenderChart");
             IsDataLoaded = false;
         }
+        [JSInvokable]
+        public async Task Unzoom()
+        {
+            await _module.InvokeVoidAsync("Unzoom");
+            await _module.InvokeVoidAsync("RenderChart");            
+        }
 
         protected async Task ToggleXLabels()
         {
@@ -123,10 +130,17 @@ namespace FamoNET.Components.Pages.DataBrowser
             if (firstRender)
             {
                 _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./Components/Pages/DataBrowser/DataBrowser.razor.js");
+                await _module.InvokeVoidAsync("SetDotNetReference", new object[1] { DotNetObjectReference.Create(this) });
                 await _module.InvokeAsync<string>("CreateEmptyChart", "");
             }
 
             await base.OnAfterRenderAsync(firstRender);            
+        }
+
+        protected override Task OnInitializedAsync()
+        {
+            objRef = DotNetObjectReference.Create(this);
+            return base.OnInitializedAsync(); 
         }
 
         public async Task LoadCSVData()
@@ -150,6 +164,11 @@ namespace FamoNET.Components.Pages.DataBrowser
                 ChartWizardComponent.SetParams(new ChartParams() { MinX = limits[0], MaxX = limits[1], MinY = limits[2], MaxY = limits[3] });
 
             IsFetchingData = false;
-        }               
+        }
+
+        public void Dispose()
+        {
+            objRef?.Dispose();
+        }
     }
 }

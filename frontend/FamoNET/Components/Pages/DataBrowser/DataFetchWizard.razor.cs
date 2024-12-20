@@ -12,7 +12,7 @@ namespace FamoNET.Components.Pages.DataBrowser
         private decimal _endMjd;
 
         [Inject]
-        private CounterDataService _counterDataService { get; set; }
+        private AndaDataService _counterDataService { get; set; }
         [Inject]
         private TimeService _timeService { get; set; }
         [Parameter]

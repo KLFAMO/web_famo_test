@@ -5,7 +5,7 @@ using NLog;
 
 namespace FamoNET.DataProviders
 {
-    public class MockDataProvider : ICounterDataProvider, ICSVDataProvider
+    public class MockDataProvider : IAndaDataProvider, ICSVDataProvider
     {
         private readonly string _csvPath;
         private readonly string _htmlPage = @"<!DOCTYPE html>

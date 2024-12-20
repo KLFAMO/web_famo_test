@@ -1,0 +1,17 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+
+<input type="text" @bind-value="@Filename" />
+
+@if (!IsSaving)
+{
+    <button class="btn btn-primary my-2 mx-2" type="button" @onclick="((e) => StartSaving())">Save to file</button>
+}
+else
+{
+    <button class="btn btn-primary my-2 mx-2" type="button" @onclick="((e) => StopSaving())">Stop</button>
+}
+
+
+
+<h1 id="Frequency">No data</h1>

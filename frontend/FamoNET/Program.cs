@@ -1,5 +1,6 @@
 using FamoNET.Components;
 using FamoNET.DataProviders;
+using FamoNET.Mock;
 using FamoNET.Model;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
@@ -16,15 +17,19 @@ namespace FamoNET
             builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
 
             builder.Services.AddScoped((s) => new TimeService());
+            builder.Services.AddSingleton((s) => new CounterWriterService());
+            builder.Services.AddSingleton((s) => new CounterDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FXMCounterUri));            
             builder.Services.AddScoped<ICSVDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
 
 #if (!DEBUG)
-            builder.Services.AddScoped<ICounterDataProvider>((s) => new CounterDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
+            builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
+            builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
 #else
-            builder.Services.AddScoped<ICounterDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+            builder.Services.AddScoped<IAndaDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+            builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
 #endif
 
-            builder.Services.AddScoped((s) => new CounterDataService(s.GetService<ICounterDataProvider>()));
+            builder.Services.AddScoped((s) => new AndaDataService(s.GetService<IAndaDataProvider>()));
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
@@ -48,6 +53,8 @@ namespace FamoNET
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
 
+            var counterDataService = app.Services.GetService<CounterDataService>();
+            var writerService = app.Services.GetService<CounterWriterService>();
             app.Run();
         }
     }

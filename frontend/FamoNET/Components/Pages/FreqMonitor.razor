@@ -1,0 +1,87 @@
+﻿@page "/freqmonitor"
+@using System.Globalization
+@rendermode InteractiveServer
+
+@if (Values != null)
+{
+    <div class="d-flex ms-2">
+        <label class="col-form-label" for="title">AOM Sr1 Calculation counter</label>
+        <div class="mx-2">
+            <select class="form-select" aria-label="Choose counter for AOM Sr1 Calculation" @bind="@SelectedCounter">
+                <option value="0">Counter_0</option>
+                <option value="1">Counter_1</option>
+                <option value="2">Counter_2</option>
+                <option value="3">Counter_3</option>
+                <option value="4">Counter_4</option>
+                <option value="5" selected>Counter_5</option>
+                <option value="6">Counter_6</option>
+                <option value="7">Counter_7</option>
+            </select>
+        </div>
+    </div>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">F_beat</th>
+                <th scope="col">AOM Sr1 Calculation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Counter_0</td>
+                <td>@Values[0].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[0] != 0 ? @Results[0].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_1</td>
+                <td>@Values[1].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[1] != 0 ? @Results[1].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_2</td>
+                <td>@Values[2].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[2] != 0 ? @Results[2].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_3</td>
+                <td>@Values[3].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[3] != 0 ? @Results[3].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_4</td>
+                <td>@Values[4].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[4] != 0 ? @Results[4].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_5</td>
+                <td>@Values[5].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[5] != 0 ? @Results[5].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_6</td>
+                <td>@Values[6].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[6] != 0 ? @Results[6].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Counter_7</td>
+                <td>@Values[7].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td>@(Results[7] != 0 ? @Results[7].ToString("N0", CultureInfo.InvariantCulture) : "")</td>
+            </tr>
+            <tr>
+                <td>Reprate</td>
+                <td>@Values[8].ToString("N0", CultureInfo.InvariantCulture)</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>    
+}
+else
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden"></span>
+        </div>
+    </div>
+}
