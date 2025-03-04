@@ -4,6 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FamoNET", "FamoNET\FamoNET.csproj", "{ECEE94DF-E8AD-496A-ADF3-FF23094AF391}"
+	ProjectSection(ProjectDependencies) = postProject
+		{344290F5-D964-4237-8211-21A1CB792B47} = {344290F5-D964-4237-8211-21A1CB792B47}
+	EndProjectSection
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "FamoNET.Scripts", "FamoNET.Scripts\FamoNET.Scripts.esproj", "{344290F5-D964-4237-8211-21A1CB792B47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +20,12 @@ Global
 		{ECEE94DF-E8AD-496A-ADF3-FF23094AF391}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECEE94DF-E8AD-496A-ADF3-FF23094AF391}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECEE94DF-E8AD-496A-ADF3-FF23094AF391}.Release|Any CPU.Build.0 = Release|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{344290F5-D964-4237-8211-21A1CB792B47}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,4 +11,12 @@
     <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.14" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\js\" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="robocopy ..\FamoNET.Scripts\out\ wwwroot\canvas /E&#xD;&#xA;exit 0" />
+  </Target>
+
 </Project>

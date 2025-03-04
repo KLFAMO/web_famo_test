@@ -12,6 +12,7 @@ namespace FamoNET.Services.DataServices
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         
         private string _counterUri;
+        private bool _isConnectingRequested = false;
                 
         private TcpClient _client = new TcpClient();
         
@@ -30,6 +31,11 @@ namespace FamoNET.Services.DataServices
 
         public async Task ConnectAsync()
         {
+            if (_isConnectingRequested)
+                return;
+            
+            _isConnectingRequested = true;
+
             try
             {                
                 _logger.Info("Connecting to Counter...");
@@ -45,6 +51,8 @@ namespace FamoNET.Services.DataServices
 
                 _logger.Info($"{ex} Failed to connect. Retrying in 5 seconds.");
                 await Task.Delay(5000);
+
+                _isConnectingRequested = false;
                 await ConnectAsync();
             }
             
@@ -59,6 +67,7 @@ namespace FamoNET.Services.DataServices
 
             try
             {
+                await stream.FlushAsync();
                 
                 while (!CTS.Token.IsCancellationRequested)
                 {                    
@@ -112,24 +121,7 @@ namespace FamoNET.Services.DataServices
                             _logger.Warn($"Unexpected message: {message}");
                         }
                             
-                    }                                            
-
-                    //foreach(var m in message.Split('|'))
-                    //{
-                    //    if (m != null && m.Length>0)
-                    //    {
-                    //        if (m[0] == '0' && _channels.Count > 0)
-                    //        {
-                    //            ChannelsReceived?.Invoke(this, new ChannelsReceivedEventArgs(_channels));
-                    //            if (_writerService != null)
-                    //                _writerService.Write(_channels);
-
-                    //            _channels = new List<CounterChannel>();
-                    //        }
-
-                    //        _channels.Add(new CounterChannel((int)Char.GetNumericValue(m[0]), Convert.ToDouble(m.Substring(2))));                                                        
-                    //    }                            
-                    //}                                        
+                    }                                                                                            
                 }
             }
             catch (TaskCanceledException)
@@ -142,6 +134,7 @@ namespace FamoNET.Services.DataServices
             }
             finally
             {
+                _isConnectingRequested = false;
                 _logger.Info("Disposed");                
             }
         }

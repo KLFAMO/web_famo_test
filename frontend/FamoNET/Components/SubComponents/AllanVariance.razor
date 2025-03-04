@@ -1,0 +1,20 @@
+﻿<div class="container">
+  <div class="row">
+    <div class="col-md-auto">
+        <div class="container">
+            <div class="row">
+                <p>Allan control</p>
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-primary" @onclick="@(() => { PlotAllan = true; })">Start</button>
+            </div>
+            <div class="row">
+                <button type="button" class="btn btn-secondary" @onclick="@(() => { PlotAllan = false; })">Stop</button>
+            </div>
+        </div>      
+    </div>
+    <div class="col">
+      <div id="chartElement" style="width: 100%; height: 500px"></div>
+    </div>
+  </div>
+</div>

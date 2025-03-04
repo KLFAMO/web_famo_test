@@ -2,3 +2,8 @@
 FamoNET/bin
 FamoNET/obj
 FamoNET/Data
+
+FamoNET.Scripts/.vscode/
+FamoNET.Scripts/node_modules/
+FamoNET.Scripts/obj/
+FamoNET.Scripts/out/

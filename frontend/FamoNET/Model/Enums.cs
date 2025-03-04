@@ -5,4 +5,10 @@
         InProgress,
         Completed
     }
+
+    public enum AxisMode
+    {
+        Mjd,
+        Date
+    }
 }

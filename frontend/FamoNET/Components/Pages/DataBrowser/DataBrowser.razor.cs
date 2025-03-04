@@ -1,5 +1,7 @@
 ﻿using FamoNET.Model;
+using FamoNET.Model.Enums;
 using FamoNET.Model.Interfaces;
+using FamoNET.Services;
 using FamoNET.Services.DataServices;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -7,17 +9,16 @@ using NLog;
 
 namespace FamoNET.Components.Pages.DataBrowser
 {
-    public partial class DataBrowser : ComponentBase, IDisposable
+    public partial class DataBrowser : ComponentBase
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private bool _isFetchingData = false;
-        private bool _isDataLoaded = false;
-        private IJSObjectReference _module;
-        private DotNetObjectReference<DataBrowser> objRef;
+        private bool _isDataLoaded = false;                
+        private AxisMode _axisMode = AxisMode.Mjd;
 
-        #region Injections
+        #region Injections        
         [Inject]
-        private IJSRuntime _jsRuntime { get;set; }
+        private ChartManagerService _chartManagerService { get; set; }
         [Inject]
         private AndaDataService _counterDataService { get; set; }
         [Inject]
@@ -63,8 +64,7 @@ namespace FamoNET.Components.Pages.DataBrowser
         #region Handling inner component events
         private async Task OnChartParametersUpdate(ChartParams chartParams)
         {
-            await _module.InvokeVoidAsync("SetChartParameters", chartParams);
-            await _module.InvokeVoidAsync("RenderChart");
+            await _chartManagerService.SetChartParameters(chartParams);
         }
 
         private async Task OnPythonConsoleExecute(string cmd)
@@ -82,66 +82,70 @@ namespace FamoNET.Components.Pages.DataBrowser
             if (data == null)
             {
                 IsFetchingData = false;
+                await _chartManagerService.ClearDataSets(false);
+                await _chartManagerService.SetChartParameters(new ChartParams() { Title = "Failed to retrieve data"});
                 _logger.Info("Failed to fetch data");
                 return;
             }
 
             if (data.Count == 0)
-            {                
-                await _module.InvokeVoidAsync("RenderChart");
+            {
+                await _chartManagerService.ClearDataSets(false);
+                await _chartManagerService.SetChartParameters(new ChartParams() { Title = "No data" });                
                 IsFetchingData= false;
                 return;
             }
 
-            await _module.InvokeVoidAsync("AddDataSet", data);
-            await _module.InvokeVoidAsync("RenderChart");
+            await _chartManagerService.ClearDataSets();
+            await _chartManagerService.AddDataSet(data);            
 
-            var limits = await _module.InvokeAsync<List<decimal>>("GetChartParameters");
-
-            if (limits != null)
-                ChartWizardComponent.SetParams(new ChartParams() { MinX = limits[0], MaxX = limits[1], MinY = limits[2], MaxY = limits[3] });
+            var chartParams = await _chartManagerService.GetViewportParameters();
+            chartParams.Title = DataFetchWizardComponent.SelectedTableName;
+            ChartWizardComponent.SetParams(chartParams);
+            await _chartManagerService.SetChartParameters(chartParams);
             
             IsFetchingData = false;
             IsDataLoaded = true;
         }
         #endregion
 
-        protected async Task ClearChart()
-        {
-            await _module.InvokeVoidAsync("ClearDataSets");
-            await _module.InvokeVoidAsync("RenderChart");
-            IsDataLoaded = false;
-        }
-        [JSInvokable]
-        public async Task Unzoom()
-        {
-            await _module.InvokeVoidAsync("Unzoom");
-            await _module.InvokeVoidAsync("RenderChart");            
-        }
-
-        protected async Task ToggleXLabels()
-        {
-            await _module.InvokeVoidAsync("ToggleXLabels");
-            await _module.InvokeVoidAsync("RenderChart");
-        }
-
+        #region Overrides
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import","./Components/Pages/DataBrowser/DataBrowser.razor.js");
-                await _module.InvokeVoidAsync("SetDotNetReference", new object[1] { DotNetObjectReference.Create(this) });
-                await _module.InvokeAsync<string>("CreateEmptyChart", "");
+                await _chartManagerService.InitializeService<DataBrowser>(DotNetObjectReference.Create(this));
+                await _chartManagerService.InitializeChart("No data");
             }
 
-            await base.OnAfterRenderAsync(firstRender);            
+            await base.OnAfterRenderAsync(firstRender);
+        }
+        #endregion
+        
+        protected async Task ClearChart()
+        {
+            await _chartManagerService.ClearDataSets();
+            IsDataLoaded = false;
         }
 
-        protected override Task OnInitializedAsync()
+        [JSInvokable]
+        public async Task Unzoom() => await _chartManagerService.Unzoom();           
+
+        protected async Task ToggleXLabels()
         {
-            objRef = DotNetObjectReference.Create(this);
-            return base.OnInitializedAsync(); 
-        }
+            if (_axisMode == AxisMode.Mjd)
+            {
+                _axisMode = AxisMode.Date;
+                await _chartManagerService.ConvertToDate();
+            }
+            else
+            {
+                _axisMode = AxisMode.Mjd;
+                await _chartManagerService.ConvertToMjd();
+            }            
+        }          
+
+        public async Task AdjustToVisible() => await _chartManagerService.AdjustToVisible();        
 
         public async Task LoadCSVData()
         {
@@ -155,20 +159,10 @@ namespace FamoNET.Components.Pages.DataBrowser
                 return;
             }
 
-            await _module.InvokeVoidAsync("AddDataSet", data);
-            await _module.InvokeVoidAsync("RenderChart");
-
-            var limits = await _module.InvokeAsync<List<decimal>>("GetChartParameters");
-            
-            if (limits != null)
-                ChartWizardComponent.SetParams(new ChartParams() { MinX = limits[0], MaxX = limits[1], MinY = limits[2], MaxY = limits[3] });
+            await _chartManagerService.AddDataSet(data);            
+            ChartWizardComponent.SetParams(await _chartManagerService.GetViewportParameters());
 
             IsFetchingData = false;
-        }
-
-        public void Dispose()
-        {
-            objRef?.Dispose();
-        }
+        }     
     }
 }

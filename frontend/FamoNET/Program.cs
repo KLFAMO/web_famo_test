@@ -6,6 +6,7 @@ using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using FamoNET.Services.DataServices;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace FamoNET
 {
@@ -17,15 +18,16 @@ namespace FamoNET
             builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
 
             builder.Services.AddScoped((s) => new TimeService());
+            builder.Services.AddScoped((s) => new ChartManagerService(s.GetRequiredService<IJSRuntime>()));
             builder.Services.AddSingleton((s) => new CounterWriterService());
             builder.Services.AddSingleton((s) => new CounterDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FXMCounterUri));            
-            builder.Services.AddScoped<ICSVDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+            builder.Services.AddScoped<ICSVDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
 
 #if (!DEBUG)
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
 #else
-            builder.Services.AddScoped<IAndaDataProvider>((s) => new MockDataProvider(@"TestData\data_export(5).csv"));
+            builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
 #endif
 

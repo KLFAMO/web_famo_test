@@ -1,0 +1,1 @@
+{"root":["./app.ts","./canvasjs/canvascore.ts","./canvasjs/dataservice.ts","./canvasjs/zoomservice.ts","./model/chartparameters.ts","./model/mjddataset.ts","./model/viewport.ts","./model/interfaces/idataset.ts"],"version":"5.7.3"}

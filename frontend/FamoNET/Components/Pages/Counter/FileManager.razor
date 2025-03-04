@@ -9,10 +9,11 @@
     <tbody>
         @foreach(var file in Files)
         {
+            var fileName = file;
             <tr>
                 <td>@file.Name</td>
                 <td>@(file.Status == Model.Enums.FileStatus.Completed ? "Completed" : "In Progress")</td>
-                <td><button class="btn btn-primary my-2" type="button" disabled="@(file.Status == Model.Enums.FileStatus.InProgress ? "true" : "")" @onclick="(() => DownloadFile(file))">Download</button></td>
+                <td><button class="btn btn-primary my-2" type="button" disabled="@(fileName.Status == Model.Enums.FileStatus.InProgress ? true : false)" @onclick="(() => DownloadFile(fileName))">Download</button></td>
             </tr>
         }        
     </tbody>

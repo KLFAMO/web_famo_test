@@ -11,6 +11,7 @@ namespace FamoNET.Components.Pages
         private const double sr1 = 429228470332607;
         private const double aomSr1 = 84000000;
         private string _selectedCounter = "5";
+        
         private List<double> _values;
         public List<double> Values 
         { 
@@ -38,6 +39,8 @@ namespace FamoNET.Components.Pages
             }
         }
 
+        private List<double> _recentValues = new List<double>();
+
         [Inject]
         private IFreqMonitorDataService FreqMonitorDataService { get; set; }
         public string SelectedCounter 
@@ -49,6 +52,8 @@ namespace FamoNET.Components.Pages
                     return;
                 _selectedCounter = value;
                 StateHasChanged();
+
+                _recentValues.Clear();
             }
         }
 
@@ -72,11 +77,24 @@ namespace FamoNET.Components.Pages
                     {
                         _results.Add(0);
                         continue;
-                    }    
-                    _results.Add(Math.Floor((((2.0 * f0 + n * _values[8] + _values[i]) - aomSr1) - sr88) / 4.0));
+                    }
+
+                    var calculatedValue = Math.Floor((((2.0 * f0 + n * _values[8] + _values[i]) - aomSr1) - sr88) / 4.0);
+                    
+                    if (Int32.Parse(_selectedCounter) == i)
+                    {
+                        _recentValues.Add(calculatedValue);
+                        if (_recentValues.Count > 10)
+                        {
+                            _recentValues.RemoveAt(0);
+                        }
+                        
+                        _results.Add(_recentValues.Average());
+                    }                                                
+                    else
+                        _results.Add(calculatedValue);
                 }
-                //foreach (var v in _values)
-                //    _results.Add(Math.Floor((((2.0*f0 + n * _values[8] + v) - aomSr1)-sr88)/4.0));
+                
                 await InvokeAsync(StateHasChanged);
             }
         }        

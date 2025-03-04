@@ -14,6 +14,7 @@
     <div class="row-cols-8">
         <button type="button" class="btn btn-primary my-2" onclick="@(()=> ClearChart())">Clear</button>
         <button type="button" class="btn btn-primary my-2" onclick="@(()=> ToggleXLabels())">MJD/Date</button>
+        <button type="button" class="btn btn-primary my-2" onclick="@(()=> AdjustToVisible())">Adjust to visible</button>
     </div>      
 </div>
 
@@ -26,13 +27,7 @@
                 <span class="visually-hidden"></span>
             </div>
         </div>
-    }    
-    else if (!IsDataLoaded)
-    {
-        <div class="d-flex justify-content-center">
-            <h1>No data</h1>
-        </div>
-    }
+    }        
     
     <div id="chartElement" style="width: 100%; height: 500px"></div>
 </div>
@@ -40,4 +35,4 @@
 <div>
     <PythonConsole QueryExecuted="OnPythonConsoleExecute" @ref="PythonConsoleComponent" />
 </div>
-
+ 

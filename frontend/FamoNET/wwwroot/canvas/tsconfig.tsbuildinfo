@@ -1,0 +1,1 @@
+{"root":["../eslint.config.js","../interop.ts","../canvasjs/canvaschart.ts","../canvasjs/canvascore.ts","../canvasjs/dataservice.ts","../canvasjs/zoomservice.ts","../model/chartparameters.ts","../model/datapoint.ts","../model/dataset.ts","../model/enums.ts","../model/viewportparameters.ts","../types/canvasjs.d.ts"],"version":"5.7.3"}

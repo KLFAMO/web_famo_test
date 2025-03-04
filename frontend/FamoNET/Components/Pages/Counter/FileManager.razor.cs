@@ -23,7 +23,7 @@ namespace FamoNET.Components.Pages.Counter
             {
                 try
                 {
-                    using (Stream stream = new FileStream("MyFilename.txt", FileMode.Open))
+                    using (Stream stream = new FileStream(file, FileMode.Open))
                     {
                         //file was opened, so it's not busy
                     }
@@ -44,24 +44,24 @@ namespace FamoNET.Components.Pages.Counter
             StateHasChanged();
         }
 
-        //public void CompleteFile(FileStatus fileStatus)
-        //{
-        //    var file = Files.FirstOrDefault(f => f.Name == fileStatus.Name);
-        //    if (file == null)
-        //    {
-        //        _logger.Error("Requested file could not be completed (not found)");
-        //        return;
-        //    }
+        public void CompleteFile()
+        {
+            var file = Files.FirstOrDefault(f => f.Status == Model.Enums.FileStatus.InProgress);
+            if (file == null)
+            {
+                _logger.Error("Requested file could not be completed (not found)");
+                return;
+            }
 
-        //    file.Status = Model.Enums.FileStatus.Completed;
-        //    StateHasChanged();
-        //}
+            file.Status = Model.Enums.FileStatus.Completed;
+            StateHasChanged();
+        }
 
         public async Task DownloadFile(FileStatus file)
         {
-            if (File.Exists(Path.Combine("Data", file.Name)))
+            if (File.Exists(file.Name))
             {
-                var fileStream = File.OpenRead(Path.Combine("Data", file.Name));
+                var fileStream = File.OpenRead(file.Name);
                 using var streamRef = new DotNetStreamReference(stream: fileStream);
                 await _jsRuntime.InvokeVoidAsync("downloadFileFromStream", file.Name, streamRef);
             }

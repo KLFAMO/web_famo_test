@@ -15,12 +15,10 @@ namespace FamoNET.Components.Pages.DataBrowser
         [SupplyParameterFromForm]
         private ChartParams Model { get; set; }        
 
-
-
         protected override void OnInitialized()
         {
             base.OnInitialized();
-            Model = new ChartParams();
+            Model = new ChartParams();            
         }
         
         protected async Task HandleValidSubmit()
@@ -37,5 +35,7 @@ namespace FamoNET.Components.Pages.DataBrowser
             Model = model;
             StateHasChanged();
         }        
+
+
     }
 }

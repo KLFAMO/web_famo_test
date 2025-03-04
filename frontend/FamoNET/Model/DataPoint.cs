@@ -2,10 +2,10 @@
 {
     public class DataPoint
     {        
-        public decimal X { get; set; }
-        public decimal Y { get; set; }
+        public double X { get; set; }
+        public double Y { get; set; }
 
-        public DataPoint(decimal x, decimal y)
+        public DataPoint(double x, double y)
         {
             X = x; 
             Y = y;

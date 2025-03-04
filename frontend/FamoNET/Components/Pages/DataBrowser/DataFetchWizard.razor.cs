@@ -6,15 +6,14 @@ namespace FamoNET.Components.Pages.DataBrowser
 {
     public partial class DataFetchWizard : ComponentBase
     {
-        private List<string> _tableNames;
+        private List<string> _tableNames = new List<string>();
         private string _selectedTableName;
         private decimal _startMjd;
         private decimal _endMjd;
 
         [Inject]
-        private AndaDataService _counterDataService { get; set; }
-        [Inject]
-        private TimeService _timeService { get; set; }
+        private AndaDataService _andaDataService { get; set; }
+        
         [Parameter]
         public EventCallback<(decimal,decimal,string)> FetchRequested { get; set; }
         
@@ -77,13 +76,16 @@ namespace FamoNET.Components.Pages.DataBrowser
                 var mjd_now = Math.Floor(jdNumerical - 2400000.5);
                 _startMjd = Convert.ToDecimal(mjd_now - 1);
                 _endMjd = Convert.ToDecimal(mjd_now);
-                StateHasChanged();                              
+                StateHasChanged();
+
+                TableNames = await _andaDataService.GetTableNamesAsync();
             }
         }
         protected async Task FetchData()
         {
             if (_selectedTableName == null)
                 return;
+
             await FetchRequested.InvokeAsync((StartMjd, EndMjd, SelectedTableName));
         }
     }
