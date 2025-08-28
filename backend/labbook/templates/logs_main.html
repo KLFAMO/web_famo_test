@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tytul }}</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto; 
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        td:nth-child(3) { /* Trzecia kolumna = Message */
+            white-space: normal; /* Pozwala na zawijanie tekstu */
+            width: 100%; /* Zajmuje maksymalnie dużo miejsca */
+        }
+
+
+        .filter-container {
+            margin-bottom: 15px;
+        }
+        .filter-container input {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <p>MJD Today: {{mjd_now}}</p>
+    <!-- Add new message form -->
+    <form method="POST" action="" class="add-log-form">
+        {% csrf_token %}
+        <h3>Dodaj nowy log</h3>
+        <label for="from_mjd">MJD od:</label>
+        <input type="number" step="0.000000001" name="from_mjd" id="from_mjd"
+            ondblclick="this.value=Math.round({{mjd_now}});" required>
+        <label for="to_mjd">MJD do:</label>
+        <input type="number" step="0.000000001" name="to_mjd" id="to_mjd"
+            ondblclick="this.value=Math.round({{mjd_now}});">
+        <br><br>
+        <label for="message">Wiadomość:</label>
+        <textarea name="message" id="message" rows="2" style="width: 100%;" required></textarea><br><br>
+        <label for="tags">Tagi:</label>
+        <input type="text" name="tags" id="tags"><br><br>
+        <button type="submit">Add message</button>
+    </form>
+
+    <!-- Display logs form -->
+    <hr style="width: 100%; height: 2px; background-color: black; border: none;">
+    <form method="GET" action="" class="filter-container">
+        <label for="from_mjd">MJD od:</label>
+        <input type="number" step="0.00000001" name="from_mjd" id="from_mjd" value="{{ from_mjd }}">
+        <label for="to_mjd">MJD do:</label>
+        <input type="number" step="0.00000001" name="to_mjd" id="to_mjd" value="{{ to_mjd }}">
+        <button type="submit">Refresh</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Start MJD</th>
+                <th>End MJD</th>
+                <th>Message</th>
+                <th>Tag</th>
+                <th>ID</th>
+                <th>Parent ID</th>
+                <th>Extra</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.from_mjd }}</td>
+                <td>{{ log.to_mjd }}</td>
+                <td>{{ log.message }}</td>
+                <td>{{ log.category }}</td>
+                <td>{{ log.id }}</td>
+                <td>{{ log.parent_id|default:"-" }}</td>
+                <td>{{ log.extra|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+

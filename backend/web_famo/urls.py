@@ -22,6 +22,7 @@ import lock689.views
 import anda.views
 import freq_monitor.views
 import time_converter.views
+import labbook.views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,4 +42,5 @@ urlpatterns = [
     path('freq_monitor/', freq_monitor.views.index, name='freq_monitor'),
     path('freq_monitor/get_data', freq_monitor.views.get_data),
     path('time_converter/', time_converter.views.convert_date, name='time_converter'),
+    path('labbook/', labbook.views.LogsMainView.as_view(), name='labbook'),
 ]

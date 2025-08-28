@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'anda',
     'freq_monitor',
     'time_converter',
+    'labbook',
 ]
 
 MIDDLEWARE = [
