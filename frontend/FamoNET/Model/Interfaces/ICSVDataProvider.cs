@@ -2,6 +2,6 @@
 {
     public interface ICSVDataProvider
     {
-        Task<List<DataPoint>> LoadCSV();
+        Task<List<DataPoint<double>>> LoadCSV();
     }
 }

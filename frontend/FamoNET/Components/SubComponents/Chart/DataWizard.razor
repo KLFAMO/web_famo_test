@@ -1,0 +1,54 @@
+﻿@rendermode InteractiveServer
+
+<div class="box">
+    <EditForm Model="this" OnSubmit="@FetchData" FormName="FetchWizard">
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Table
+                </a>
+            </p>
+            <p class="control">
+                <div class="select">
+                    <select aria-label="Choose data" disabled=@IsUIDisabled @bind="@SelectedTableName">
+                        <option selected>Choose data</option>
+                        @foreach (var tableName in TableNames)
+                        {
+                            <option value="@tableName">@tableName</option>
+                        }
+                    </select>
+                </div>
+            </p>
+        </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    MJD
+                </a>
+            </p>
+            <p class="control">
+                <InputNumber class="input" @bind-Value="@StartMjd" placeholder="From" id="title" required />
+            </p>
+            <p class="control">
+                <a class="button is-static">
+                    -
+                </a>
+            </p>
+            <p class="control">
+                <InputNumber class="input" @bind-Value="@EndMjd" placeholder="To" id="title" required />
+            </p>
+        </div>
+        <div class="field">
+            <button type="submit" class="button is-primary" disabled=@IsUIDisabled>Fetch data</button>
+        </div>
+    </EditForm>
+</div>
+
+
+@code {
+    private bool IsUIDisabled = false;
+
+    public void ToggleUI() => IsUIDisabled = !IsUIDisabled;
+}
+
+

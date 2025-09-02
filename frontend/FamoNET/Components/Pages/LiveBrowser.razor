@@ -1,0 +1,43 @@
+﻿@page "/live"
+@rendermode InteractiveServer
+
+<div class="box">
+    <EditForm Model="this" OnSubmit="@StartLive" FormName="FetchWizard">
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Table
+                </a>
+            </p>
+            <p class="control">
+                <div class="select">
+                    <select aria-label="Choose data" @bind="@SelectedTableName">
+                        <option selected>Choose data</option>
+                        @foreach (var tableName in TableNames)
+                        {
+                            <option value="@tableName">@tableName</option>
+                        }
+                    </select>
+                </div>
+            </p>
+        </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Points
+                </a>
+            </p>
+            <p class="control">
+                <InputNumber class="input" @bind-Value="@Points" placeholder="From" id="title" required />
+            </p>            
+        </div>
+        <div class="field">
+            <button type="submit" class="button is-primary">Live</button>
+        </div>
+    </EditForm>
+
+    
+    <FamoNET.Components.SubComponents.Chart.Chart_MJD @ref=Chart_MJD IsEditable="false" EnableAllan="false" />
+    <FamoNET.Components.SubComponents.AllanVariance @ref=AllanVarianceComponent />
+   
+</div>

@@ -1,10 +1,12 @@
 using FamoNET.Components;
+using FamoNET.Controllers.Mock;
 using FamoNET.DataProviders;
-using FamoNET.Mock;
+using FamoNET.DataProviders.Mock;
 using FamoNET.Model;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using FamoNET.Services.DataServices;
+using FamoNET.Services.DataServices.Mock;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -26,9 +28,11 @@ namespace FamoNET
 #if (!DEBUG)
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
+            builder.Services.AddTransient<IFC1000Controller>((s) => new FC1000DataProvider());
 #else
             builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
+            builder.Services.AddTransient<IFC1000Controller>((s) => new MockFC1000Controller());
 #endif
 
             builder.Services.AddScoped((s) => new AndaDataService(s.GetService<IAndaDataProvider>()));
@@ -37,6 +41,10 @@ namespace FamoNET
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
+            //builder.Logging.ClearProviders();
+            //builder.Logging.SetMinimumLevel(LogLevel.Trace);
+            //builder.Host.UseNLog();
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

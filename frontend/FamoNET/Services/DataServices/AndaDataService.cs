@@ -12,7 +12,7 @@ namespace FamoNET.Services.DataServices
             _dataProvider = dataProvider;
         }        
 
-        public async Task<List<DataPoint>> SendPythonAsync(string cmd)
+        public async Task<List<DataPoint<double>>> SendPythonAsync(string cmd)
         {                  
             return await _dataProvider.GetData(cmd);
         }
@@ -22,7 +22,7 @@ namespace FamoNET.Services.DataServices
             return await _dataProvider.GetTableNames();
         }
 
-        public async Task<List<DataPoint>> GetDataAsync(decimal startMjd, decimal endMjd, string tableName)
+        public async Task<List<DataPoint<double>>> GetDataAsync(double startMjd, double endMjd, string tableName)
         {
             return await _dataProvider.GetData(startMjd, endMjd, tableName);
         }

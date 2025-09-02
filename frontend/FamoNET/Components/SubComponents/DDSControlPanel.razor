@@ -1,0 +1,77 @@
+﻿
+<div class="box">
+    <div class="field is-horizontal">
+        <div class="field-label">
+            <label class="label">IP</label>
+        </div>
+        <div class="field-body">           
+            <div class="field">
+                <div class="control">
+                    <p>@DDS_Model.IP</p>                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label">
+            <label class="label">Name</label>
+        </div>
+        <div class="field-body">
+            <div class="field">
+                <div class="control">
+                    <p>@DDS_Model.Name</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label">
+            <label class="label">Description</label>
+        </div>
+        <div class="field-body">
+            <div class="field">
+                <div class="control">
+                    <p>@DDS_Model.Description</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label">
+        </div>
+        <div class="field-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Channel</th>
+                        <th>Amplitude</th>
+                        <th>Phase</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var channel in Channels)
+                    {
+                        <tr>
+                            <td>@channel.Id</td>
+                            <td>@channel.Name</td>
+                            <td>
+                                <input type="number" class="input" @bind="channel.Amplitude" />
+                            </td>
+                            <td>
+                                <input type="number" class="input" @bind="channel.Phase" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="columns is-centered">
+        <div class="column is-half has-text-centered">
+            <button class="button is-link" type="button" @onclick="(e) => ConfirmModalComponent.ShowModal(Model.Operation.Update)">Send</button>
+        </div>
+    </div>
+</div>
+
+<ConfirmModal @ref=ConfirmModalComponent ChoiceMade="OnModalConfirmed" />

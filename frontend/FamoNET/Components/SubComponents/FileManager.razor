@@ -1,0 +1,20 @@
+﻿<table class="table is-fullwidth">
+    <thead>
+        <tr>
+            <th scope="col">Filename</th>
+            <th scope="col">Status</th>            
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var file in Files)
+        {
+            var fileName = file;
+            <tr>
+                <td>@file.Name</td>
+                <td>@(file.Status == Model.ProgressStatus.Completed ? "Completed" : "In Progress")</td>
+                <td><button class="button" type="button" disabled="@(fileName.Status == Model.ProgressStatus.InProgress ? true : false)" @onclick="(() => DownloadFile(fileName))">Download</button></td>
+            </tr>
+        }        
+    </tbody>
+</table>

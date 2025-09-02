@@ -1,0 +1,143 @@
+﻿<div class="box">
+    @if (IsInitialized)
+    {
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-half">
+                    <table class="table is-centered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>RBW</th>
+                                <th>Center</th>
+                                <th>Span</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <p>Current</p>
+                                </td>
+                                <td>
+                                    @if (Model.RBW < 1000)
+                                    {
+                                        <p>@Model.RBW Hz</p>
+                                    }
+                                    else if (Model.RBW < 1000000)
+                                    {
+                                        <p>@(Model.RBW / 1000) KHz</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@(Model.RBW / 1000000) MHz</p>
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.CenterFrequency < 1000)
+                                    {
+                                        <p>@Model.CenterFrequency Hz</p>
+                                    }
+                                    else if (Model.CenterFrequency < 1000000)
+                                    {
+                                        <p>@(@Model.CenterFrequency / 1000) KHz</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@(@Model.CenterFrequency / 1000000) MHz</p>
+                                    }
+                                </td>
+                                <td>
+                                    @if (Model.Span < 1000)
+                                    {
+                                        <p>@Model.Span Hz</p>
+                                    }
+                                    else if (Model.Span < 1000000)
+                                    {
+                                        <p>@(@Model.Span / 1000) KHz</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@(@Model.Span / 1000000) MHz</p>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p>New</p>
+                                </td>
+                                <td>
+                                    <div class="field">
+                                        <div class="control">
+                                            <input type="text" class="input" @bind-value="@NewRBW" @bind-value:event="oninput" placeholder="Value..." />
+                                        </div>
+                                        <p class="control">
+                                            <div class="select">
+                                                <select aria-label="Units" @bind="@SelectedRBWUnit">
+                                                    <option value="1">Hz</option>
+                                                    <option value="1000">KHz</option>
+                                                    <option value="1000000">MHz</option>
+                                                </select>
+                                            </div>
+                                        </p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="field">
+                                        <div class="control">
+                                            <input type="text" class="input" @bind-value="@NewCenterFrequency" @bind-value:event="oninput" placeholder="Value..." />
+                                        </div>
+                                        <p class="control">
+                                            <div class="select">
+                                                <select aria-label="Units" @bind="@SelectedCenterFrequencyUnit">
+                                                    <option value="1">Hz</option>
+                                                    <option value="1000">KHz</option>
+                                                    <option value="1000000">MHz</option>
+                                                </select>
+                                            </div>
+                                        </p>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="field">
+                                        <div class="control">
+                                            <input type="text" class="input" @bind-value="@NewSpan" @bind-value:event="oninput" placeholder="Value..." />
+                                        </div>
+                                        <p class="control">
+                                            <div class="select">
+                                                <select aria-label="Units" @bind="@SelectedSpanUnit">
+                                                    <option value="1">Hz</option>
+                                                    <option value="1000">KHz</option>
+                                                    <option value="1000000">MHz</option>
+                                                </select>
+                                            </div>
+                                        </p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="button" @onclick="((e) => SetDeviceParameters())">Set</button>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="field">
+            <div class="control">
+                <input type="text" class="input" @bind-value="IP" @bind-value:event="oninput" placeholder="IP..." />
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <input type="text" class="input" @bind-value="Port" @bind-value:event="oninput" placeholder="Port" />
+            </div>
+        </div>
+        <div class="field">
+            <div class="control">
+                <button type="button" class="button" @onclick="() => Initialize()" disabled=@IsInitialized>Connect</button>
+            </div>
+        </div>
+    }
+    <div id="@ChartGuid" style="width: 100%; height: 500px"></div>
+</div>

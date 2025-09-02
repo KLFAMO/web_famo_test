@@ -24,7 +24,7 @@ namespace FamoNET.DataProviders
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
         }
 
-        public async Task<List<DataPoint>> GetData(decimal startMjd, decimal endMjd, string tableName)
+        public async Task<List<DataPoint<double>>> GetData(double startMjd, double endMjd, string tableName)
         {            
             NameValueCollection queryParameters = HttpUtility.ParseQueryString(string.Empty);
             
@@ -35,7 +35,7 @@ namespace FamoNET.DataProviders
             HttpResponseMessage response = null;
             try
             {
-                response = await _httpClient.GetAsync("table_data/?"+queryParameters.ToString(), _cancellationTokenSource.Token);
+                response = await _httpClient.GetAsync("table_data?"+queryParameters.ToString(), _cancellationTokenSource.Token);
             }
             catch(Exception ex)
             {
@@ -51,7 +51,7 @@ namespace FamoNET.DataProviders
             
             try
             {
-                var result = new List<DataPoint>();
+                var result = new List<DataPoint<double>>();
 
                 JsonNode root = JsonSerializer.Deserialize<JsonNode>(await response.Content.ReadAsStringAsync());
                 var mjds = root["data"].AsObject()["mjd"].AsArray();
@@ -59,7 +59,7 @@ namespace FamoNET.DataProviders
 
                 for (int i = 0; i < mjds.Count; ++i)
                 {
-                    result.Add(new DataPoint(mjds[i].GetValue<double>(), vals[i].GetValue<double>()));
+                    result.Add(new DataPoint<double>(mjds[i].GetValue<double>(), vals[i].GetValue<double>()));
                 }
 
                 return result;
@@ -71,7 +71,7 @@ namespace FamoNET.DataProviders
             }
         }
 
-        public async Task<List<DataPoint>> GetData(string query)
+        public async Task<List<DataPoint<double>>> GetData(string query)
         {
             throw new NotImplementedException();
         }

@@ -1,8 +1,8 @@
 export class DataPoint {
-    x: any
+    x: number | Date
     y: number
 
-    constructor(x: any, y: number) {
+    constructor(x: number | Date, y: number) {
         this.x = x;
         this.y = y;
     }

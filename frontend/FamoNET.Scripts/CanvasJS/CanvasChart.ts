@@ -3,136 +3,171 @@
 declare let CanvasJS: any;
 import { ChartParameters } from '../Model/ChartParameters.js';
 import { ViewportParameters } from '../Model/ViewportParameters.js';
-import { DataSet } from "../Model/DataSet.js"
-
+import { DataPoint } from "../Model/DataPoint.js"
+import { AxisMode } from "../Model/Enums.js";
+import { DataOperations } from '../Utils/DataOperations.js';
 
 interface IMinMaxValues {
 	MinValue: number;
 	MaxValue: number
 }
 
-export class CanvasChart {
+export class CanvasChart extends EventTarget {
+	private debugMode: boolean = true;
 	private mainChart: any = undefined;
 	private dotNetReference: any = undefined;	
-	private isInitialized: boolean = false;
-
-	constructor(dotNetReference: any) {		
+	private isInitialized: boolean = false;	
+	private disableEvents: boolean = false;
+	private chartGuid: string = "";
+	private axisMode: AxisMode = AxisMode.MJD;
+	constructor(dotNetReference: any) {	
+		super()
 		this.dotNetReference = dotNetReference;
-	}
+	}		
 
-	RangeChanged?: (e: ViewportParameters) => void;		
+	InitializeChart(guid: string, chartParameters: ChartParameters) {
+		this.chartGuid = guid;
+		this.axisMode = chartParameters.AxisMode;
 
-	InitializeChart(container?: HTMLElement | null, title?: string, logarithmic?: boolean) {
-		
-		if (container === undefined || container === null) {
-			console.error("Failed to initialize chart module. Could not find chart container.")
+		let container = document.getElementById(guid);
+
+		if (container === null) {
+			console.error(`Container ${guid} not found`);
 			return;
 		}		
 
-		this.mainChart = new CanvasJS.Chart("chartElement", {
+		this.disableEvents = chartParameters.DisableEvents;
+
+		this.mainChart = new CanvasJS.Chart(container, {
 			colorSet: "customColorSet1",
 			zoomEnabled: true,
 			zoomType: "xy",
 			title: {
-				text: title
+				text: chartParameters.Title
 			},
-			data: [],
-			axisX: {
-				//valueFormatString: "#####.0K"
-				valueFormatString: logarithmic ? "#.####E+0" : null,
+			data: [],					
+			axisX: {				
+				labelFontColor: chartParameters.DisableXLabels === true ? "transparent" : "#000000",
+				valueFormatString: chartParameters.Logarithmic ? "#.####E+0" : null,
 				gridThickness: 1,
-				interval: logarithmic ? 1 : null, // Interval between ticks (logarithmic interval)
-				minimum: logarithmic ? 0.1 : null, // Minimum value
-				maximum: logarithmic ? 1000 : null, // Maximum value
-				logarithmic: logarithmic
+				interval: chartParameters.Logarithmic ? 1 : null, // Interval between ticks (logarithmic interval)
+				minimum: chartParameters.Logarithmic ? 0.1 : null, // Minimum value
+				maximum: chartParameters.Logarithmic ? 1000 : null, // Maximum value
+				logarithmic: chartParameters.Logarithmic,
+				crosshair: {
+					enabled: true,
+					color: "orange",
+					labelFontColor: "#F8F8F8"
+				},
 			},
-			axisY: {
-				valueFormatString: "#.####E+0",
-				logarithmic: logarithmic
+			axisY: {				
+				logarithmic: chartParameters.Logarithmic,
+				reversed: chartParameters.InvertYAxis
 			},
+			
 			rangeChanged: (e: any) => {
-				if (e.type === "reset") {
+
+				if (this.disableEvents === true) {
 					return;
 				}
-				if (this.RangeChanged) {
-					this.RangeChanged(new ViewportParameters(e.axisX[0].viewportMinimum,
-						e.axisX[0].viewportMaximum,
-						e.axisY[0].viewportMinimum,
-						e.axisY[0].viewportMaximum));
-				}
-				
-				console.log(`Adding view to history: ${e.axisX[0].viewportMinimum} ${e.axisX[0].viewportMaximum} ${e.axisY[0].viewportMinimum} ${e.axisY[0].viewportMaximum}`)
+
+				let newVP = new ViewportParameters(e.axisX[0].viewportMinimum,
+					e.axisX[0].viewportMaximum,
+					e.axisY[0].viewportMinimum,
+					e.axisY[0].viewportMaximum, this.axisMode);				
+
+				this.RaiseRangeChanged(newVP);	
+
+				if (e.type === "reset") {
+					this.dispatchEvent(new CustomEvent('RangeReset', {
+						detail: {
+							guid: this.chartGuid							
+						}
+					}));	
+				}											
 			},
 			stripLines: []
 		});				
 
-		this.Render();	
-		console.log("Chart object: ", this.mainChart);
+		this.Render();			
 	}	
-
+	
 	GetViewportParameters(): ViewportParameters {
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
-			return new ViewportParameters(0, 0, 0, 0);				
+			return new ViewportParameters(0, 0, 0, 0, this.axisMode);				
 		}
 
 		if (this.mainChart.axisX.length < 1 || this.mainChart.axisY.length < 1) {
 			console.error("Axis not found: ", this.mainChart);
-			return new ViewportParameters(0, 0, 0, 0);
+			return new ViewportParameters(0, 0, 0, 0, this.axisMode);
 		}
 
 		return new ViewportParameters(
 			this.mainChart.axisX[0].get("viewportMinimum"),
 			this.mainChart.axisX[0].get("viewportMaximum"),
 			this.mainChart.axisY[0].get("viewportMinimum"),
-			this.mainChart.axisY[0].get("viewportMaximum"));
+			this.mainChart.axisY[0].get("viewportMaximum"), this.axisMode);
 	}
 
-	SetChartParameters(chartParams?: ChartParameters): void {
+	SetViewportParameters(viewportParameters: ViewportParameters): void {
+		if (this.debugMode) {
+			console.trace("Setting vp:", viewportParameters);
+		}
+
+		//somtimes new vp is not working without this default set
+		//this.mainChart.axisX[0].set("viewportMaximum", null, false);
+		//this.mainChart.axisY[0].set("viewportMaximum", null, false);
+		//this.mainChart.axisX[0].set("viewportMinimum", null, false);
+		//this.mainChart.axisY[0].set("viewportMinimum", null, false);
+		
+
+		this.mainChart.options.axisX.viewportMinimum = viewportParameters.MinX;
+		this.mainChart.options.axisX.viewportMaximum = viewportParameters.MaxX;
+		this.mainChart.options.axisY.viewportMinimum = viewportParameters.MinY;
+		this.mainChart.options.axisY.viewportMaximum = viewportParameters.MaxY;
+		this.Render();
+		this.RaiseRangeChanged(viewportParameters);			
+	}
+
+	ResetViewport(): void {
+		if (this.debugMode) {
+			console.trace("VP reset.");
+		}
+		
+		this.mainChart.axisX[0].set("viewportMaximum", null, false);
+		this.mainChart.axisY[0].set("viewportMaximum", null, false);
+		this.mainChart.axisX[0].set("viewportMinimum", null, false);
+		this.mainChart.axisY[0].set("viewportMinimum", null, false);
+		this.Render(); //called to calculate auto values
+		
+		this.RaiseRangeChanged(this.GetViewportParameters());
+
+		this.dispatchEvent(new CustomEvent('RangeReset', {
+			detail: {
+				guid: this.chartGuid				
+			}
+		}));		
+	}
+
+	SetChartParameters(chartParams: ChartParameters): void {
+		if (this.debugMode) {
+			console.trace("Setting chart params:", chartParams);
+		}
+		
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return;
-		}
-
-		if (this.mainChart.axisX.length < 1 || this.mainChart.axisY.length < 1) {
-			console.error("Axis not found");
-			return;
-		}
-
-		if (chartParams === undefined) {
-			this.mainChart.axisX[0].set("viewportMaximum", null, false);
-			this.mainChart.axisY[0].set("viewportMaximum", null, false);
-			this.mainChart.axisX[0].set("viewportMinimum", null, false);
-			this.mainChart.axisY[0].set("viewportMinimum", null, false);
-			return;
-		}
-
-		if (chartParams.Title != undefined) {
-			this.mainChart.options.title.text = chartParams.Title;
-		}
-
-		if (chartParams.ViewportParameters === undefined) {
-			return;
-		}
-
-		if (chartParams.ViewportParameters.MinX != undefined) {
-			this.mainChart.options.axisX.viewportMinimum = chartParams.ViewportParameters.MinX;
-		}
-
-		if (chartParams.ViewportParameters.MaxX != undefined) {
-			this.mainChart.options.axisX.viewportMaximum = chartParams.ViewportParameters.MaxX;
-		}
-
-		if (chartParams.ViewportParameters.MinY != undefined) {
-			this.mainChart.options.axisY.viewportMinimum = chartParams.ViewportParameters.MinY;
-		}
-
-		if (chartParams.ViewportParameters.MaxY != undefined) {
-			this.mainChart.options.axisY.viewportMaximum = chartParams.ViewportParameters.MaxY;
-		}
+		}				
+				
+		this.mainChart.options.title.text = chartParams.Title;		
 	}
 
 	Render(): void {
+		if (this.debugMode) {
+			console.log("Render");
+		}
+		
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return;
@@ -140,18 +175,22 @@ export class CanvasChart {
 
 		if (!this.isInitialized) {
 			this.mainChart.render();
-			this.isInitialized = true;
+			this.isInitialized = true;			
 		}
 		
 		if (this.isInitialized) {			
 			if (this.mainChart.axisX.length>0 && this.mainChart.axisX[0].get("logarithmic") === true) {
 				this.AddMinorLogarithmicGridLines();
 			}			
-			this.mainChart.render();
+			this.mainChart.render();			
 		}				
 	}
 
-	AddDataSet(dataSet: DataSet): void {
+	AddDataSet(dataSet: DataPoint[]): void {
+		if (this.debugMode) {
+			console.trace("Adding dataset", dataSet);
+		}
+		
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return;
@@ -159,12 +198,16 @@ export class CanvasChart {
 
 		const dataSeriesObject : any = {};
 		dataSeriesObject.type = "spline";
-		dataSeriesObject.dataPoints = dataSet.Collection;
+		dataSeriesObject.dataPoints = dataSet;
 
 		this.mainChart.options.data.push(dataSeriesObject)
 	}
 
 	ClearDataSets(): void {
+		if (this.debugMode) {
+			console.trace("Clear dataset");
+		}		
+
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return;
@@ -173,7 +216,11 @@ export class CanvasChart {
 		this.mainChart.options.data = [];		
 	}
 
-	AdjustToVisibleData(): void {	
+	AdjustToVisibleData(): void {
+		if (this.debugMode) {
+			console.trace("Adjusting to visible");
+		}
+		
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return;
@@ -182,24 +229,52 @@ export class CanvasChart {
 		const chartParams = this.GetViewportParameters();
 		const minMaxValues = this.FindYMinMaxValue(chartParams);
 
-		this.SetChartParameters(new ChartParameters(new ViewportParameters(chartParams.MinX, chartParams.MaxX, minMaxValues.MinValue, minMaxValues.MaxValue)))
+		let visibleOffset = ((minMaxValues.MaxValue - minMaxValues.MinValue) / 2) * 0.1;
+		this.SetViewportParameters(new ViewportParameters(chartParams.MinX, chartParams.MaxX, minMaxValues.MinValue - visibleOffset, minMaxValues.MaxValue + visibleOffset, this.axisMode))
 	}
 
-	private FindYMinMaxValue(chartParams?: ViewportParameters): IMinMaxValues {
+	//canvasjs RaiseChanged is only raised when user interacts with chart. This function is a default way of handling RangeChanged either by interaction or logic.
+	RaiseRangeChanged(newVP: ViewportParameters) {
+		if (this.disableEvents === true) {
+			return;
+		}
+
+		if (this.debugMode) {
+			console.trace("Range changed raised");
+		}
+		
+        this.dispatchEvent(new CustomEvent('RangeChanged', {
+			detail: {
+				guid: this.chartGuid,
+                viewport: newVP
+            }
+        }));					
+		
+		if (newVP.Type == AxisMode.Date) {
+			console.log(newVP);
+			this.dotNetReference.invokeMethodAsync("ViewportChanged", this.chartGuid, new Date(newVP.MinX).toISOString(), new Date(newVP.MaxX).toISOString(), newVP.MinY, newVP.MaxY, newVP.Type);
+		}
+		else {
+			console.log(newVP);
+			this.dotNetReference.invokeMethodAsync("ViewportChanged", this.chartGuid, newVP.MinX, newVP.MaxX, newVP.MinY, newVP.MaxY, newVP.Type);
+		}		
+	}
+
+	private FindYMinMaxValue(viewport?: ViewportParameters): IMinMaxValues {
 		if (this.mainChart === undefined) {
 			console.error("Chart not initialized");
 			return { MinValue: 0, MaxValue: 0 } as IMinMaxValues;
 		}
 
-		if (!chartParams) {
-			chartParams = this.GetViewportParameters();
+		if (!viewport) {
+			viewport = this.GetViewportParameters();
 		}
 		
-		let minVisibleValue: number | undefined = undefined;
-		let maxVisibleValue: number | undefined = undefined;
+		let minVisibleValue: any | undefined = undefined;
+		let maxVisibleValue: any | undefined = undefined;
 
 		this.mainChart.options.data.forEach((dataset) => {
-			dataset.dataPoints.filter(dp => dp.x >= chartParams.MinX! && dp.x <= chartParams.MaxX!)
+			dataset.dataPoints.filter(dp => dp.x >= viewport!.MinX! && dp.x <= viewport!.MaxX!)
 				.forEach((dataparam) => {					
 					if (maxVisibleValue === undefined || dataparam.y > maxVisibleValue) {
 						maxVisibleValue = dataparam.y;
@@ -212,7 +287,7 @@ export class CanvasChart {
 
 		if (minVisibleValue === undefined || maxVisibleValue === undefined) {
 			console.warn("Failed to find min and max value for visible data!");
-			console.info(minVisibleValue, maxVisibleValue, chartParams);
+			console.info(minVisibleValue, maxVisibleValue, viewport);
 		}
 
 		const result: IMinMaxValues = {
@@ -223,13 +298,14 @@ export class CanvasChart {
 		return result;
 	}
 
-	private AddMinorLogarithmicGridLines(): void {
+	private AddMinorLogarithmicGridLines(): void {		
 		const viewportParameters = this.GetViewportParameters();
 
-		if (!viewportParameters || !viewportParameters.MaxX || !viewportParameters.MaxY) {
+		if (!viewportParameters || viewportParameters.MinX instanceof Date || viewportParameters.MaxX instanceof Date) {
 			console.warn("Failed to add logarithmic lines");
 			return;
 		}
+		
 		const xGridLines: any = [];
 
 		// Generate minor grid lines for x-axis
@@ -247,7 +323,7 @@ export class CanvasChart {
 					lineColor: "#000000", // Light gray color					
 				});
 			}
-		}
+		}		
 
 		const yGridLines: any = [];
 		// Generate minor grid lines for y-axis

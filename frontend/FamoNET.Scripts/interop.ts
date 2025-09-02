@@ -1,60 +1,93 @@
 import { CanvasCore } from "./CanvasJS/CanvasCore.js";
 import { ChartParameters } from "./Model/ChartParameters.js";
 import { ViewportParameters } from "./Model/ViewportParameters.js"
-import { DataSet } from "./Model/DataSet.js"
+
 import { DataPoint } from "./Model/DataPoint.js"
+import { AxisMode } from "./Model/Enums.js";
 
-let canvasCore: CanvasCore | undefined = undefined;
-let dotNetReference: any = undefined;
+export class Interop {
+	canvasCore: CanvasCore | undefined = undefined;
+	dotNetReference: any = undefined;	
+}
 
-export function SetDotNetReference(reference: any) {
-	dotNetReference = reference;	
+let instances = new Map<string, Interop>();
+
+export function SetDotNetReference(guid: string, dotnetReference: any) {
+	if (instances.has(guid)) {
+		console.error("Interop instance already exists!");
+		return;
+	}
+
+	instances.set(guid, new Interop());
+
+	let instance = instances.get(guid);
+	instance!.dotNetReference = dotnetReference;
 };
 
-export function InitializeChart(title?: string, logarithmic?: boolean) {
-	canvasCore = new CanvasCore(dotNetReference, title, logarithmic);
+export function InitializeChart(guid: string, chartParametersJson) {
+	let interop = instances.get(guid);
+	interop!.canvasCore = new CanvasCore(interop!.dotNetReference, guid, new ChartParameters(chartParametersJson.title, chartParametersJson.logarithmic, chartParametersJson.disableXLabels, chartParametersJson.disableEvents, chartParametersJson.invertYAxis, chartParametersJson.axisMode));
 }
 
-export function Unzoom() {
-	canvasCore?.zoomService?.Unzoom();
-}
-
-export function AddDataSet(dataSet) {	
-	let dataPoints : Array<DataPoint> = [];
-	dataSet.forEach(dp =>
-	{
-		dataPoints.push(new DataPoint(dp.x, dp.y));
-	})
+export function AddDataSet(guid: string, dataPoints) {	
+	let interop = instances.get(guid);	
+	let dataSet: DataPoint[] = [];
+	dataPoints.forEach(dp => {
+		if (typeof dp.x == 'string') {
+			dataSet.push(new DataPoint(new Date(dp.x), dp.y));
+		}
+		else if (typeof dp.x == 'number') {
+			dataSet.push(new DataPoint(dp.x, dp.y));			
+		}		
+	})	
 	
-	canvasCore?.dataService?.AddDataSet(new DataSet(dataPoints));
+	interop!.canvasCore?.dataService?.AddDataSet(dataSet);
 }
 
-export function ClearDataSets() {
-	canvasCore?.dataService?.ClearDataSets();
+export function ClearDataSets(guid: string) {
+	let interop = instances.get(guid);
+	interop!.canvasCore?.dataService?.ClearDataSets();
 }
 
-export function SetChartParameters(newParams) {
-	let chartParameters = new ChartParameters(new ViewportParameters(newParams.minX, newParams.maxX, newParams.minY, newParams.maxY), newParams.title);	
-	canvasCore?.SetChartParameters(chartParameters);
+export function SetChartParameters(guid:string, chartParameters) {
+	let interop = instances.get(guid);
+	interop!.canvasCore?.SetChartParameters(new ChartParameters(chartParameters.title));
 }
 
-export function GetViewportParameters() {
-	let viewportParameters = canvasCore?.GetChartParameters();
-	return [viewportParameters?.MinX, viewportParameters?.MaxX, viewportParameters?.MinY, viewportParameters?.MaxY]
+export function SetViewportParameters(guid: string, viewportParams) {
+	console.log("interop: ", viewportParams);
+	let interop = instances.get(guid);	
+	let chartParameters = new ViewportParameters(viewportParams.minX, viewportParams.maxX, viewportParams.minY, viewportParams.maxY, viewportParams.axisMode);
+	interop!.canvasCore?.SetViewportParameters(chartParameters);
 }
 
-export function AdjustToVisibleData() {
-	canvasCore?.AdjustToVisibleData();
+export function GetViewportParameters(guid:string) {
+	let interop = instances.get(guid);
+	let viewportParameters = interop!.canvasCore?.GetViewportParameters();
+	return [viewportParameters?.MinX, viewportParameters?.MaxX, viewportParameters?.MinY, viewportParameters?.MaxY, viewportParameters?.Type]
 }
 
-export function RenderChart() {
-	canvasCore?.RenderChart();
+export function ResetViewport(guid:string) {
+	let interop = instances.get(guid);
+	interop!.canvasCore?.ResetViewport();
 }
 
-export function ConvertToDate() {
-	canvasCore?.dataService?.ConvertToDate();
+export function AdjustToVisibleData(guid:string) {
+	let interop = instances.get(guid);
+	interop!.canvasCore?.AdjustToVisibleData();
 }
 
-export function ConvertToMjd() {
-	canvasCore?.dataService?.ConvertToMjd();
+export function RenderChart(guid:string) {
+	let interop = instances.get(guid);
+	interop!.canvasCore?.RenderChart();
+}
+
+export function PopPreviousViewport(guid:string) {
+	let interop = instances.get(guid);
+	let previousViewport = interop!.canvasCore?.zoomService?.PopPreviousViewport();	
+	return [previousViewport?.MinX, previousViewport?.MaxX, previousViewport?.MinY, previousViewport?.MaxY, previousViewport?.Type]
+}
+
+export function Dispose(guid: string) {
+	instances.delete(guid);
 }

@@ -6,38 +6,41 @@ import { DataService } from "./DataService.js"
 
 export class CanvasCore {
 	private dotNetReference: any = undefined;
-	public zoomService: ZoomService | undefined = undefined; 
 	private canvasChart: CanvasChart | undefined = undefined;
+
+	public zoomService: ZoomService | undefined = undefined; 	
 	public dataService: DataService | undefined = undefined;
 
-	constructor(dotNetReference, title?: string, logarithmic?: boolean) {
-		let container = document.getElementById("chartElement");
-		container!.oncontextmenu = () => {
-			this.zoomService?.Unzoom();
-			this.canvasChart?.Render();
-			return false;
-		}
-
-		this.canvasChart = new CanvasChart(dotNetReference);		
-		this.canvasChart.InitializeChart(container, title, logarithmic);
+	constructor(dotNetReference, containerGuid: string, chartParameters: ChartParameters) {		
+		this.canvasChart = new CanvasChart(dotNetReference);
+		this.canvasChart.InitializeChart(containerGuid, chartParameters);
+		
 
 		this.zoomService = new ZoomService(this.canvasChart);
 		this.dataService = new DataService(this.canvasChart);
 	}	
 
-	GetChartParameters(): ViewportParameters {
+	GetViewportParameters(): ViewportParameters {
 		return this.canvasChart?.GetViewportParameters()!;
 	}
 
-	SetChartParameters(chartParameters: ChartParameters) {
+	SetChartParameters(chartParameters: ChartParameters) {		
 		this.canvasChart?.SetChartParameters(chartParameters);
+	}
+
+	SetViewportParameters(vp: ViewportParameters) {
+		this.canvasChart?.SetViewportParameters(vp);								
 	}
 
 	AdjustToVisibleData() {
 		this.canvasChart?.AdjustToVisibleData();
 	}
 
+	ResetViewport() {
+		this.canvasChart?.ResetViewport();
+	}
+	
 	RenderChart() {
 		this.canvasChart?.Render();
-	}
+	}	
 }

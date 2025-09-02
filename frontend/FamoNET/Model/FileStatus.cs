@@ -3,6 +3,6 @@
     public class FileStatus
     {
         public string Name { get; set; }
-        public Enums.FileStatus Status { get; set; }
+        public ProgressStatus Status { get; set; }
     }
 }

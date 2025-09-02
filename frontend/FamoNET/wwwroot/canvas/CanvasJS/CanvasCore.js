@@ -2,24 +2,17 @@ import { ZoomService } from "./ZoomService.js";
 import { CanvasChart } from "./CanvasChart.js";
 import { DataService } from "./DataService.js";
 export class CanvasCore {
-    constructor(dotNetReference, title, logarithmic) {
+    constructor(dotNetReference, containerGuid, chartParameters) {
         this.dotNetReference = undefined;
-        this.zoomService = undefined;
         this.canvasChart = undefined;
+        this.zoomService = undefined;
         this.dataService = undefined;
-        let container = document.getElementById("chartElement");
-        container.oncontextmenu = () => {
-            var _a, _b;
-            (_a = this.zoomService) === null || _a === void 0 ? void 0 : _a.Unzoom();
-            (_b = this.canvasChart) === null || _b === void 0 ? void 0 : _b.Render();
-            return false;
-        };
         this.canvasChart = new CanvasChart(dotNetReference);
-        this.canvasChart.InitializeChart(container, title, logarithmic);
+        this.canvasChart.InitializeChart(containerGuid, chartParameters);
         this.zoomService = new ZoomService(this.canvasChart);
         this.dataService = new DataService(this.canvasChart);
     }
-    GetChartParameters() {
+    GetViewportParameters() {
         var _a;
         return (_a = this.canvasChart) === null || _a === void 0 ? void 0 : _a.GetViewportParameters();
     }
@@ -27,9 +20,17 @@ export class CanvasCore {
         var _a;
         (_a = this.canvasChart) === null || _a === void 0 ? void 0 : _a.SetChartParameters(chartParameters);
     }
+    SetViewportParameters(vp) {
+        var _a;
+        (_a = this.canvasChart) === null || _a === void 0 ? void 0 : _a.SetViewportParameters(vp);
+    }
     AdjustToVisibleData() {
         var _a;
         (_a = this.canvasChart) === null || _a === void 0 ? void 0 : _a.AdjustToVisibleData();
+    }
+    ResetViewport() {
+        var _a;
+        (_a = this.canvasChart) === null || _a === void 0 ? void 0 : _a.ResetViewport();
     }
     RenderChart() {
         var _a;

@@ -1,4 +1,5 @@
 export enum AxisMode {
-    MJD = 1,
-    Date
+    MJD = 0,
+    Date = 1,
+    Time = 2
 }

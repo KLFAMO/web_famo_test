@@ -1,0 +1,42 @@
+﻿@page "/ddsconfiguration"
+@rendermode InteractiveServer
+
+<section class="hero is-warning">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <p class="title">Configuration Mode</p>
+        </div>
+    </div>
+</section>
+
+<div class="columns m-2">
+    <div class="column is-one-fifth">
+        <div class="box">
+            <button type="button" class="button">
+                <span class="icon">
+                    <i class="fa fa-plus"></i>
+                </span>
+            </button>
+            <table class="table is-fullwidth is-striped is-hoverable">
+                <thead>
+                    <tr>
+                        <th>DDS name</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dds in DDSs)
+                    {
+                        <tr @onclick="(e) => LoadDDS(dds)">
+                            <td>@dds.Name</td>
+                            <td>@dds.IP</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="column">
+        <FamoNET.Components.SubComponents.DDSConfigurationPanel @ref=DDSConfigurationPanel />
+    </div>
+</div>

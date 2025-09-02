@@ -21,5 +21,10 @@
                                    + Math.Floor(30.6001 * (month + 1))
                                    + day + B - 1524.5;
         }
+
+        public static double GetMJD(DateTime dateTime)
+        {
+            return GetJulianDate(dateTime) - 2400000.5;
+        }
     }
 }

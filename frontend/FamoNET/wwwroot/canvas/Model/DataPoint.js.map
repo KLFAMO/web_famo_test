@@ -1,1 +1,1 @@
-{"version":3,"file":"DataPoint.js","sourceRoot":"","sources":["../../Model/DataPoint.ts"],"names":[],"mappings":"AAAA,MAAM,OAAO,SAAS;IAIlB,YAAY,CAAM,EAAE,CAAS;QACzB,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;QACX,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;IACf,CAAC;CACJ"}
+{"version":3,"file":"DataPoint.js","sourceRoot":"","sources":["../../Model/DataPoint.ts"],"names":[],"mappings":"AAAA,MAAM,OAAO,SAAS;IAIlB,YAAY,CAAgB,EAAE,CAAS;QACnC,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;QACX,IAAI,CAAC,CAAC,GAAG,CAAC,CAAC;IACf,CAAC;CACJ"}

@@ -4,23 +4,30 @@
 
 @if (Values != null)
 {
-    <div class="d-flex ms-2">
-        <label class="col-form-label" for="title">AOM Sr1 Calculation counter</label>
-        <div class="mx-2">
-            <select class="form-select" aria-label="Choose counter for AOM Sr1 Calculation" @bind="@SelectedCounter">
-                <option value="0">Counter_0</option>
-                <option value="1">Counter_1</option>
-                <option value="2">Counter_2</option>
-                <option value="3">Counter_3</option>
-                <option value="4">Counter_4</option>
-                <option value="5" selected>Counter_5</option>
-                <option value="6">Counter_6</option>
-                <option value="7">Counter_7</option>
-            </select>
-        </div>
+    <div class="container">    
+    <div class="field has-addons">
+        <p class="control">
+            <a class="button is-static">
+                AOM Sr1 Calculation counter
+            </a>
+        </p>
+        <p class="control">
+            <div class="select">
+                <select aria-label="Choose counter for AOM Sr1 Calculation" @bind="@SelectedCounter">
+                    <option value="0">Counter_0</option>
+                    <option value="1">Counter_1</option>
+                    <option value="2">Counter_2</option>
+                    <option value="3">Counter_3</option>
+                    <option value="4">Counter_4</option>
+                    <option value="5" selected>Counter_5</option>
+                    <option value="6">Counter_6</option>
+                    <option value="7">Counter_7</option>
+                </select>
+            </div>
+        </p>
     </div>
-    
-    <table class="table">
+        
+    <table class="table is-striped is-fullwidth">
         <thead>
             <tr>
                 <th scope="col">Name</th>
@@ -75,13 +82,12 @@
                 <td></td>
             </tr>
         </tbody>
-    </table>    
+    </table>
+    </div>
 }
 else
 {
-    <div class="d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden"></span>
-        </div>
-    </div>
+    <div class="container">
+        <progress class="progress is-large is-info" max="100">60%</progress>
+    </div>    
 }

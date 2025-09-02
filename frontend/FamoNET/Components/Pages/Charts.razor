@@ -1,0 +1,13 @@
+﻿@page "/charts"
+@using FamoNET.Components.SubComponents
+@rendermode InteractiveServer
+
+@for(int i=0; i< LoadedCharts.Count; ++i)
+{
+    int index = i;
+    <RhodeSchwarz1000Chart @ref=LoadedCharts[index]></RhodeSchwarz1000Chart>
+}
+
+<div class="container has-text-centered">
+    <button type="button" class="button" @onclick="AddChart">Add chart</button>
+</div>

@@ -1,0 +1,57 @@
+﻿@page "/telnet"
+@rendermode InteractiveServer
+
+<div class="field has-addons">
+    <p class="control">
+        <a class="button is-static">
+            Device
+        </a>
+    </p>
+    <p class="control">
+        <div class="select">
+            <select aria-label="Choose device">
+                <option selected>Choose</option>
+                @* @foreach (var tableName in TableNames)
+                {
+                    <option value="@tableName">@tableName</option>
+                } *@
+            </select>
+        </div>
+    </p>
+</div>
+
+<div class="hero is-fullheight">
+    <div class="hero-body p-0">
+        <div class="is-flex is-flex-direction-column is-flex-shrink-0 is-flex-grow-1 is-align-self-flex-start">
+            <div class="box" style="width:100%; height:70vh; overflow-y: auto;" id="divTerminal">
+                @foreach(var message in Messages)
+                {
+                    <p>
+                        <span class="has-text-link is-size-4">_> @message.Message</span><br />
+                        @if (message.Type == Model.TerminalMessageType.Ok)
+                        {
+                            <span class="has-text-success">Ok</span>                            
+                        }
+                        else
+                        {
+                            <span class="has-text-danger">Error</span>
+                        }
+                    </p>    
+                }   
+                
+                @if (Messages.Count < 1)
+                {
+                    <p>
+                        <span class="has-text-link is-size-4">_></span>
+                    </p>
+                }
+            </div>
+
+            <div class="control">
+                <div class="field">
+                    <input class="input" type="text" placeholder="Type your command..." @onkeydown="OnKeyPress" @bind="CurrentMessage" @bind:event="oninput" />
+                </div>
+            </div>
+       </div>
+    </div>
+</div>

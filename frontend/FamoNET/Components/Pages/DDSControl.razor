@@ -1,0 +1,18 @@
+﻿@page "/ddscontrol"
+
+<section class="hero is-info">
+    <div class="hero-body">
+        <div class="container has-text-centered">
+            <p class="title">Control Mode</p>            
+        </div>
+    </div>
+</section>
+
+<div class="grid is-col-min-24 m-2">
+    @foreach (var dds in DDSs)
+    {
+        <div class="cell">
+            <FamoNET.Components.SubComponents.DDSControlPanel DDS_Model="dds" />
+        </div>
+    }
+</div>

@@ -1,0 +1,80 @@
+﻿@rendermode InteractiveServer
+@inherits ChartWithAllanComponentBase<DateTime>
+
+<div class="box">
+    @if (IsEditable)
+    {
+        <EditForm Model="Model" OnSubmit="UpdateParameters" FormName="ChartWizard">
+            <div class="field has-addons">
+                <p class="control">
+                    <a class="button is-static">
+                        Title
+                    </a>
+                </p>
+                <p class="control">
+                    <InputText class="input" @bind-Value="@Model.Title" id="title" />
+                </p>
+            </div>
+
+            <div class="field has-addons">
+                <p class="control">
+                    <a class="button is-static">
+                        Limits X
+                    </a>
+                </p>
+
+                <p class="control">
+                    <InputDate Type="InputDateType.DateTimeLocal" class="input" id="limit" @bind-Value="@Model.Viewport.MinX" />
+                </p>
+
+                <p class="control">
+                    <a class="button is-static">
+                        -
+                    </a>
+                </p>
+
+                <div class="control">
+                    <InputDate Type="InputDateType.DateTimeLocal" class="input" id="limit" @bind-Value="@Model.Viewport.MaxX" />
+                </div>
+            </div>
+
+            <div class="field has-addons">
+                <p class="control">
+                    <a class="button is-static">
+                        Limits Y
+                    </a>
+                </p>
+                <p class="control">
+                    <InputNumber class="input" @bind-Value="@Model.Viewport.MinY" />
+                </p>
+                <p class="control">
+                    <a class="button is-static">
+                        -
+                    </a>
+                </p>
+                <p class="control">
+                    <InputNumber class="input" @bind-Value="@Model.Viewport.MaxY" />
+                </p>
+            </div>
+
+            <button type="submit" class="button">Update</button>
+        </EditForm>
+    }        
+
+    <div id="@ChartGuid" style="width: 100%; height: 500px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
+
+    <div class="field is-grouped">
+        <p class="control">
+            <button class="button is-primary" @onclick=SendToAllan>
+                Allan
+            </button>
+        </p>
+
+    </div>
+    @if (EnableAllan)
+    {
+        <div class="box">
+            <AllanVariance @rendermode="new InteractiveServerRenderMode(prerender: false)" @ref="AllanVariance" />
+        </div>
+    }    
+</div>

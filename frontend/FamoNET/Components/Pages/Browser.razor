@@ -1,0 +1,44 @@
+﻿@page "/browser"
+@using FamoNET.Components.SubComponents
+@using FamoNET.Components.SubComponents.Chart
+@rendermode InteractiveServer
+
+
+<div class="block">
+    <div class="container">    
+        <DataWizard @ref="DataFetchWizardComponent" />                
+    </div>
+</div>
+
+<div class="block">
+    @if (IsFetchingData)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+        </div>
+    }        
+    <div class="tabs is-centered is-medium">
+        <ul>
+            <li class="@(CurrentMode == Model.AxisMode.Mjd ? "is-active" : "")" @onclick="@(e => SwitchMode(Model.AxisMode.Mjd))"><a>MJD</a></li>
+            <li class="@(CurrentMode == Model.AxisMode.Date ? "is-active" : "")" @onclick="@(e => SwitchMode(Model.AxisMode.Date))"><a>Date</a></li>
+            <li class="@(CurrentMode == Model.AxisMode.Offset ? "is-active" : "")" @onclick="@(e => SwitchMode(Model.AxisMode.Offset))"><a>Offset</a></li>
+        </ul>
+    </div>  
+    
+    <div style="display:@(CurrentMode == Model.AxisMode.Mjd ? "block" : "none")">
+        <Chart_MJD @ref="Chart_MJD" />
+    </div>
+    <div style="display:@(CurrentMode == Model.AxisMode.Date ? "block" : "none")">
+        <Chart_Date @ref="Chart_Date" />
+    </div>     
+    <div style="display:@(CurrentMode == Model.AxisMode.Offset ? "block" : "none")">
+        <Chart_Offset @ref="Chart_Offset" />
+    </div>
+</div>
+
+<div>
+    <PythonConsole @ref="PythonConsoleComponent" />
+</div>
+ 
