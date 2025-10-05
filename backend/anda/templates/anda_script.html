@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Python script</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    textarea, input[type="text"] { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; }
+    #code { height: 220px; }
+    #result { height: 220px; background: #f7f7f7; }
+    .row { margin: 0.8rem 0; }
+    .actions { display: flex; gap: .75rem; align-items: center; }
+    .error { color: #b00020; }
+    .muted { color: #666; font-size: .9rem; }
+    button { padding: .5rem .9rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Python script</h2>
+
+  <div class="row">
+    <label for="code">Python code:</label><br>
+    <textarea id="code" placeholder="# Write Python code...&#10;mjd = [6000, 6001, 6002]&#10;val = [123, 456, 789]"></textarea>
+  </div>
+
+  <div class="row">
+    <label for="vars">Variables names:</label><br>
+    <input id="vars" type="text" placeholder='mjd,val'>
+    <div class="muted">If no variables, ouptut will be received</div>
+  </div>
+
+  <div class="row actions">
+    <button id="send">Wy?lij i wykonaj</button>
+    <span id="status" class="muted"></span>
+    <button id="copy" title="Kopiuj JSON" style="margin-left:auto;">Kopiuj wynik</button>
+  </div>
+
+  <h3>Response (JSON):</h3>
+  <textarea id="result" readonly placeholder="Response ..."></textarea>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    $("send").addEventListener("click", async () => {
+      $("status").textContent = "Sending and executing...";
+      $("status").className = "muted";
+      $("result").value = "";
+
+      const code = $("code").value;
+      const varsField = $("vars").value;
+
+      const file = new File([code], "script.py", { type: "text/x-python" });
+      const fd = new FormData();
+      fd.append("script", file);
+      if (varsField) fd.append("vars", varsField); // CSV or JSON
+
+      try {
+        const response = await fetch("/api/anda/script", { method: "POST", body: fd });
+        const text = await response.text();
+
+        // Try interpreting as JSON
+        try {
+          const json = JSON.parse(text);
+          $("result").value = JSON.stringify(json, null, 2);
+          $("status").textContent = response.ok ? "OK" : "error (status HTTP " + response.status + ")";
+          $("status").className = response.ok ? "muted" : "error";
+        } catch {
+          // Backend did not return JSON
+          $("result").value = text || "(pusta odpowied?)";
+          $("status").textContent = response.ok ? "OK (text)" : "error (status HTTP " + response.status + ")";
+          $("status").className = response.ok ? "muted" : "error";
+        }
+      } catch (err) {
+        $("status").textContent = "Connection error: " + err;
+        $("status").className = "error";
+      }
+    });
+
+    $("copy").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText($("result").value);
+        $("status").textContent = "Copied to clipboard";
+        $("status").className = "muted";
+      } catch {
+        $("status").textContent = "Copied to clipboard failed";
+        $("status").className = "error";
+      }
+    });
+  </script>
+</body>
+</html>
