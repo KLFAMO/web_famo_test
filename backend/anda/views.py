@@ -1,3 +1,4 @@
+from collections.abc import Mapping, Iterable
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -95,6 +96,80 @@ class TableData(APIView):
         }
         return Response(data)
 
+
+def to_jsonable(x, *, depth=0, max_depth=20, max_items=None):
+    """Konwertuje 'x' na struktury JSON-owalne bez zale?no?ci od numpy/pandas."""
+    if depth > max_depth:
+        return "/*depth limit*/"
+
+    # Prymitywy
+    if x is None or isinstance(x, (bool, int, float, str)):
+        return x
+
+    # Obiekty z API podobnym do numpy/pandas ? bez importï¿½w:
+    # 1) 'tolist' (np. ndarray, wiele kontenerï¿½w)
+    tolist = getattr(x, "tolist", None)
+    if callable(tolist):
+        try:
+            return to_jsonable(tolist(), depth=depth+1, max_depth=max_depth, max_items=max_items)
+        except Exception:
+            pass
+
+    # 2) 'item' (np. skalar numpy)
+    item = getattr(x, "item", None)
+    if callable(item):
+        try:
+            return to_jsonable(item(), depth=depth+1, max_depth=max_depth, max_items=max_items)
+        except Exception:
+            pass
+
+    # 3) 'to_dict' (np. DataFrame, niestandardowe obiekty)
+    to_dict = getattr(x, "to_dict", None)
+    if callable(to_dict):
+        try:
+            # sprï¿½buj orient="records" je?li wspierane
+            try:
+                d = to_dict(orient="records")
+            except TypeError:
+                d = to_dict()
+            return to_jsonable(d, depth=depth+1, max_depth=max_depth, max_items=max_items)
+        except Exception:
+            pass
+
+    # Mapping (s?owniki)
+    if isinstance(x, Mapping):
+        out = {}
+        for k, v in x.items():
+            out[str(k)] = to_jsonable(v, depth=depth+1, max_depth=max_depth, max_items=max_items)
+        return out
+
+    # Sekwencje / iterowalne (ale nie string/bytes)
+    if isinstance(x, (list, tuple, set)):
+        it = x
+    elif isinstance(x, (bytes, bytearray, str)):
+        return str(x)
+    elif isinstance(x, Iterable):
+        it = x
+    else:
+        # Ostatnia prï¿½ba: je?li da si? zrzutowa? do JSON, ok; inaczej string
+        try:
+            json.dumps(x)
+            return x
+        except Exception:
+            return str(x)
+
+    # Z?ï¿½? list? z iterowalnego (z opcjonalnym limitem elementï¿½w)
+    out_list = []
+    count = 0
+    for elem in it:
+        out_list.append(to_jsonable(elem, depth=depth+1, max_depth=max_depth, max_items=max_items))
+        count += 1
+        if max_items is not None and count >= max_items:
+            out_list.append("/*truncated*/")
+            break
+    return out_list
+
+
 class ScriptData(APIView):
     parser_classes = [parsers.MultiPartParser]
 
@@ -124,21 +199,72 @@ class ScriptData(APIView):
                     f.write(code_bytes)
 
                 runner_path = os.path.join(workdir, "runner.py")
+                runner_code = (
+                    "import sys, os, json\n"
+                    f"sys.path[:0] = {json.dumps(EXTRA_PATHS)}\n"
+                    "from collections.abc import Mapping, Iterable\n"
+                    "\n"
+                    "def to_jsonable(x, *, depth=0, max_depth=20, max_items=None):\n"
+                    "    if depth > max_depth:\n"
+                    "        return '/*depth limit*/'\n"
+                    "    if x is None or isinstance(x, (bool, int, float, str)):\n"
+                    "        return x\n"
+                    "    tolist = getattr(x, 'tolist', None)\n"
+                    "    if callable(tolist):\n"
+                    "        try:\n"
+                    "            return to_jsonable(tolist(), depth=depth+1, max_depth=max_depth, max_items=max_items)\n"
+                    "        except Exception:\n"
+                    "            pass\n"
+                    "    item = getattr(x, 'item', None)\n"
+                    "    if callable(item):\n"
+                    "        try:\n"
+                    "            return to_jsonable(item(), depth=depth+1, max_depth=max_depth, max_items=max_items)\n"
+                    "        except Exception:\n"
+                    "            pass\n"
+                    "    to_dict = getattr(x, 'to_dict', None)\n"
+                    "    if callable(to_dict):\n"
+                    "        try:\n"
+                    "            try:\n"
+                    "                d = to_dict(orient='records')\n"
+                    "            except TypeError:\n"
+                    "                d = to_dict()\n"
+                    "            return to_jsonable(d, depth=depth+1, max_depth=max_depth, max_items=max_items)\n"
+                    "        except Exception:\n"
+                    "            pass\n"
+                    "    if isinstance(x, Mapping):\n"
+                    "        return {str(k): to_jsonable(v, depth=depth+1, max_depth=max_depth, max_items=max_items) for k, v in x.items()}\n"
+                    "    if isinstance(x, (list, tuple, set)):\n"
+                    "        it = x\n"
+                    "    elif isinstance(x, (bytes, bytearray, str)):\n"
+                    "        return str(x)\n"
+                    "    elif isinstance(x, Iterable):\n"
+                    "        it = x\n"
+                    "    else:\n"
+                    "        try:\n"
+                    "            json.dumps(x)\n"
+                    "            return x\n"
+                    "        except Exception:\n"
+                    "            return str(x)\n"
+                    "    out_list = []\n"
+                    "    count = 0\n"
+                    "    for elem in it:\n"
+                    "        out_list.append(to_jsonable(elem, depth=depth+1, max_depth=max_depth, max_items=max_items))\n"
+                    "        count += 1\n"
+                    "        if max_items is not None and count >= max_items:\n"
+                    "            out_list.append('/*truncated*/')\n"
+                    "            break\n"
+                    "    return out_list\n"
+                    "\n"
+                    "ns = {}\n"
+                    "code = open('user_script.py','r',encoding='utf-8').read()\n"
+                    "exec(compile(code, 'user_script.py', 'exec'), ns, ns)\n"
+                    f"names = {json.dumps(var_names)}\n"
+                    "out = {n: to_jsonable(ns.get(n, None)) for n in names} if names else {}\n"
+                    "print(json.dumps(out, ensure_ascii=False))\n"
+                )
                 with open(runner_path, "w", encoding="utf-8") as r:
                     r.write(
-                        "import json\n"
-                        "ns = {}\n"
-                        "code = open('user_script.py','r',encoding='utf-8').read()\n"
-                        "exec(compile(code, 'user_script.py', 'exec'), ns, ns)\n"
-                        f"names = {json.dumps(var_names)}\n"
-                        "def _safe(v):\n"
-                        "    try:\n"
-                        "        json.dumps(v)\n"
-                        "        return v\n"
-                        "    except Exception:\n"
-                        "        return str(v)\n"
-                        "out = {n: _safe(ns.get(n, None)) for n in names}\n"
-                        "print(json.dumps(out, ensure_ascii=False))\n"
+                        runner_code
                     )
 
                 env = os.environ.copy()

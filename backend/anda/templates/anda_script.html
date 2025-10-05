@@ -30,9 +30,9 @@
   </div>
 
   <div class="row actions">
-    <button id="send">Wy?lij i wykonaj</button>
+    <button id="send">Send and execute</button>
     <span id="status" class="muted"></span>
-    <button id="copy" title="Kopiuj JSON" style="margin-left:auto;">Kopiuj wynik</button>
+    <button id="copy" title="Copy JSON" style="margin-left:auto;">Copy result</button>
   </div>
 
   <h3>Response (JSON):</h3>
@@ -66,7 +66,7 @@
           $("status").className = response.ok ? "muted" : "error";
         } catch {
           // Backend did not return JSON
-          $("result").value = text || "(pusta odpowied?)";
+          $("result").value = text || "(empty response)";
           $("status").textContent = response.ok ? "OK (text)" : "error (status HTTP " + response.status + ")";
           $("status").className = response.ok ? "muted" : "error";
         }
