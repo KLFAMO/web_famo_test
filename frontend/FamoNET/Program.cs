@@ -1,4 +1,5 @@
 using FamoNET.Components;
+using FamoNET.Controllers;
 using FamoNET.Controllers.Mock;
 using FamoNET.DataProviders;
 using FamoNET.DataProviders.Mock;
@@ -28,7 +29,7 @@ namespace FamoNET
 #if (!DEBUG)
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
-            builder.Services.AddTransient<IFC1000Controller>((s) => new FC1000DataProvider());
+            builder.Services.AddTransient<IFC1000Controller>((s) => new FC1000Controller());
 #else
             builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
