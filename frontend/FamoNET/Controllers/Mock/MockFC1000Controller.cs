@@ -1,6 +1,7 @@
-﻿using FamoNET.Model.Interfaces;
+﻿using FamoNET.Model;
+using FamoNET.Model.Args;
+using FamoNET.Model.Interfaces;
 using NLog;
-using System.Net.Sockets;
 
 namespace FamoNET.Controllers.Mock
 {
@@ -9,7 +10,10 @@ namespace FamoNET.Controllers.Mock
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private double _span;
         private double _rbw;
-        public Task<(List<double> data, double rbw, double center, double span)> GetData()
+
+        public event EventHandler<SpectrumAnalyzerEventArgs> DataReceived;
+
+        public Task<(List<double> data, double rbw, double center, double span, double vbw)> GetData()
         {
             var rand = new Random();
             var result = new List<double>();
@@ -18,7 +22,7 @@ namespace FamoNET.Controllers.Mock
                 result.Add(rand.NextDouble() * _span);
             }
 
-            return Task.FromResult((result, _rbw, _span+100, _span));
+            return Task.FromResult((result, _rbw, _span+100, _span, _rbw));
         }
 
         public void Initialize(string ip, int port)
@@ -27,21 +31,9 @@ namespace FamoNET.Controllers.Mock
             _span = port;
         }
 
-        public Task SetBandwidth(double bandwidth)
+        public Task SetParameters(SpectrumAnalyzerParameters spectrumAnalyzerParameters)
         {
-            _logger.Debug($"Set bandwidth: {bandwidth}");
-            return Task.CompletedTask;
-        }
-
-        public Task SetCenterFrequency(double frequency)
-        {
-            _logger.Debug($"Set center frequency: {frequency}");
-            return Task.CompletedTask;
-        }
-
-        public Task SetFrequencySpan(double span)
-        {
-            _logger.Debug($"Set span: {span}");
+            _logger.Debug(spectrumAnalyzerParameters.CenterFrequency + " " + spectrumAnalyzerParameters.Span + " " + spectrumAnalyzerParameters.VBW + " " + spectrumAnalyzerParameters.RBW);
             return Task.CompletedTask;
         }
     }

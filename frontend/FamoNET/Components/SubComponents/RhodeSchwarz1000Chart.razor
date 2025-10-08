@@ -1,5 +1,5 @@
 ﻿<div class="box">
-    @if (IsInitialized)
+    @if (IsInitialized && !IsLoading)
     {
         <div class="container">
             <div class="columns is-centered">
@@ -11,6 +11,7 @@
                                 <th>RBW</th>
                                 <th>Center</th>
                                 <th>Span</th>
+                                <th>VBW</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,6 +61,20 @@
                                         <p>@(@Model.Span / 1000000) MHz</p>
                                     }
                                 </td>
+                                <td>
+                                    @if (Model.VBW < 1000)
+                                    {
+                                        <p>@Model.VBW Hz</p>
+                                    }
+                                    else if (Model.VBW < 1000000)
+                                    {
+                                        <p>@(@Model.VBW / 1000) KHz</p>
+                                    }
+                                    else
+                                    {
+                                        <p>@(@Model.VBW / 1000000) MHz</p>
+                                    }
+                                </td>
                             </tr>
                             <tr>
                                 <td>
@@ -68,17 +83,25 @@
                                 <td>
                                     <div class="field">
                                         <div class="control">
-                                            <input type="text" class="input" @bind-value="@NewRBW" @bind-value:event="oninput" placeholder="Value..." />
-                                        </div>
-                                        <p class="control">
                                             <div class="select">
-                                                <select aria-label="Units" @bind="@SelectedRBWUnit">
-                                                    <option value="1">Hz</option>
-                                                    <option value="1000">KHz</option>
-                                                    <option value="1000000">MHz</option>
+                                                <select aria-label="Units" @bind="@NewRBW">
+                                                    <option value="1">1 Hz</option>
+                                                    <option value="3">3 Hz</option>
+                                                    <option value="10">10 Hz</option>
+                                                    <option value="30">30 Hz</option>
+                                                    <option value="100">100 Hz</option>
+                                                    <option value="300">300 Hz</option>
+                                                    <option value="1000">1 KHz</option>
+                                                    <option value="3000">3 KHz</option>
+                                                    <option value="10000">10 KHz</option>
+                                                    <option value="30000">30 KHz</option>
+                                                    <option value="100000">100 KHz</option>
+                                                    <option value="300000">300 KHz</option>
+                                                    <option value="1000000">1 MHz</option>
+                                                    <option value="3000000">3 MHz</option>
                                                 </select>
                                             </div>
-                                        </p>
+                                        </div>                                        
                                     </div>
                                 </td>
                                 <td>
@@ -113,6 +136,30 @@
                                         </p>
                                     </div>
                                 </td>
+                                <td>
+                                    <div class="field">
+                                        <div class="control">
+                                            <div class="select">
+                                                <select aria-label="Units" @bind="@NewVBW">
+                                                    <option value="1">1 Hz</option>
+                                                    <option value="3">3 Hz</option>
+                                                    <option value="10">10 Hz</option>
+                                                    <option value="30">30 Hz</option>
+                                                    <option value="100">100 Hz</option>
+                                                    <option value="300">300 Hz</option>
+                                                    <option value="1000">1 KHz</option>
+                                                    <option value="3000">3 KHz</option>
+                                                    <option value="10000">10 KHz</option>
+                                                    <option value="30000">30 KHz</option>
+                                                    <option value="100000">100 KHz</option>
+                                                    <option value="300000">300 KHz</option>                                                    
+                                                    <option value="1000000">1 MHz</option>
+                                                    <option value="3000000">3 MHz</option>                                                    
+                                                </select>
+                                            </div>
+                                        </div>                                        
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -120,6 +167,10 @@
                 </div>
             </div>
         </div>
+    }
+    else if (IsLoading)
+    {
+        <progress class="progress is-large is-info" max="100">60%</progress>
     }
     else
     {

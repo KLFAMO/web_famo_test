@@ -1,8 +1,10 @@
 ﻿using FamoNET.Model;
+using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
 using System.Net;
+using System.Transactions;
 
 namespace FamoNET.Components.SubComponents
 {
@@ -16,26 +18,33 @@ namespace FamoNET.Components.SubComponents
         private ViewportParams<double> _viewportParams { get; set; }
 
         protected readonly Guid ChartGuid = Guid.NewGuid();
+        
         public string IP { get; set; }        
         public int Port { get; set; }                
-        public bool FailedToConnect { get; set; }
+                
         public bool IsInitialized { get; set; }      
         private SAModel Model { get; set; } = new SAModel();
+        private bool IsLoading { get; set; } = false;
 
-        public int SelectedRBWUnit { get; set; } = 1;
         public int SelectedCenterFrequencyUnit { get; set; } = 1;
         public int SelectedSpanUnit { get; set; } = 1;
+
         public double NewRBW { get; set; } = -1;
         public double NewCenterFrequency { get; set; } = -1;
         public double NewSpan { get; set; } = -1;
+        public double NewVBW { get; set; } = -1;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         public async Task SetDeviceParameters()
         {
-            await _fcController.SetFrequencySpan(NewSpan*SelectedSpanUnit);
-            await _fcController.SetCenterFrequency(NewCenterFrequency * SelectedCenterFrequencyUnit);
-            await _fcController.SetBandwidth(NewRBW*SelectedRBWUnit);
+            await _fcController.SetParameters(new SpectrumAnalyzerParameters()
+            {
+                CenterFrequency = NewCenterFrequency * SelectedCenterFrequencyUnit,
+                RBW = NewRBW,
+                VBW = NewVBW,
+                Span = NewSpan * SelectedSpanUnit
+            });            
         }
 
         private async Task Initialize()
@@ -51,66 +60,69 @@ namespace FamoNET.Components.SubComponents
             });
 
             if (!IPAddress.TryParse(IP, out var ip))
-            {
-                FailedToConnect = true;                
+            {                               
                 await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Wrong IP" });
                 await InvokeAsync(StateHasChanged);
                 return;
             }
 
-            IsInitialized = true;            
+            IsLoading = true;
+            IsInitialized = true;
+            _fcController.DataReceived += OnDataReceived;
             _fcController.Initialize(IP, Port);
-            _ = RefreshData();            
         }
 
-        private async Task RefreshData()
+        private async void OnDataReceived(object sender, SpectrumAnalyzerEventArgs spectrumAnalyzerArgs)
         {
-            while (!_cancellationTokenSource.IsCancellationRequested)
+            IsLoading = false;
+            var spectrumAnalyzerParameters = spectrumAnalyzerArgs.Parameters;
+
+            try
             {
-                try
+                await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = $"Spectrum Analyzer [{IP}]" }).ConfigureAwait(false);
+                Model.Data.Clear();
+
+                var points = new List<DataPoint<double>>();
+                for (int i = 0; i < spectrumAnalyzerParameters.Frequencies.Count; i++)
                 {
-                    Model.Data.Clear();
-                    var (frequencies, rbw, center, span) = await _fcController.GetData().ConfigureAwait(false);
-                    var points = new List<DataPoint<double>>();
-                    for (int i = 0; i < frequencies.Count; i++)
-                    {
-                        points.Add(new DataPoint<double>((center-span)+(i*rbw), frequencies[i]));
-                    }
-
-                    Model.RBW = rbw;
-                    Model.Span = span;
-                    Model.CenterFrequency = center;
-
-                    if (NewRBW == -1)
-                        NewRBW = rbw;
-
-                    if (NewSpan == -1)
-                        NewSpan = span;
-
-                    if (NewCenterFrequency == -1)
-                        NewCenterFrequency = center;
-
-                    if (_viewportParams == null || frequencies.Min() < _viewportParams.MinY || frequencies.Max() > _viewportParams.MaxY)
-                    {
-                        CalculateView(frequencies);
-                    }
-
-                    await _chartManagerService.ClearDataSets(ChartGuid, false).ConfigureAwait(false);
-                    await _chartManagerService.AddDataSet(ChartGuid, points, false).ConfigureAwait(false);
-                    await _chartManagerService.SetViewportParameters(ChartGuid, _viewportParams).ConfigureAwait(false);
-                    FailedToConnect = false;
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
-                }
-                catch(Exception ex)
-                {
-                    FailedToConnect = true;
-                    await _chartManagerService.ClearDataSets(ChartGuid).ConfigureAwait(false);
-                    await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Failed to connect" }).ConfigureAwait(false);
-                    _viewportParams = null;
-                    await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                    points.Add(new DataPoint<double>((spectrumAnalyzerParameters.CenterFrequency - spectrumAnalyzerParameters.Span) + (i * spectrumAnalyzerParameters.RBW), spectrumAnalyzerParameters.Frequencies[i]));
                 }
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                Model.RBW = spectrumAnalyzerParameters.RBW;
+                Model.Span = spectrumAnalyzerParameters.Span;
+                Model.CenterFrequency = spectrumAnalyzerParameters.CenterFrequency;
+                Model.VBW = spectrumAnalyzerParameters.VBW;
+
+                if (NewRBW == -1)
+                    NewRBW = spectrumAnalyzerParameters.RBW;
+
+                if (NewVBW == -1)
+                    NewVBW = spectrumAnalyzerParameters.VBW;
+
+                if (NewSpan == -1)
+                    NewSpan = spectrumAnalyzerParameters.Span;
+
+                if (NewCenterFrequency == -1)
+                    NewCenterFrequency = spectrumAnalyzerParameters.CenterFrequency;
+
+                if (_viewportParams == null || spectrumAnalyzerParameters.Frequencies.Min() < _viewportParams.MinY || spectrumAnalyzerParameters.Frequencies.Max() > _viewportParams.MaxY)
+                {
+                    CalculateView(spectrumAnalyzerParameters.Frequencies);
+                }
+
+                await _chartManagerService.ClearDataSets(ChartGuid, false).ConfigureAwait(false);
+                await _chartManagerService.AddDataSet(ChartGuid, points, false).ConfigureAwait(false);
+                await _chartManagerService.SetViewportParameters(ChartGuid, _viewportParams).ConfigureAwait(false);
+
+                IsLoading = false;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await _chartManagerService.ClearDataSets(ChartGuid).ConfigureAwait(false);
+                await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Failed to parse data" }).ConfigureAwait(false);
+                _viewportParams = null;
+                await InvokeAsync(StateHasChanged).ConfigureAwait(false);
             }
         }
         

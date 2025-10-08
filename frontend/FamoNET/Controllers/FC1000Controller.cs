@@ -1,4 +1,8 @@
-﻿using FamoNET.Model.Interfaces;
+﻿using FamoNET.Model;
+using FamoNET.Model.Args;
+using FamoNET.Model.Interfaces;
+using NLog;
+using System;
 using System.Net.Sockets;
 using System.Text;
 
@@ -6,99 +10,95 @@ namespace FamoNET.Controllers
 {
     public class FC1000Controller : IFC1000Controller
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private string _ip;
         private int _port;
-
+        private CancellationTokenSource _cancellationTokenSource;        
+        public event EventHandler<SpectrumAnalyzerEventArgs> DataReceived;
+        
         public void Initialize(string ip, int port)
         {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+            }
+            _cancellationTokenSource = new CancellationTokenSource();
+
             _ip = ip;
-            _port = port;
+            _port = port;            
+            
+            _ = StartReading();
         }
 
-        public async Task<(List<double> data, double rbw, double center, double span)> GetData()
+        private async Task StartReading()
         {
-            using (TcpClient client = new TcpClient())
+            try
             {
-                client.Connect(_ip, _port);
+                using TcpClient tcpClient = new TcpClient();
+                tcpClient.Connect(_ip, _port);
 
-                if (!client.Connected)
+                using NetworkStream stream = tcpClient.GetStream();
+            
+                while (!_cancellationTokenSource.IsCancellationRequested)
                 {
-                    throw new Exception("Failed to connect to the instrument");
+                    await SendCommand(stream, "TRAC:DATA?");
+                    string xResponse = ReadResponse(stream);
+                    double[] frequencies = ParseData(xResponse);
+
+                    await SendCommand(stream, "FREQuency:CENTer?");
+                    xResponse = ReadResponse(stream);
+                    double centerFreq = ParseData(xResponse)[0];
+
+                    await SendCommand(stream, "FREQuency:SPAN?");
+                    xResponse = ReadResponse(stream);
+                    double span = ParseData(xResponse)[0];
+
+                    await SendCommand(stream, "BANDwidth?");
+                    xResponse = ReadResponse(stream);
+                    double rbw = ParseData(xResponse)[0];
+
+                    await SendCommand(stream, "BANDwidth:VIDeo?");
+                    xResponse = ReadResponse(stream);
+                    double vbw = ParseData(xResponse)[0];
+
+                    DataReceived?.Invoke(this, new SpectrumAnalyzerEventArgs(new Model.SpectrumAnalyzerParameters
+                    {
+                        Frequencies = frequencies.ToList(),
+                        CenterFrequency = centerFreq,
+                        RBW = rbw,
+                        Span = span,
+                        VBW = vbw
+                    }));
+
+                    await Task.Delay(1000).ConfigureAwait(false);
                 }
-
-                NetworkStream stream = client.GetStream();
-
-                await SendCommand(stream, "TRAC:DATA?");
-                string xResponse = ReadResponse(stream);
-                double[] frequencies = ParseData(xResponse);
-
-                await SendCommand(stream, "FREQuency:CENTer?");
-                xResponse = ReadResponse(stream);
-                double centerFreq = ParseData(xResponse)[0];
-
-                await SendCommand(stream, "FREQuency:SPAN?");
-                xResponse = ReadResponse(stream);
-                double span = ParseData(xResponse)[0];
-
-                await SendCommand(stream, "BANDwidth?");
-                xResponse = ReadResponse(stream);
-                double rbw = ParseData(xResponse)[0];
-
-                return (new List<double>(frequencies), rbw, centerFreq, span);
             }
-        }
+            catch(Exception ex)
+            {
+                if (ex is TaskCanceledException)
+                {
+                    _logger.Debug("SpectrumAnalyzer read task exit");
+                }
+                else
+                {
+                    _logger.Error(ex);
+                }
+            }
+        }       
 
-        public async Task SetCenterFrequency(double frequency)
+        public async Task SetParameters(SpectrumAnalyzerParameters spectrumAnalyzerParameters)
         {
-            using (TcpClient client = new TcpClient())
-            {
-                client.Connect(_ip, _port);
+            using TcpClient tcpClient = new TcpClient();            
+            tcpClient.Connect(_ip, _port);
 
-                if (!client.Connected)
-                {
-                    throw new Exception("Failed to connect to the instrument");
-                }
-
-                NetworkStream stream = client.GetStream();
-
-                await SendCommand(stream, $"FREQuency:CENTer {frequency}HZ");
-            }
+            using NetworkStream stream = tcpClient.GetStream();
+            await SendCommand(stream, $"FREQuency:CENTer {spectrumAnalyzerParameters.CenterFrequency}HZ");
+            await SendCommand(stream, $"FREQuency:SPAN {spectrumAnalyzerParameters.Span}HZ");
+            await SendCommand(stream, $"BANDwidth {spectrumAnalyzerParameters.RBW}HZ");
+            await SendCommand(stream, $"BANDwidth:VIDeo {spectrumAnalyzerParameters.VBW}HZ");
         }
 
-        public async Task SetFrequencySpan(double span)
-        {
-            using (TcpClient client = new TcpClient())
-            {
-                client.Connect(_ip, _port);
-
-                if (!client.Connected)
-                {
-                    throw new Exception("Failed to connect to the instrument");
-                }
-
-                NetworkStream stream = client.GetStream();
-
-                await SendCommand(stream, $"FREQuency:SPAN {span}HZ");
-            }
-        }
-
-        public async Task SetBandwidth(double bandwidth)
-        {
-            using (TcpClient client = new TcpClient())
-            {
-                client.Connect(_ip, _port);
-
-                if (!client.Connected)
-                {
-                    throw new Exception("Failed to connect to the instrument");
-                }
-
-                NetworkStream stream = client.GetStream();
-
-                await SendCommand(stream, $"BANDwidth {bandwidth}HZ");
-            }
-        }
-
+             
         private async Task SendCommand(NetworkStream stream, string command)
         {
             byte[] cmdBytes = Encoding.ASCII.GetBytes(command + "\n");
@@ -126,6 +126,6 @@ namespace FamoNET.Controllers
             }
 
             return values;
-        }
+        }        
     }
 }
