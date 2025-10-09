@@ -4,6 +4,7 @@ using FamoNET.Model.Interfaces;
 using NLog;
 using System;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace FamoNET.Controllers
@@ -38,32 +39,28 @@ namespace FamoNET.Controllers
                 tcpClient.Connect(_ip, _port);
 
                 using NetworkStream stream = tcpClient.GetStream();
-            
+                using StreamReader streamReader = new StreamReader(stream);
+
                 while (!_cancellationTokenSource.IsCancellationRequested)
                 {
-                    await SendCommand(stream, "TRAC:DATA?");
-                    string xResponse = ReadResponse(stream);
-                    double[] frequencies = ParseData(xResponse);
+                    await SendCommand(stream, "TRAC:DATA?");                    
+                    double[] frequencies = ParseData(await streamReader.ReadLineAsync());                    
 
-                    await SendCommand(stream, "FREQuency:CENTer?");
-                    xResponse = ReadResponse(stream);
-                    double centerFreq = ParseData(xResponse)[0];
+                    await SendCommand(stream, "FREQuency:CENTer?");                    
+                    double centerFreq = ParseData(await streamReader.ReadLineAsync())[0];
 
-                    await SendCommand(stream, "FREQuency:SPAN?");
-                    xResponse = ReadResponse(stream);
-                    double span = ParseData(xResponse)[0];
+                    await SendCommand(stream, "FREQuency:SPAN?");                    
+                    double span = ParseData(await streamReader.ReadLineAsync())[0];
 
-                    await SendCommand(stream, "BANDwidth?");
-                    xResponse = ReadResponse(stream);
-                    double rbw = ParseData(xResponse)[0];
+                    await SendCommand(stream, "BANDwidth?");                    
+                    double rbw = ParseData(await streamReader.ReadLineAsync())[0];
 
-                    await SendCommand(stream, "BANDwidth:VIDeo?");
-                    xResponse = ReadResponse(stream);
-                    double vbw = ParseData(xResponse)[0];
-
-                    DataReceived?.Invoke(this, new SpectrumAnalyzerEventArgs(new Model.SpectrumAnalyzerParameters
+                    await SendCommand(stream, "BANDwidth:VIDeo?");                    
+                    double vbw = ParseData(await streamReader.ReadLineAsync())[0];
+                    
+                    DataReceived?.Invoke(this, new SpectrumAnalyzerEventArgs(new SpectrumAnalyzerParameters
                     {
-                        Frequencies = frequencies.ToList(),
+                        Frequencies = new List<double>(frequencies),
                         CenterFrequency = centerFreq,
                         RBW = rbw,
                         Span = span,
@@ -92,10 +89,11 @@ namespace FamoNET.Controllers
             tcpClient.Connect(_ip, _port);
 
             using NetworkStream stream = tcpClient.GetStream();
-            await SendCommand(stream, $"FREQuency:CENTer {spectrumAnalyzerParameters.CenterFrequency}HZ");
-            await SendCommand(stream, $"FREQuency:SPAN {spectrumAnalyzerParameters.Span}HZ");
-            await SendCommand(stream, $"BANDwidth {spectrumAnalyzerParameters.RBW}HZ");
-            await SendCommand(stream, $"BANDwidth:VIDeo {spectrumAnalyzerParameters.VBW}HZ");
+
+            await SendCommand(stream, $"FREQuency:CENTer {spectrumAnalyzerParameters.CenterFrequency}HZ");            
+            await SendCommand(stream, $"FREQuency:SPAN {spectrumAnalyzerParameters.Span}HZ");            
+            await SendCommand(stream, $"BANDwidth {spectrumAnalyzerParameters.RBW}HZ");            
+            await SendCommand(stream, $"BANDwidth:VIDeo {spectrumAnalyzerParameters.VBW}HZ");            
         }
 
              
@@ -103,14 +101,7 @@ namespace FamoNET.Controllers
         {
             byte[] cmdBytes = Encoding.ASCII.GetBytes(command + "\n");
             await stream.WriteAsync(cmdBytes, 0, cmdBytes.Length);
-        }
-
-        private string ReadResponse(NetworkStream stream)
-        {
-            byte[] buffer = new byte[16384]; // Larger buffer for potentially big data
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            return Encoding.ASCII.GetString(buffer, 0, bytesRead).Trim();
-        }
+        }       
 
         private double[] ParseData(string response)
         {

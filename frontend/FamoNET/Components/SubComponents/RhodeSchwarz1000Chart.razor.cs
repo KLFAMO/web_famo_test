@@ -3,6 +3,7 @@ using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
+using NLog;
 using System.Net;
 using System.Transactions;
 
@@ -10,6 +11,7 @@ namespace FamoNET.Components.SubComponents
 {
     public partial class RhodeSchwarz1000Chart : ComponentBase, IAsyncDisposable
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         [Inject]
         private ChartManagerService _chartManagerService { get; set; }
         [Inject]
@@ -83,9 +85,12 @@ namespace FamoNET.Components.SubComponents
                 Model.Data.Clear();
 
                 var points = new List<DataPoint<double>>();
+                var step = 2 * spectrumAnalyzerParameters.Span / (spectrumAnalyzerParameters.Frequencies.Count-1); 
+                var minFreq = spectrumAnalyzerParameters.CenterFrequency - spectrumAnalyzerParameters.Span;
+
                 for (int i = 0; i < spectrumAnalyzerParameters.Frequencies.Count; i++)
                 {
-                    points.Add(new DataPoint<double>((spectrumAnalyzerParameters.CenterFrequency - spectrumAnalyzerParameters.Span) + (i * spectrumAnalyzerParameters.RBW), spectrumAnalyzerParameters.Frequencies[i]));
+                    points.Add(new DataPoint<double>((minFreq) + (i*step), spectrumAnalyzerParameters.Frequencies[i]));
                 }
 
                 Model.RBW = spectrumAnalyzerParameters.RBW;
@@ -105,10 +110,8 @@ namespace FamoNET.Components.SubComponents
                 if (NewCenterFrequency == -1)
                     NewCenterFrequency = spectrumAnalyzerParameters.CenterFrequency;
 
-                if (_viewportParams == null || spectrumAnalyzerParameters.Frequencies.Min() < _viewportParams.MinY || spectrumAnalyzerParameters.Frequencies.Max() > _viewportParams.MaxY)
-                {
-                    CalculateView(spectrumAnalyzerParameters.Frequencies);
-                }
+
+                AdjustView(points);
 
                 await _chartManagerService.ClearDataSets(ChartGuid, false).ConfigureAwait(false);
                 await _chartManagerService.AddDataSet(ChartGuid, points, false).ConfigureAwait(false);
@@ -123,19 +126,36 @@ namespace FamoNET.Components.SubComponents
                 await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Failed to parse data" }).ConfigureAwait(false);
                 _viewportParams = null;
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
+                _logger.Error(ex);
             }
         }
-        
-        private void CalculateView(List<double> frequencies)
+
+        private void AdjustView(List<DataPoint<double>> points)
         {
-            var offset = (frequencies.Max() - frequencies.Min()) * 0.2;
+            var minX = points.Select(p => p.X).Min();
+            var maxX = points.Select(p => p.X).Max();
 
-            _viewportParams = new ViewportParams<double>();
-            _viewportParams.MinX = Model.CenterFrequency-Model.Span;
-            _viewportParams.MaxX = Model.CenterFrequency+Model.Span;
+            var minY = points.Select(p => p.Y).Min();
+            var maxY = points.Select(p => p.Y).Max();
 
-            _viewportParams.MinY = frequencies.Min() - offset;
-            _viewportParams.MaxY = frequencies.Max() + offset;
+            if (_viewportParams == null ||
+                minX < _viewportParams.MinX || 
+                maxX > _viewportParams.MaxX ||
+                minY < _viewportParams.MinY ||
+                maxY > _viewportParams.MaxY ||
+                _viewportParams.MaxX > maxX*1.1 ||
+                _viewportParams.MinX < minX*0.9)
+            {
+                var offset = (maxY - minY) * 0.2;
+
+                _viewportParams = new ViewportParams<double>();
+                _viewportParams.MinX = Model.CenterFrequency - Model.Span;
+                _viewportParams.MaxX = Model.CenterFrequency + Model.Span;
+
+                _viewportParams.MinY = minY - offset;
+                _viewportParams.MaxY = maxY + offset;
+            }
+            
         }
 
         public async ValueTask DisposeAsync()

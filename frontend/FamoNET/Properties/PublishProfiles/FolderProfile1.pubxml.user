@@ -3,7 +3,7 @@
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>C:\Users\Hofek\source\repos\web_famo_test\frontend\FamoNET\bin\Release\net8.0\publish\</_PublishTargetUrl>
-    <History>True|2025-10-08T16:49:57.1386054Z||;True|2025-10-08T18:32:44.7676647+02:00||;True|2025-10-08T17:57:44.8459862+02:00||;True|2025-10-08T17:38:43.2442883+02:00||;True|2025-10-06T19:24:04.3312482+02:00||;</History>
+    <History>True|2025-10-09T17:11:09.9245835Z||;True|2025-10-09T19:08:16.8812767+02:00||;True|2025-10-09T18:40:48.9495933+02:00||;True|2025-10-09T17:57:32.0846766+02:00||;True|2025-10-09T17:32:06.1183435+02:00||;True|2025-10-08T18:49:57.1386054+02:00||;True|2025-10-08T18:32:44.7676647+02:00||;True|2025-10-08T17:57:44.8459862+02:00||;True|2025-10-08T17:38:43.2442883+02:00||;True|2025-10-06T19:24:04.3312482+02:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>
