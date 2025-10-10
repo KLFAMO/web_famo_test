@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Device
-import pathlib
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import sys
 from django.conf import settings
 
@@ -58,3 +59,13 @@ def setdds(request):
 def device_list(request):
     devices = Device.objects.all()
     return render(request, 'device_list.html', {'devices': devices})
+
+
+class DeviceNamesAPIView(APIView):
+    def get(self, request):
+        device_types = request.GET.getlist('device_type')
+        queryset = Device.objects.all()
+        if device_types:
+            queryset = queryset.filter(device_type__in=device_types)
+        devices = queryset.values('name', 'ip_famo', 'device_type', 'description', 'location')
+        return Response(list(devices)) 

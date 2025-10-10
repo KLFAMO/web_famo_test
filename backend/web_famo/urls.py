@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/anda/tables_names/', anda.views.DataTablesNames.as_view(), name='anda_tables'),
     path('api/anda/table_data', anda.views.TableData.as_view(), name='anda_table_data'),
     path('api/anda/script', anda.views.ScriptData.as_view(), name='anda_script'),
+    path('api/devices', devices.views.DeviceNamesAPIView.as_view(), name='device_names_api'),
     path('freq_monitor/', freq_monitor.views.index, name='freq_monitor'),
     path('freq_monitor/get_data', freq_monitor.views.get_data),
     path('time_converter/', time_converter.views.convert_date, name='time_converter'),

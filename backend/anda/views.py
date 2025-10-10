@@ -6,8 +6,7 @@ from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import parsers, status
-import json
-import sys
+import json, resource, sys
 from django.conf import settings
 sys.path.append(settings.MYTOOLS_PATH)
 import sqldata as sqd
@@ -97,77 +96,16 @@ class TableData(APIView):
         return Response(data)
 
 
-def to_jsonable(x, *, depth=0, max_depth=20, max_items=None):
-    """Konwertuje 'x' na struktury JSON-owalne bez zale?no?ci od numpy/pandas."""
-    if depth > max_depth:
-        return "/*depth limit*/"
-
-    # Prymitywy
-    if x is None or isinstance(x, (bool, int, float, str)):
-        return x
-
-    # Obiekty z API podobnym do numpy/pandas ? bez importï¿½w:
-    # 1) 'tolist' (np. ndarray, wiele kontenerï¿½w)
-    tolist = getattr(x, "tolist", None)
-    if callable(tolist):
-        try:
-            return to_jsonable(tolist(), depth=depth+1, max_depth=max_depth, max_items=max_items)
-        except Exception:
-            pass
-
-    # 2) 'item' (np. skalar numpy)
-    item = getattr(x, "item", None)
-    if callable(item):
-        try:
-            return to_jsonable(item(), depth=depth+1, max_depth=max_depth, max_items=max_items)
-        except Exception:
-            pass
-
-    # 3) 'to_dict' (np. DataFrame, niestandardowe obiekty)
-    to_dict = getattr(x, "to_dict", None)
-    if callable(to_dict):
-        try:
-            # sprï¿½buj orient="records" je?li wspierane
-            try:
-                d = to_dict(orient="records")
-            except TypeError:
-                d = to_dict()
-            return to_jsonable(d, depth=depth+1, max_depth=max_depth, max_items=max_items)
-        except Exception:
-            pass
-
-    # Mapping (s?owniki)
-    if isinstance(x, Mapping):
-        out = {}
-        for k, v in x.items():
-            out[str(k)] = to_jsonable(v, depth=depth+1, max_depth=max_depth, max_items=max_items)
-        return out
-
-    # Sekwencje / iterowalne (ale nie string/bytes)
-    if isinstance(x, (list, tuple, set)):
-        it = x
-    elif isinstance(x, (bytes, bytearray, str)):
-        return str(x)
-    elif isinstance(x, Iterable):
-        it = x
-    else:
-        # Ostatnia prï¿½ba: je?li da si? zrzutowa? do JSON, ok; inaczej string
-        try:
-            json.dumps(x)
-            return x
-        except Exception:
-            return str(x)
-
-    # Z?ï¿½? list? z iterowalnego (z opcjonalnym limitem elementï¿½w)
-    out_list = []
-    count = 0
-    for elem in it:
-        out_list.append(to_jsonable(elem, depth=depth+1, max_depth=max_depth, max_items=max_items))
-        count += 1
-        if max_items is not None and count >= max_items:
-            out_list.append("/*truncated*/")
-            break
-    return out_list
+def _limit_resources():
+    try:
+        resource.setrlimit(resource.RLIMIT_CPU, (60, 60))  # seconds
+        mem = 512 * 1024 * 1024
+        resource.setrlimit(resource.RLIMIT_AS, (mem, mem))  # bytes
+        resource.setrlimit(resource.RLIMIT_NOFILE, (16, 16))  # max open files
+        resource.setrlimit(resource.RLIMIT_FSIZE, (10*1024*1024, 10*1024*1024))  # max file size 10MB
+        resource.setrlimit(resource.RLIMIT_CORE, (0, 0))  # no core dumps
+    except Exception:
+        pass
 
 
 class ScriptData(APIView):
@@ -263,9 +201,7 @@ class ScriptData(APIView):
                     "print(json.dumps(out, ensure_ascii=False))\n"
                 )
                 with open(runner_path, "w", encoding="utf-8") as r:
-                    r.write(
-                        runner_code
-                    )
+                    r.write(runner_code)
 
                 env = os.environ.copy()
                 env["PYTHONPATH"] = os.pathsep.join([*EXTRA_PATHS, env.get("PYTHONPATH", "")])
@@ -277,6 +213,7 @@ class ScriptData(APIView):
                         text=True,
                         env=env,
                         timeout=TIMEOUT_S,
+                        # preexec_fn=_limit_resources,
                     )
                 except subprocess.TimeoutExpired:
                     return Response(
@@ -306,7 +243,15 @@ class ScriptData(APIView):
             path = tmp.name
 
         try:
-            proc = subprocess.run(["python3", path], capture_output=True, text=True)
+            proc = subprocess.run(
+                [sys.executable, "runner.py"],
+                cwd=workdir,
+                capture_output=True,
+                text=True,
+                env=env,
+                timeout=TIMEOUT_S,
+                preexec_fn=_limit_resources,
+            )
         finally:
             try:
                 os.unlink(path)
