@@ -19,7 +19,8 @@ namespace FamoNET
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
-
+            
+            builder.Services.AddScoped<ISystemNotificationService>((s) => new SystemNotificationService());
             builder.Services.AddScoped((s) => new TimeService());
             builder.Services.AddScoped((s) => new ChartManagerService(s.GetRequiredService<IJSRuntime>()));
             builder.Services.AddSingleton((s) => new CounterWriterService());
@@ -30,10 +31,12 @@ namespace FamoNET
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
             builder.Services.AddTransient<IFC1000Controller>((s) => new FC1000Controller());
+            builder.Services.AddScoped<IDevicesDataService>((s) => new DevicesDataService(s.GetService<IOptions<EndpointsOptions>>().Value.DevicesUri));
 #else
             builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
             builder.Services.AddTransient<IFC1000Controller>((s) => new MockFC1000Controller());
+            builder.Services.AddScoped<IDevicesDataService>((s) => new MockDevicesDataService());
 #endif
 
             builder.Services.AddScoped((s) => new AndaDataService(s.GetService<IAndaDataProvider>()));

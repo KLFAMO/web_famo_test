@@ -6,7 +6,7 @@ namespace FamoNET.Components.Pages
     public partial class Charts : ComponentBase
     {
         public List<RhodeSchwarz1000Chart> LoadedCharts = new List<RhodeSchwarz1000Chart>() { };
-
+        private SystemMessageComponent SystemMessageComponent;
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);

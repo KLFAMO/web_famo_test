@@ -57,16 +57,19 @@ namespace FamoNET.Controllers
 
                     await SendCommand(stream, "BANDwidth:VIDeo?");                    
                     double vbw = ParseData(await streamReader.ReadLineAsync())[0];
-                    
-                    DataReceived?.Invoke(this, new SpectrumAnalyzerEventArgs(new SpectrumAnalyzerParameters
-                    {
-                        Frequencies = new List<double>(frequencies),
-                        CenterFrequency = centerFreq,
-                        RBW = rbw,
-                        Span = span,
-                        VBW = vbw
-                    }));
 
+                    if (!frequencies.Contains(double.NaN) && frequencies.Count() > 0)
+                    {
+                        DataReceived?.Invoke(this, new SpectrumAnalyzerEventArgs(new SpectrumAnalyzerParameters
+                        {
+                            Frequencies = new List<double>(frequencies),
+                            CenterFrequency = centerFreq,
+                            RBW = rbw,
+                            Span = span,
+                            VBW = vbw
+                        }));
+                    }
+                    
                     await Task.Delay(1000).ConfigureAwait(false);
                 }
             }
@@ -90,10 +93,17 @@ namespace FamoNET.Controllers
 
             using NetworkStream stream = tcpClient.GetStream();
 
-            await SendCommand(stream, $"FREQuency:CENTer {spectrumAnalyzerParameters.CenterFrequency}HZ");            
-            await SendCommand(stream, $"FREQuency:SPAN {spectrumAnalyzerParameters.Span}HZ");            
-            await SendCommand(stream, $"BANDwidth {spectrumAnalyzerParameters.RBW}HZ");            
-            await SendCommand(stream, $"BANDwidth:VIDeo {spectrumAnalyzerParameters.VBW}HZ");            
+            await SendCommand(stream, $"FREQuency:CENTer {spectrumAnalyzerParameters.CenterFrequency}HZ");
+            await stream.FlushAsync();
+            
+            await SendCommand(stream, $"FREQuency:SPAN {spectrumAnalyzerParameters.Span}HZ");
+            await stream.FlushAsync();            
+            
+            await SendCommand(stream, $"BANDwidth {spectrumAnalyzerParameters.RBW}HZ");
+            await stream.FlushAsync();
+            
+            await SendCommand(stream, $"BANDwidth:VIDeo {spectrumAnalyzerParameters.VBW}HZ");
+            await stream.FlushAsync();
         }
 
              

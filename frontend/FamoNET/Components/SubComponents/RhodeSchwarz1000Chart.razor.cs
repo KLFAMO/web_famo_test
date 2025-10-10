@@ -5,7 +5,6 @@ using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
 using NLog;
 using System.Net;
-using System.Transactions;
 
 namespace FamoNET.Components.SubComponents
 {
@@ -16,6 +15,9 @@ namespace FamoNET.Components.SubComponents
         private ChartManagerService _chartManagerService { get; set; }
         [Inject]
         private IFC1000Controller _fcController { get; set; }
+
+        [Inject]
+        private ISystemNotificationService _notificationService { get; set; }
 
         private ViewportParams<double> _viewportParams { get; set; }
 
@@ -40,17 +42,31 @@ namespace FamoNET.Components.SubComponents
 
         public async Task SetDeviceParameters()
         {
-            await _fcController.SetParameters(new SpectrumAnalyzerParameters()
+            try
             {
-                CenterFrequency = NewCenterFrequency * SelectedCenterFrequencyUnit,
-                RBW = NewRBW,
-                VBW = NewVBW,
-                Span = NewSpan * SelectedSpanUnit
-            });            
+                if (NewCenterFrequency == double.NaN || NewRBW == double.NaN || NewVBW == double.NaN || NewSpan == double.NaN)
+                {
+                    _notificationService.SendSystemMessage(this, new SystemMessage("Invalid new values", SystemMessageType.Error));
+                    return;
+                }
+
+                await _fcController.SetParameters(new SpectrumAnalyzerParameters()
+                {
+                    CenterFrequency = NewCenterFrequency * SelectedCenterFrequencyUnit,
+                    RBW = NewRBW,
+                    VBW = NewVBW,
+                    Span = NewSpan * SelectedSpanUnit
+                });
+            }
+            catch(Exception ex)
+            {
+                _notificationService.SendSystemMessage(this, new SystemMessage("Failed to set parameters", SystemMessageType.Error));
+                _logger.Error(ex);
+            }
         }
 
         private async Task Initialize()
-        {
+        {            
             if (!IsInitialized)
             {
                 await _chartManagerService.InitializeChart(ChartGuid, new ChartParameters<double>() { Title="", DisableXLabels = true, DisableEvents = true, InvertYAxis = false, AxisMode = AxisMode.Mjd });
@@ -62,8 +78,8 @@ namespace FamoNET.Components.SubComponents
             });
 
             if (!IPAddress.TryParse(IP, out var ip))
-            {                               
-                await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Wrong IP" });
+            {
+                _notificationService.SendSystemMessage(this, new SystemMessage("Wrong IP format", SystemMessageType.Error));                
                 await InvokeAsync(StateHasChanged);
                 return;
             }
@@ -123,7 +139,7 @@ namespace FamoNET.Components.SubComponents
             catch (Exception ex)
             {
                 await _chartManagerService.ClearDataSets(ChartGuid).ConfigureAwait(false);
-                await _chartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double> { Title = "Failed to parse data" }).ConfigureAwait(false);
+                _notificationService.SendSystemMessage(this, new SystemMessage("Failed to parse data", SystemMessageType.Error));
                 _viewportParams = null;
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
                 _logger.Error(ex);

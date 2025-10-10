@@ -7,5 +7,6 @@
         public string AndaUri { get; set; }        
         public string FreqMonitorUri { get; set; }
         public string FXMCounterUri { get; set; }
+        public string DevicesUri { get; set; }
     }
 }
