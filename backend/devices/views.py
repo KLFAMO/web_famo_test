@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import sys
 from django.conf import settings
+from rest_framework import serializers, status
+import socket
 
 sys.path.append(settings.MYTOOLS_PATH)
 import telnet
@@ -69,3 +71,66 @@ class DeviceNamesAPIView(APIView):
             queryset = queryset.filter(device_type__in=device_types)
         devices = queryset.values('name', 'ip_famo', 'device_type', 'description', 'location')
         return Response(list(devices)) 
+
+
+class TelnetRequestSerializer(serializers.Serializer):
+    command = serializers.CharField(max_length=100, allow_blank=False, trim_whitespace=False)
+    ip = serializers.IPAddressField(protocol='both')
+    port = serializers.IntegerField(min_value=1, max_value=65535)
+
+
+class TelnetAPIView(APIView):
+    """
+    POST /api/telnet
+    Body (application/json):
+    {
+      "command": "example command 1",
+      "ip": "192.168.3.6",
+      "port": 23
+    }
+    200 OK – sent correctly
+    400 Bad Request – invalid input
+    504 Gateway Timeout / 502 Bad Gateway – network error / timeout
+    """
+    # permission_classes = [AllowAny] 
+
+    def post(self, request, *args, **kwargs):
+        serializer = TelnetRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        command = serializer.validated_data["command"]
+        ip = serializer.validated_data["ip"]
+        port = serializer.validated_data["port"]
+
+        try:
+            ans = telnet.send(mes=command, ip=ip, port=port, todb=True)
+            if isinstance(ans, bytes):
+                ans = ans.decode(errors="replace")
+
+            return Response(
+                {
+                    "status": "ok",
+                    "ip": ip,
+                    "port": port,
+                    "command": command,
+                    "response": ans,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except (socket.timeout, TimeoutError) as e:
+            return Response(
+                {"detail": f"Timeout while connecting to {ip}:{port}", "error": str(e)},
+                status=status.HTTP_504_GATEWAY_TIMEOUT,
+            )
+        except (ConnectionError, OSError) as e:
+            return Response(
+                {"detail": f"Network/Telnet error to {ip}:{port}", "error": str(e)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except Exception as e:
+            return Response(
+                {"detail": "Unexpected server error", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

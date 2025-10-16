@@ -37,10 +37,11 @@
         <label for="ip">IP:</label>
         <input type="text" id="ip" placeholder="192.168.3.19" />
         <label for="port">Port:</label>
-        <input type="number" id="port" placeholder="10" />
+        <input type="number" id="port" placeholder="23" />
     </div>
     <textarea id="console" placeholder="Enter commands here..."></textarea>
     <button id="clear">Clear Console</button>
+
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const ipInput = document.getElementById("ip");
@@ -48,8 +49,8 @@
             const consoleTextarea = document.getElementById("console");
             const clearButton = document.getElementById("clear");
 
-            // Pobieranie dynamicznego URL-a widoku Django
-            const telnetCmdUrl = "{% url 'telnet_cmd' %}";
+            // URL API widoku Django REST (TelnetAPIView)
+            const telnetApiUrl = "{% url 'telnet_api' %}";  // <- upewnij siďż˝, ďż˝e masz nazwďż˝ ďż˝cieďż˝ki w urls.py
 
             consoleTextarea.addEventListener("keydown", async (event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -57,7 +58,8 @@
 
                     const ip = ipInput.value.trim();
                     const port = portInput.value.trim();
-                    const command = consoleTextarea.value.split("\n").pop().trim();
+                    const lines = consoleTextarea.value.split("\n");
+                    const command = lines[lines.length - 1].trim();
 
                     if (!ip || !port || !command) {
                         alert("Please provide valid IP, Port, and Command.");
@@ -65,12 +67,29 @@
                     }
 
                     try {
-                        const url = `${telnetCmdUrl}?ip=${encodeURIComponent(ip)}&port=${encodeURIComponent(port)}&mes=${encodeURIComponent(command)}`;
-                        const response = await fetch(url);
-                        const result = await response.text();
+                        const response = await fetch(telnetApiUrl, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": getCookie("csrftoken"), // jeďż˝li uďż˝ywasz CSRF
+                            },
+                            body: JSON.stringify({
+                                ip: ip,
+                                port: parseInt(port),
+                                command: command,
+                            }),
+                        });
 
-                        consoleTextarea.value += `\nResponse: ${result}\n`;
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            consoleTextarea.value += `\nResponse: ${result.response}\n`;
+                        } else {
+                            consoleTextarea.value += `\nError (${response.status}): ${result.detail || JSON.stringify(result)}\n`;
+                        }
+
                         consoleTextarea.scrollTop = consoleTextarea.scrollHeight;
+
                     } catch (error) {
                         consoleTextarea.value += `\nError: ${error.message}\n`;
                         consoleTextarea.scrollTop = consoleTextarea.scrollHeight;
@@ -81,6 +100,22 @@
             clearButton.addEventListener("click", () => {
                 consoleTextarea.value = "";
             });
+
+            // Pomocnicza funkcja do pobierania tokena CSRF z cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== "") {
+                    const cookies = document.cookie.split(";");
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.startsWith(name + "=")) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
         });
     </script>
 </body>
