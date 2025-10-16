@@ -9,16 +9,26 @@
     </p>
     <p class="control">
         <div class="select">
-            <select aria-label="Choose device">
+            <select aria-label="Choose device" @bind=SelectedIP>
                 <option selected>Choose</option>
-                @* @foreach (var tableName in TableNames)
+                @foreach (var device in Devices)
                 {
-                    <option value="@tableName">@tableName</option>
-                } *@
+                    <option value="@device.IP">@device.Name @device.IP</option>
+                }
             </select>
         </div>
     </p>
 </div>
+<div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Port
+                </a>
+            </p>
+            <p class="control">                
+                <input type="text" class="input" style="max-width: 10em;" @bind-value="Port" @bind-value:event="oninput" placeholder="Optional" />                
+            </p>
+        </div>   
 
 <div class="hero is-fullheight">
     <div class="hero-body p-0">
@@ -45,11 +55,11 @@
                         <span class="has-text-link is-size-4">_></span>
                     </p>
                 }
-            </div>
+            </div>           
 
             <div class="control">
                 <div class="field">
-                    <input class="input" type="text" placeholder="Type your command..." @onkeydown="OnKeyPress" @bind="CurrentMessage" @bind:event="oninput" />
+                    <input @ref="InputBox" class="input" type="text" placeholder="Type your command..." @onkeydown="OnKeyPress" disabled="@(!IsReady)" @bind="CurrentMessage" @bind:event="oninput" />
                 </div>
             </div>
        </div>

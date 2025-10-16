@@ -13,8 +13,7 @@ namespace FamoNET.Components.SubComponents.Chart
         private List<string> _tableNames = new List<string>();
         private string _selectedTableName;
         private double _startMjd;
-        private double _endMjd;
-        private bool _firstFetch = true;
+        private double _endMjd;        
 
         [Inject]
         private AndaDataService _andaDataService { get; set; }                
@@ -89,8 +88,11 @@ namespace FamoNET.Components.SubComponents.Chart
         {
             if (_selectedTableName == null)
                 return;
-            
+
+            ToggleUI();
             var data = await _andaDataService.GetDataAsync(_startMjd, _endMjd, _selectedTableName);
+            ToggleUI();
+            
             DataAvailable?.Invoke(this, data);           
         }
     }

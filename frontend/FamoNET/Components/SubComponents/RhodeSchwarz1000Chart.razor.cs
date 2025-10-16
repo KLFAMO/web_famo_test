@@ -2,6 +2,7 @@
 using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
+using FamoNET.Services.DataServices;
 using Microsoft.AspNetCore.Components;
 using NLog;
 using System.Net;
@@ -18,17 +19,20 @@ namespace FamoNET.Components.SubComponents
 
         [Inject]
         private ISystemNotificationService _notificationService { get; set; }
+        [Inject]
+        private IDevicesDataService _devicesDataService { get; set; }
 
         private ViewportParams<double> _viewportParams { get; set; }
+        private List<Device> Devices { get; set; } = [];
 
         protected readonly Guid ChartGuid = Guid.NewGuid();
         
         public string IP { get; set; }        
-        public int Port { get; set; }                
+        public int? Port { get; set; }                
                 
         public bool IsInitialized { get; set; }      
         private SAModel Model { get; set; } = new SAModel();
-        private bool IsLoading { get; set; } = false;
+        private bool IsLoading { get; set; } = true;
 
         public int SelectedCenterFrequencyUnit { get; set; } = 1;
         public int SelectedSpanUnit { get; set; } = 1;
@@ -39,6 +43,23 @@ namespace FamoNET.Components.SubComponents
         public double NewVBW { get; set; } = -1;
 
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            await base.OnAfterRenderAsync(firstRender);
+
+            if (firstRender)
+            {
+                await LoadData();
+            }
+        }
+
+        private async Task LoadData()
+        {
+            Devices = await _devicesDataService.GetDevicesAsync();
+            IsLoading = false;
+            await InvokeAsync(() => StateHasChanged());
+        }
 
         public async Task SetDeviceParameters()
         {
@@ -87,7 +108,7 @@ namespace FamoNET.Components.SubComponents
             IsLoading = true;
             IsInitialized = true;
             _fcController.DataReceived += OnDataReceived;
-            _fcController.Initialize(IP, Port);
+            _fcController.Initialize(IP, Port.HasValue ? Port.Value : 5555);
         }
 
         private async void OnDataReceived(object sender, SpectrumAnalyzerEventArgs spectrumAnalyzerArgs)
@@ -138,7 +159,15 @@ namespace FamoNET.Components.SubComponents
             }
             catch (Exception ex)
             {
-                await _chartManagerService.ClearDataSets(ChartGuid).ConfigureAwait(false);
+                try
+                {
+                    await _chartManagerService.ClearDataSets(ChartGuid).ConfigureAwait(false);
+                }
+                catch(Exception ex2) //Component dispose
+                {
+                    _logger.Trace("Tried to interact with chart, but page is disposed");                    
+                }
+
                 _notificationService.SendSystemMessage(this, new SystemMessage("Failed to parse data", SystemMessageType.Error));
                 _viewportParams = null;
                 await InvokeAsync(StateHasChanged).ConfigureAwait(false);
@@ -154,22 +183,26 @@ namespace FamoNET.Components.SubComponents
             var minY = points.Select(p => p.Y).Min();
             var maxY = points.Select(p => p.Y).Max();
 
+            var offsetY = (maxY - minY) * 0.2;
+
             if (_viewportParams == null ||
                 minX < _viewportParams.MinX || 
                 maxX > _viewportParams.MaxX ||
                 minY < _viewportParams.MinY ||
                 maxY > _viewportParams.MaxY ||
                 _viewportParams.MaxX > maxX*1.1 ||
-                _viewportParams.MinX < minX*0.9)
+                _viewportParams.MinX < minX*0.9 ||
+                _viewportParams.MinY < minY-offsetY ||
+                _viewportParams.MaxY > maxY+offsetY)
             {
-                var offset = (maxY - minY) * 0.2;
+                
 
                 _viewportParams = new ViewportParams<double>();
                 _viewportParams.MinX = Model.CenterFrequency - Model.Span;
                 _viewportParams.MaxX = Model.CenterFrequency + Model.Span;
 
-                _viewportParams.MinY = minY - offset;
-                _viewportParams.MaxY = maxY + offset;
+                _viewportParams.MinY = minY - offsetY;
+                _viewportParams.MaxY = maxY + offsetY;
             }
             
         }

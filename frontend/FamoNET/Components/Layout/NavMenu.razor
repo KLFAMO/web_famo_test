@@ -1,4 +1,6 @@
-﻿<nav class="navbar" role="navigation" aria-label="main navigation">
+﻿@inject IJSRuntime JS
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <a class="navbar-item" href="/">
             <h1>FamoNET</h1>
@@ -25,18 +27,18 @@
                     </a>
                     <a class="navbar-item" href="/live">
                         Live
-                    </a>                    
+                    </a>
                 </div>
             </div>
-       
+
 
             <a class="navbar-item" href="/freqmonitor">
                 Monitor
             </a>
 
-            <a class="navbar-item" href="/counter">
+            @* <a class="navbar-item" href="/counter">
                 FXMCounter
-            </a>
+            </a> *@
 
 
             <div class="navbar-item has-dropdown is-hoverable">
@@ -53,17 +55,26 @@
                     </a>
                 </div>
             </div>
-            
+
             <a class="navbar-item" href="/telnet">
                 Telnet
             </a>
             <a class="navbar-item" href="/charts">
                 Device Charts
             </a>
-        </div>        
+        </div>
     </div>
 </nav>
 
-<script>
-    //get from bulma doc
-</script>
+@code {
+    private IJSObjectReference? module;    
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {            
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./Components/Layout/NavMenu.razor.js");
+        }
+    }
+}

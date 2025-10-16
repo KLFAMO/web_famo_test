@@ -1,0 +1,49 @@
+﻿@page "/test"
+<h3>Test page</h3>
+
+@if (Devices.Count == 0)
+{
+    <div class="container">
+        <progress class="progress is-large is-info" max="100">60%</progress>
+    </div>
+}
+else
+{
+    <div class="field has-addons">
+        <p class="control">
+            <a class="button is-static">
+                Devices
+            </a>
+        </p>
+        <p class="control">
+            <div class="select">
+                <select aria-label="Choose device" @bind="@SelectedIP">
+                    <option selected>Choose device</option>
+                    @foreach (var device in Devices)
+                    {
+                        <option value="@device.IP">@device.Name @device.IP</option>
+                    }
+                </select>
+            </div>
+        </p>
+    </div>
+    <div class="field has-addons">
+        <p class="control">
+            <a class="button is-static">
+                Devices filtered
+            </a>
+        </p>
+        <p class="control">
+            <div class="select">
+                <select aria-label="Choose device">
+                    <option selected>Choose device</option>
+                    @foreach (var device in DevicesFiltered)
+                    {
+                        <option value="@device.IP">@device.Name @device.IP</option>
+                    }
+                </select>
+            </div>
+        </p>
+    </div>
+
+}

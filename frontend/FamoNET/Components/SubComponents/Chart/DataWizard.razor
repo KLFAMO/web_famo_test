@@ -42,13 +42,23 @@
             <button type="submit" class="button is-primary" disabled=@IsUIDisabled>Fetch data</button>
         </div>
     </EditForm>
+    @if (IsUIDisabled)
+    {
+        <div class="container">
+            <progress class="progress is-large is-info" max="100">60%</progress>
+        </div>
+    }
 </div>
 
 
 @code {
     private bool IsUIDisabled = false;
 
-    public void ToggleUI() => IsUIDisabled = !IsUIDisabled;
+    public void ToggleUI() 
+    {    
+        IsUIDisabled = !IsUIDisabled;
+        StateHasChanged();
+    }
 }
 
 

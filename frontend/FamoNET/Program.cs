@@ -8,6 +8,7 @@ using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using FamoNET.Services.DataServices;
 using FamoNET.Services.DataServices.Mock;
+using FamoNET.Services.Mock;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -32,11 +33,13 @@ namespace FamoNET
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new FreqMonitorDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FreqMonitorUri));
             builder.Services.AddTransient<IFC1000Controller>((s) => new FC1000Controller());
             builder.Services.AddScoped<IDevicesDataService>((s) => new DevicesDataService(s.GetService<IOptions<EndpointsOptions>>().Value.DevicesUri));
+            builder.Services.AddScoped<ITelnetService>((s) => new TelnetService(s.GetService<IOptions<EndpointsOptions>>().Value.TelnetUri));
 #else
             builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());
             builder.Services.AddTransient<IFC1000Controller>((s) => new MockFC1000Controller());
             builder.Services.AddScoped<IDevicesDataService>((s) => new MockDevicesDataService());
+            builder.Services.AddScoped<ITelnetService>((s) => new MockTelnetService());
 #endif
 
             builder.Services.AddScoped((s) => new AndaDataService(s.GetService<IAndaDataProvider>()));

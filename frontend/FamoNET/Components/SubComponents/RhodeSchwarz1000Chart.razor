@@ -101,7 +101,7 @@
                                                     <option value="3000000">3 MHz</option>
                                                 </select>
                                             </div>
-                                        </div>                                        
+                                        </div>
                                     </div>
                                 </td>
                                 <td>
@@ -152,12 +152,12 @@
                                                     <option value="10000">10 KHz</option>
                                                     <option value="30000">30 KHz</option>
                                                     <option value="100000">100 KHz</option>
-                                                    <option value="300000">300 KHz</option>                                                    
+                                                    <option value="300000">300 KHz</option>
                                                     <option value="1000000">1 MHz</option>
-                                                    <option value="3000000">3 MHz</option>                                                    
+                                                    <option value="3000000">3 MHz</option>
                                                 </select>
                                             </div>
-                                        </div>                                        
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -174,16 +174,34 @@
     }
     else
     {
-        <div class="field">
-            <div class="control">
-                <input type="text" class="input" @bind-value="IP" @bind-value:event="oninput" placeholder="IP..." />
-            </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Devices
+                </a>
+            </p>
+            <p class="control">
+                <div class="select">
+                    <select aria-label="Choose device" @bind="@IP">
+                        <option selected>Choose device</option>
+                        @foreach (var device in Devices)
+                        {
+                            <option value="@device.IP">@device.Name @device.IP</option>
+                        }
+                    </select>
+                </div>
+            </p>
         </div>
-        <div class="field">
-            <div class="control">
-                <input type="text" class="input" @bind-value="Port" @bind-value:event="oninput" placeholder="Port" />
-            </div>
-        </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Port
+                </a>
+            </p>
+            <p class="control">                
+                <input type="text" class="input" style="max-width: 10em;" @bind-value="Port" @bind-value:event="oninput" placeholder="Optional" />                
+            </p>
+        </div>        
         <div class="field">
             <div class="control">
                 <button type="button" class="button" @onclick="() => Initialize()" disabled=@IsInitialized>Connect</button>
