@@ -21,6 +21,13 @@ class DeviceAdmin(admin.ModelAdmin):
     ordering = ('numeric_ip_famo', 'ip_if')
 
 
+@admin.register(IpAssignment)
+class IpAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('mac_addr', 'ip_addr', 'hostname', 'network_type', 'kind', 'active')
+    search_fields = ('mac_addr', 'ip_addr', 'hostname', 'network_type', 'kind')
+    list_filter = ('network_type', 'kind', 'active')
+    ordering = ('mac_addr',)
+
 admin.site.register(ElementType)
 admin.site.register(Element)
 admin.site.register(PortType)
@@ -29,5 +36,4 @@ admin.site.register(ConnectorType)
 admin.site.register(Connection)
 admin.site.register(Location)
 admin.site.register(NetworkInterface)
-admin.site.register(IpAssignment)
 admin.site.register(ExposedPort)
