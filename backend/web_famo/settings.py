@@ -27,6 +27,12 @@ MYTOOLS_PATH = config('MYTOOLS_PATH')
 ALLOWED_HOSTS = ['192.168.3.{}'.format(i) for i in range(256)]
 ALLOWED_HOSTS.append('localhost')
 
+# labs DHCP configuration
+DHCP_HOST = config('DHCP_HOST', default=None)
+DHCP_USER = config('DHCP_USER', default=None)
+DHCP_PATH = config('DHCP_PATH', default='/etc/dhcp/dhcpd.conf')
+DHCP_PORT = config('DHCP_PORT', default=22, cast=int)
+
 
 # Application definition
 
