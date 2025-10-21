@@ -1,5 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.db.models import Prefetch
+from django.urls import reverse
+from django.views.generic import ListView
 from django.http import HttpResponse
+from django.views.generic import CreateView, UpdateView
+from django_tables2.views import SingleTableMixin
+from django_filters.views import FilterView
 from .models import Device
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,6 +13,10 @@ import sys
 from django.conf import settings
 from rest_framework import serializers, status
 import socket
+from .models import Element, NetworkInterface, IpAssignment
+from .tables import ElementTable
+from .filters import ElementFilter
+from .forms import ElementForm, NetworkInterfaceFormSet
 
 sys.path.append(settings.MYTOOLS_PATH)
 import telnet
@@ -61,6 +71,81 @@ def setdds(request):
 def device_list(request):
     devices = Device.objects.all()
     return render(request, 'device_list.html', {'devices': devices})
+
+
+class ElementListView(SingleTableMixin, FilterView):
+    """
+    Pro list view:
+    - Sortable table (django-tables2)
+    - Filters (django-filter)
+    - Prefetch interfaces and active IPs to avoid N+1
+    """
+    table_class = ElementTable
+    model = Element
+    template_name = "devices/elements_list.html"   # root-level templates/
+    filterset_class = ElementFilter
+    paginate_by = 50
+
+    def get_queryset(self):
+        # Prefetch only active IP assignments for each interface
+        active_ip_qs = IpAssignment.objects.filter(active=True).order_by("network_type", "kind", "ip_addr")
+
+        iface_qs = NetworkInterface.objects.prefetch_related(
+            Prefetch("ip_assignments", queryset=active_ip_qs, to_attr="active_ip_assignments")
+        )
+
+        # Base queryset with relations and prefetch applied
+        return (
+            Element.objects
+            .select_related("element_type", "location")
+            .prefetch_related(Prefetch("network_interfaces", queryset=iface_qs, to_attr="ifaces"))
+            .order_by("name")
+        )
+
+class ElementCreateView(CreateView):
+    """Create Element with inline NetworkInterface formset."""
+    model = Element
+    form_class = ElementForm
+    template_name = "devices/element_form.html"
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        formset = NetworkInterfaceFormSet()
+        return render(request, self.template_name, {"form": form, "formset": formset})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        formset = NetworkInterfaceFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            element = form.save()
+            formset.instance = element
+            formset.save()
+            return redirect(reverse("element_list"))
+        return render(request, self.template_name, {"form": form, "formset": formset})
+
+class ElementUpdateView(UpdateView):
+    """Update Element with inline NetworkInterface formset."""
+    model = Element
+    form_class = ElementForm
+    template_name = "element_form.html"
+    context_object_name = "element"
+
+    def get(self, request, *args, **kwargs):
+        element = self.get_object()
+        form = self.form_class(instance=element)
+        formset = NetworkInterfaceFormSet(instance=element)
+        return render(request, self.template_name, {"form": form, "formset": formset, "element": element})
+
+    def post(self, request, *args, **kwargs):
+        element = self.get_object()
+        form = self.form_class(request.POST, instance=element)
+        formset = NetworkInterfaceFormSet(request.POST, instance=element)
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect(reverse("element_list"))
+        return render(request, self.template_name, {"form": form, "formset": formset, "element": element})
+
 
 
 class DeviceNamesAPIView(APIView):

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q, F
 import struct
 import socket
+from typing import Dict, Optional
 
 
 NETWORK_CHOICES = [
@@ -109,7 +110,7 @@ class Element(models.Model):
 
 MAC_VALIDATOR = RegexValidator(
     regex=r"^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$",
-    message="MAC w formacie XX:XX:XX:XX:XX:XX"
+    message="MAC in format XX:XX:XX:XX:XX:XX"
 )
 
 

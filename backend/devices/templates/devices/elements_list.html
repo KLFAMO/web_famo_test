@@ -1,0 +1,39 @@
+{% extends "devices/base.html" %}
+{% load render_table from django_tables2 %}
+{% load form_extras %}
+
+{% block title %}Elements{% endblock %}
+
+{% block content %}
+  <h1 class="mb-3">Elements</h1>
+
+  <!-- Bootstrap 5 filter form -->
+  <form method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-3">
+      <label class="form-label">{{ filter.form.q.label }}</label>
+      {{ filter.form.q|add_class:"form-control" }}
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ filter.form.element_type.label }}</label>
+      {{ filter.form.element_type|add_class:"form-select" }}
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">{{ filter.form.location.label }}</label>
+      {{ filter.form.location|add_class:"form-select" }}
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">{{ filter.form.network_type.label }}</label>
+      {{ filter.form.network_type|add_class:"form-select" }}
+    </div>
+    <div class="col-md-1 d-grid">
+      <button type="submit" class="btn btn-primary">Apply</button>
+    </div>
+  </form>
+
+  <div class="mb-3">
+    <a href="{% url 'element_add' %}" class="btn btn-success">+ Add Element</a>
+  </div>
+
+  <!-- django-tables2 table -->
+  {% render_table table %}
+{% endblock %}

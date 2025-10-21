@@ -1,0 +1,90 @@
+{% extends "devices/base.html" %}
+{% load form_extras %}
+
+{% block title %}
+  {% if element %}Edit Element{% else %}Add Element{% endif %}
+{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">
+    {% if element %}Edit Element: {{ element.name }}{% else %}Add Element{% endif %}
+  </h1>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Element form -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ form.name.label }}</label>
+            {{ form.name|add_class:"form-control" }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ form.serial.label }}</label>
+            {{ form.serial|add_class:"form-control" }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">{{ form.element_type.label }}</label>
+            {{ form.element_type|add_class:"form-select" }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ form.location.label }}</label>
+            {{ form.location|add_class:"form-select" }}
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">{{ form.is_module.label }}</label><br>
+            {{ form.is_module }}
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">{{ form.parent.label }}</label>
+            {{ form.parent|add_class:"form-select" }}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">{{ form.description.label }}</label>
+            {{ form.description|add_class:"form-control" }}
+          </div>
+          <div class="col-12">
+            <label class="form-label">{{ form.properties.label }}</label>
+            {{ form.properties|add_class:"form-control" }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Network interfaces formset -->
+    <h5 class="mb-3">Network Interfaces</h5>
+    {{ formset.management_form }}
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Network Type</th>
+          <th>MAC</th>
+          <th>Description</th>
+          <th>Active</th>
+          <th>Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in formset.forms %}
+          <tr>
+            <td>{{ f.network_type|add_class:"form-select" }}</td>
+            <td>{{ f.mac_addr|add_class:"form-control" }}</td>
+            <td>{{ f.description|add_class:"form-control" }}</td>
+            <td class="text-center">{{ f.active }}</td>
+            <td class="text-center">{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <a href="{% url 'element_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+    </div>
+  </form>
+{% endblock %}
