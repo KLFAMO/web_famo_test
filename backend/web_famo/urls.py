@@ -50,4 +50,5 @@ urlpatterns = [
     path('freq_monitor/get_data', freq_monitor.views.get_data),
     path('time_converter/', time_converter.views.convert_date, name='time_converter'),
     path('labbook/', labbook.views.LogsMainView.as_view(), name='labbook'),
+    path("api/labbook", labbook.views.LabbookApiView.as_view(), name="labbook_api"),
 ]

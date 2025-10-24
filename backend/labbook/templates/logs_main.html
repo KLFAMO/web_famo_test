@@ -1,94 +1,298 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ tytul }}</title>
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: auto; 
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-            white-space: nowrap;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        td:nth-child(3) { /* Trzecia kolumna = Message */
-            white-space: normal; /* Pozwala na zawijanie tekstu */
-            width: 100%; /* Zajmuje maksymalnie dużo miejsca */
-        }
-
-
-        .filter-container {
-            margin-bottom: 15px;
-        }
-        .filter-container input {
-            margin-right: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ tytul }}</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 16px; }
+    table { width: 100%; border-collapse: collapse; table-layout: auto; }
+    th, td { border: 1px solid #bbb; padding: 8px; text-align: left; white-space: nowrap; }
+    th { background: #f2f2f2; }
+    td:nth-child(3) { white-space: normal; width: 100%; }
+    .toolbar { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; margin: 8px 0 16px; }
+    .section { margin: 16px 0; }
+    .muted { color: #666; font-size: 0.9em; }
+    .btn { padding: 6px 10px; border: 1px solid #999; border-radius: 6px; background: #fafafa; cursor: pointer; }
+    .btn:hover { background: #f0f0f0; }
+    .row-actions { display: flex; gap: 6px; }
+    input[type="number"], input[type="text"], textarea { width: 100%; box-sizing: border-box; }
+    textarea { min-height: 56px; }
+    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .hidden { display: none; }
+    label { display:block; font-size: 0.9em; margin-bottom: 4px; }
+    hr { border: none; height: 1px; background: #ddd; margin: 16px 0; }
+  </style>
 </head>
 <body>
-    <p>MJD Today: {{mjd_now}}</p>
-    <!-- Add new message form -->
-    <form method="POST" action="" class="add-log-form">
-        {% csrf_token %}
-        <h3>Dodaj nowy log</h3>
-        <label for="from_mjd">MJD od:</label>
-        <input type="number" step="0.000000001" name="from_mjd" id="from_mjd"
-            ondblclick="this.value=Math.round({{mjd_now}});" required>
-        <label for="to_mjd">MJD do:</label>
-        <input type="number" step="0.000000001" name="to_mjd" id="to_mjd"
-            ondblclick="this.value=Math.round({{mjd_now}});">
-        <br><br>
-        <label for="message">Wiadomość:</label>
-        <textarea name="message" id="message" rows="2" style="width: 100%;" required></textarea><br><br>
-        <label for="tags">Tagi:</label>
-        <input type="text" name="tags" id="tags"><br><br>
-        <button type="submit">Add message</button>
-    </form>
+  <h2>Labbook</h2>
+  <p class="muted">MJD Today: <span id="mjdNow">{{ mjd_now }}</span></p>
 
-    <!-- Display logs form -->
-    <hr style="width: 100%; height: 2px; background-color: black; border: none;">
-    <form method="GET" action="" class="filter-container">
-        <label for="from_mjd">MJD od:</label>
-        <input type="number" step="0.00000001" name="from_mjd" id="from_mjd" value="{{ from_mjd }}">
-        <label for="to_mjd">MJD do:</label>
-        <input type="number" step="0.00000001" name="to_mjd" id="to_mjd" value="{{ to_mjd }}">
-        <button type="submit">Refresh</button>
-    </form>
+  <!-- Create form -->
+  <div class="section">
+    <h3>Dodaj nowy log</h3>
+    <div class="grid">
+      <div>
+        <label>MJD od</label>
+        <input id="new_start" type="number" step="0.000000001"
+               ondblclick="this.value=Math.round(parseFloat(document.getElementById('mjdNow').textContent));"/>
+      </div>
+      <div>
+        <label>MJD do</label>
+        <input id="new_end" type="number" step="0.000000001"
+               ondblclick="this.value=Math.round(parseFloat(document.getElementById('mjdNow').textContent));"/>
+      </div>
+      <div>
+        <label>Tag</label>
+        <input id="new_tag" type="text" />
+      </div>
+    </div>
+    <div class="section">
+      <label>Message</label>
+      <textarea id="new_message"></textarea>
+    </div>
+    <button class="btn" id="addBtn">Dodaj</button>
+  </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Start MJD</th>
-                <th>End MJD</th>
-                <th>Message</th>
-                <th>Tag</th>
-                <th>ID</th>
-                <th>Parent ID</th>
-                <th>Extra</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td>{{ log.from_mjd }}</td>
-                <td>{{ log.to_mjd }}</td>
-                <td>{{ log.message }}</td>
-                <td>{{ log.category }}</td>
-                <td>{{ log.id }}</td>
-                <td>{{ log.parent_id|default:"-" }}</td>
-                <td>{{ log.extra|default:"-" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <hr/>
+
+  <!-- Filters / toolbar -->
+  <div class="toolbar">
+    <div>
+      <label>MJD od</label>
+      <input id="f_from" type="number" step="0.00000001" />
+    </div>
+    <div>
+      <label>MJD do</label>
+      <input id="f_to" type="number" step="0.00000001" />
+    </div>
+    <button class="btn" id="refreshBtn">Refresh</button>
+    <span class="muted" id="status"></span>
+  </div>
+
+  <!-- Data table -->
+  <table id="logsTable">
+    <thead>
+      <tr>
+        <th>Start MJD</th>
+        <th>End MJD</th>
+        <th>Message</th>
+        <th>Tag</th>
+        <th>ID</th>
+        <th>Parent ID</th>
+        <th>Akcje</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Edit panel -->
+  <div class="section hidden" id="editPanel">
+    <h3>Edytuj wpis <span id="editIdLabel"></span></h3>
+    <div class="grid">
+      <div>
+        <label>MJD od</label>
+        <input id="edit_start" type="number" step="0.000000001" />
+      </div>
+      <div>
+        <label>MJD do</label>
+        <input id="edit_end" type="number" step="0.000000001" />
+      </div>
+      <div>
+        <label>Tag</label>
+        <input id="edit_tag" type="text" />
+      </div>
+    </div>
+    <div class="section">
+      <label>Wiadomo??</label>
+      <textarea id="edit_message"></textarea>
+    </div>
+    <div class="grid-2">
+      <button class="btn" id="saveEditBtn">Zapisz</button>
+      <button class="btn" id="cancelEditBtn">Anuluj</button>
+    </div>
+  </div>
+
+  <!-- Resolve API URL via Django to avoid hardcoded paths -->
+  <script>
+    const API = "{% url 'labbook_api' %}";
+  </script>
+
+  <script>
+    // ---------- Utilities ----------
+
+    // Safe fetch wrapper: shows readable errors and logs to console
+    async function safeFetch(url, options) {
+      try {
+        const res = await fetch(url, options);
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`HTTP ${res.status} ${res.statusText} ? ${text}`);
+        }
+        return res;
+      } catch (e) {
+        console.error('Fetch error:', e);
+        alert('API error: ' + e.message);
+        throw e;
+      }
+    }
+
+    // Simple status toaster
+    function status(msg) {
+      const el = document.getElementById('status');
+      el.textContent = msg || '';
+      if (msg) setTimeout(() => el.textContent = '', 3000);
+    }
+
+    // Minimal HTML escaping for safe text placement
+    function escapeHtml(str) {
+      return (str || '').replace(/[&<>"']/g, s => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[s]));
+    }
+
+    // ---------- DOM refs ----------
+    const tableBody = document.querySelector('#logsTable tbody');
+    const fFrom = document.getElementById('f_from');
+    const fTo = document.getElementById('f_to');
+
+    // Create form refs
+    const newStart = document.getElementById('new_start');
+    const newEnd = document.getElementById('new_end');
+    const newTag = document.getElementById('new_tag');
+    const newMessage = document.getElementById('new_message');
+
+    // Edit panel refs/state
+    const editPanel = document.getElementById('editPanel');
+    const editIdLabel = document.getElementById('editIdLabel');
+    const editStart = document.getElementById('edit_start');
+    const editEnd = document.getElementById('edit_end');
+    const editTag = document.getElementById('edit_tag');
+    const editMessage = document.getElementById('edit_message');
+    let editingId = null;
+
+    // ---------- Event bindings ----------
+
+    // Create new record
+    document.getElementById('addBtn').addEventListener('click', async () => {
+      const payload = {
+        start_mjd: String(newStart.value || ''),
+        end_mjd: String(newEnd.value || newStart.value || ''),
+        message: newMessage.value || '',
+        tag: newTag.value || '',
+      };
+      if (!payload.start_mjd || !payload.message) {
+        alert('Wymagane: MJD od oraz Wiadomo??.');
+        return;
+      }
+      await safeFetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      // Clean form and reload
+      newMessage.value = '';
+      status('Dodano wpis.');
+      await loadData();
+    });
+
+    // Save edits (PUT)
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+      if (!editingId) return;
+      const payload = {
+        id: editingId,
+        start_mjd: String(editStart.value || ''),
+        end_mjd: String(editEnd.value || editStart.value || ''),
+        message: editMessage.value || '',
+        tag: editTag.value || '',
+      };
+      await safeFetch(API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      status('Zaktualizowano wpis #' + editingId);
+      editingId = null;
+      editPanel.classList.add('hidden');
+      await loadData();
+    });
+
+    // Cancel editing
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      editingId = null;
+      editPanel.classList.add('hidden');
+    });
+
+    // Refresh list with filters
+    document.getElementById('refreshBtn').addEventListener('click', () => loadData());
+
+    // ---------- Rendering ----------
+
+    function makeRow(rec) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${rec.start_mjd}</td>
+        <td>${rec.end_mjd}</td>
+        <td>${escapeHtml(rec.message || '')}</td>
+        <td>${escapeHtml(rec.tag || '')}</td>
+        <td>${rec.id}</td>
+        <td>${rec.parentId ?? 0}</td>
+        <td class="row-actions"></td>
+      `;
+      const actions = tr.querySelector('.row-actions');
+
+      // Edit button: loads single record via GET ?id=
+      const btnEdit = document.createElement('button');
+      btnEdit.textContent = 'Edytuj';
+      btnEdit.className = 'btn';
+      btnEdit.addEventListener('click', async () => {
+        const res = await safeFetch(`${API}?id=${rec.id}`);
+        const data = await res.json();
+        editingId = data.id;
+        editIdLabel.textContent = '#' + data.id;
+        editStart.value = data.start_mjd;
+        editEnd.value = data.end_mjd;
+        editTag.value = data.tag || '';
+        editMessage.value = data.message || '';
+        editPanel.classList.remove('hidden');
+        // scroll to edit panel
+        editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      actions.appendChild(btnEdit);
+      return tr;
+    }
+
+    // Load list (optionally with filters)
+    async function loadData() {
+      tableBody.innerHTML = '';
+      const params = new URLSearchParams();
+      if (fFrom.value) params.set('from_mjd', fFrom.value);
+      if (fTo.value) params.set('to_mjd', fTo.value);
+
+      const res = await safeFetch(`${API}${params.toString() ? ('?' + params.toString()) : ''}`);
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        status('Brak wpisï¿½w w tym zakresie.');
+      }
+
+      data.forEach(rec => tableBody.appendChild(makeRow(rec)));
+    }
+
+    // ---------- Initial boot ----------
+    (function initDefaults() {
+      // First load without filters (so you immediately see something)
+      loadData().catch(() => {});
+
+      // Then set sensible default filter window (~1000 days)
+      const today = parseFloat(document.getElementById('mjdNow').textContent);
+      if (!isNaN(today)) {
+        fTo.value = today.toFixed(0);
+        fFrom.value = Math.max(0, today - 1000).toFixed(0);
+      }
+    })();
+  </script>
 </body>
-</html>
-
+</html
