@@ -1,16 +1,21 @@
-from django.shortcuts import redirect, render
+from django.conf import settings
+from django.core.management import call_command, CommandError
+from django.contrib import messages
+from django.db import transaction
 from django.db.models import Prefetch
-from django.urls import reverse
-from django.views.generic import ListView
 from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+from django.views.generic import ListView
 from django.views.generic import CreateView, UpdateView
-from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
+from django_tables2.views import SingleTableMixin
 from .models import Device
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import sys
-from django.conf import settings
+from io import StringIO
 from rest_framework import serializers, status
 import socket
 from .models import Element, NetworkInterface, IpAssignment
@@ -219,3 +224,47 @@ class TelnetAPIView(APIView):
                 {"detail": "Unexpected server error", "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+@require_POST
+def run_fetch_dhcp(request):
+    """
+    Run the 'fetch_dhcp' management command, accepting a password from POST.
+    NOTE: open to all users per your request; keep POST+CSRF. Do not log the password.
+    """
+    out = StringIO()
+    password = request.POST.get("password") or None
+    strict = bool(request.POST.get("strict_host_key"))  # optional checkbox
+
+    try:
+        with transaction.atomic():
+            # Pass password only if present; avoid printing it anywhere
+            if password is not None:
+                call_command("fetch_dhcp", stdout=out, password=password, strict_host_key=strict)
+            else:
+                call_command("fetch_dhcp", stdout=out, strict_host_key=strict)
+        # Do not display the password in messages
+        messages.success(request, f"fetch_dhcp finished.\n{out.getvalue()[:2000]}")
+    except CommandError as e:
+        messages.error(request, f"fetch_dhcp failed: {e}\n{out.getvalue()[:1000]}")
+    except Exception as e:
+        messages.error(request, f"Unexpected error in fetch_dhcp: {e}")
+    return redirect(reverse("element_list"))
+
+
+@require_POST
+def run_relink_ips(request):
+    """
+    Run the 'relink_ips' management command.
+    NOTE: intentionally open to all users (as requested).
+    """
+    out = StringIO()
+    try:
+        with transaction.atomic():
+            call_command("relink_ips", stdout=out)
+        messages.success(request, f"relink_ips finished.\n{out.getvalue()[:2000]}")
+    except CommandError as e:
+        messages.error(request, f"relink_ips failed: {e}\n{out.getvalue()[:1000]}")
+    except Exception as e:
+        messages.error(request, f"Unexpected error in relink_ips: {e}")
+    return redirect(reverse("element_list"))

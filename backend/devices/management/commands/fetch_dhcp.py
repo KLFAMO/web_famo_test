@@ -15,7 +15,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--strict-host-key", action="store_true",
-                            help="If set, require known_hosts verification instead of auto-accept.")
+            help="If set, require known_hosts verification instead of auto-accept.")
+        parser.add_argument("--password", dest="password", default=None,
+            help="SSH password to authenticate (use only over trusted HTTPS / internal UI).")
+
     
     def handle(self, *args, **opts):
         host = getattr(settings, "DHCP_HOST", None)
@@ -24,6 +27,7 @@ class Command(BaseCommand):
         remote_path = getattr(settings, "DHCP_PATH", "/etc/dhcp/dhcpd.conf")
         key_path = getattr(settings, "DHCP_KEY", None)
         strict = bool(opts.get("strict_host_key"))
+        password_opt = opts.get("password")  # may be None
 
         if not host or not user:
             raise CommandError("Set DHCP_HOST and DHCP_USER in .env / settings.py.")
@@ -41,8 +45,10 @@ class Command(BaseCommand):
                 ssh.connect(hostname=host, port=port, username=user, key_filename=key_path, timeout=10)
             else:
                 # ask for password (no echo)
-                password = getpass.getpass(f"Password for {user}@{host}: ")
-                ssh.connect(hostname=host, port=port, username=user, password=password, timeout=10)
+                if password_opt is None:
+                    password_opt = getpass.getpass(f"Password for {user}@{host}: ")
+                ssh.connect(hostname=host, port=port, username=user, password=password_opt, timeout=10)
+
 
             sftp = ssh.open_sftp()
             try:

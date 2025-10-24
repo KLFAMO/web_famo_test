@@ -7,33 +7,73 @@
 {% block content %}
   <h1 class="mb-3">Elements</h1>
 
-  <!-- Bootstrap 5 filter form -->
-  <form method="get" class="row g-3 align-items-end mb-4">
-    <div class="col-md-3">
-      <label class="form-label">{{ filter.form.q.label }}</label>
-      {{ filter.form.q|add_class:"form-control" }}
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">{{ filter.form.element_type.label }}</label>
-      {{ filter.form.element_type|add_class:"form-select" }}
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">{{ filter.form.location.label }}</label>
-      {{ filter.form.location|add_class:"form-select" }}
-    </div>
-    <div class="col-md-2">
-      <label class="form-label">{{ filter.form.network_type.label }}</label>
-      {{ filter.form.network_type|add_class:"form-select" }}
-    </div>
-    <div class="col-md-1 d-grid">
-      <button type="submit" class="btn btn-primary">Apply</button>
-    </div>
-  </form>
+  <!-- Action toolbar -->
+  <div class="d-flex gap-2 mb-3">
+    <!-- Button that opens the password modal -->
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#fetchDhcpModal">
+      Fetch DHCP
+    </button>
 
-  <div class="mb-3">
-    <a href="{% url 'element_add' %}" class="btn btn-success">+ Add Element</a>
+    <!-- Simple form for Relink IPs (no password needed) -->
+    <form method="post" action="{% url 'run_relink_ips' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary" title="Relink IpAssignments.interface by MAC">
+        Relink IPs
+      </button>
+    </form>
+
+    <a href="{% url 'element_add' %}" class="btn btn-success ms-auto">+ Add Element</a>
   </div>
 
-  <!-- django-tables2 table -->
+  <!-- Messages -->
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-2" style="white-space: pre-wrap;">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Filters ... (zostaw jak masz) -->
+
   {% render_table table %}
+
+  <!-- Modal: Fetch DHCP (asks for password) -->
+  <div class="modal fade" id="fetchDhcpModal" tabindex="-1" aria-labelledby="fetchDhcpLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="post" action="{% url 'run_fetch_dhcp' %}" class="modal-content">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="fetchDhcpLabel">Fetch DHCP</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3">
+            Provide SSH password to fetch the DHCP configuration from the remote server.<br>
+            <small class="text-muted">Password is used only for this request and not stored.</small>
+          </p>
+
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" autocomplete="current-password" required>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="1" id="strictHostKey" name="strict_host_key">
+            <label class="form-check-label" for="strictHostKey">
+              Strict host key (require known_hosts)
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            Run Fetch
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}
