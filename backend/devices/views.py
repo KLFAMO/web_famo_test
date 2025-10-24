@@ -127,7 +127,7 @@ class ElementUpdateView(UpdateView):
     """Update Element with inline NetworkInterface formset."""
     model = Element
     form_class = ElementForm
-    template_name = "element_form.html"
+    template_name = "devices/element_form.html"
     context_object_name = "element"
 
     def get(self, request, *args, **kwargs):
