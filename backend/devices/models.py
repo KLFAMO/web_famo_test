@@ -358,3 +358,142 @@ class ExposedPort(models.Model):
     def __str__(self):
         return f"{self.module} :: {self.alias} -> {self.inner_port}"
 
+
+class ParameterSpec(models.Model):
+    """
+    Parameter template defined for a given ElementType.
+    Example: key='ch0.freq', unit='Hz', default_num=10e6, hard_min=0, hard_max=5e8
+    """
+    element_type = models.ForeignKey(
+        ElementType, on_delete=models.CASCADE, related_name="param_specs"
+    )
+
+    key = models.CharField(max_length=120)         # e.g. "ch0.freq"
+    label = models.CharField(max_length=160, blank=True)
+    unit = models.CharField(max_length=40, blank=True)
+
+    # Defaults and limits (numeric only, Decimal for precision)
+    default_num = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    soft_min = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    soft_max = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    hard_min = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    hard_max = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+
+    step = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)  # UI hint
+    order = models.PositiveIntegerField(default=0)
+    group = models.CharField(max_length=120, blank=True)  # e.g. "CH0"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["element_type", "key"], name="uq_param_spec_type_key"),
+        ]
+        ordering = ["element_type_id", "order", "key"]
+
+    def clean(self):
+        if self.hard_min is not None and self.hard_max is not None and self.hard_min > self.hard_max:
+            raise ValidationError("hard_min > hard_max.")
+        if self.soft_min is not None and self.soft_max is not None and self.soft_min > self.soft_max:
+            raise ValidationError("soft_min > soft_max.")
+
+    def __str__(self):
+        return f"{self.element_type.name}::{self.key}"
+
+
+class ElementParameter(models.Model):
+    """
+    Numeric parameter instance for a specific Element.
+    Copies key/label/unit/limits from the spec at creation time (denormalized).
+    """
+    element = models.ForeignKey(Element, on_delete=models.CASCADE, related_name="parameters")
+    spec = models.ForeignKey(ParameterSpec, null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
+
+    # Denormalized metadata
+    key = models.CharField(max_length=120)
+    label = models.CharField(max_length=160, blank=True)
+    unit = models.CharField(max_length=40, blank=True)
+
+    # Current numeric value + limits (copied from spec; can be overridden)
+    value_num = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    soft_min = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    soft_max = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    hard_min = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    hard_max = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+
+    step = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+    group = models.CharField(max_length=120, blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    is_custom = models.BooleanField(default=False)  # ad-hoc parameter not based on a spec
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["element", "key"],
+                condition=Q(active=True),
+                name="uq_active_param_key_per_element",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["element", "active"]),
+            models.Index(fields=["element", "group", "order"]),
+        ]
+        ordering = ["element_id", "group", "order", "key"]
+
+    def clean(self):
+        if self.hard_min is not None and self.hard_max is not None and self.hard_min > self.hard_max:
+            raise ValidationError("hard_min > hard_max on instance.")
+
+    def clamp_numeric(self):
+        """Apply hard boundaries to value_num (if present)."""
+        if self.value_num is None:
+            return
+        v = self.value_num
+        if self.hard_min is not None and v < self.hard_min:
+            self.value_num = self.hard_min
+        if self.hard_max is not None and self.value_num > self.hard_max:
+            self.value_num = self.hard_max
+
+    def save(self, *args, **kwargs):
+        self.clamp_numeric()
+        super().save(*args, **kwargs)
+
+    def set_value(self, value, source="manual", note=""):
+        """
+        Set numeric value, clamp, save, and record history row.
+        `source`/`note` are free text for audit.
+        """
+        self.value_num = value
+        self.save()
+        ElementParameterHistory.objects.create(
+            parameter=self,
+            value_num=self.value_num,
+            source=source,
+            note=note,
+        )
+
+    def __str__(self):
+        return f"{self.element.name}.{self.key}"
+
+
+class ElementParameterHistory(models.Model):
+    """
+    Audit trail of numeric parameter changes.
+    Created automatically by ElementParameter.set_value().
+    """
+    parameter = models.ForeignKey(
+        ElementParameter, on_delete=models.CASCADE, related_name="history"
+    )
+    ts = models.DateTimeField(auto_now_add=True)
+
+    value_num = models.DecimalField(max_digits=24, decimal_places=8, null=True, blank=True)
+
+    source = models.CharField(max_length=40, default="manual")  # e.g. "manual", "import", "api"
+    note = models.CharField(max_length=240, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["parameter", "ts"])]
+        ordering = ["-ts"]
+
+    def __str__(self):
+        return f"{self.parameter} @ {self.ts}"
