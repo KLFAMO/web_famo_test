@@ -89,7 +89,7 @@ class ElementListView(SingleTableMixin, FilterView):
     model = Element
     template_name = "devices/elements_list.html"   # root-level templates/
     filterset_class = ElementFilter
-    paginate_by = 50
+    paginate_by = 100
 
     def get_queryset(self):
         # Prefetch only active IP assignments for each interface
@@ -107,26 +107,93 @@ class ElementListView(SingleTableMixin, FilterView):
             .order_by("name")
         )
 
+# views.py
 class ElementCreateView(CreateView):
     """Create Element with inline NetworkInterface formset."""
     model = Element
     form_class = ElementForm
     template_name = "devices/element_form.html"
 
+    def get_success_url(self):
+        return reverse("element_list")
+
     def get(self, request, *args, **kwargs):
         form = self.form_class()
+        # formset bez instance na GET jest OK (render), zapis nastąpi po utworzeniu elementu
         formset = NetworkInterfaceFormSet()
         return render(request, self.template_name, {"form": form, "formset": formset})
 
     def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
-        formset = NetworkInterfaceFormSet(request.POST)
-        if form.is_valid() and formset.is_valid():
-            element = form.save()
-            formset.instance = element
-            formset.save()
-            return redirect(reverse("element_list"))
-        return render(request, self.template_name, {"form": form, "formset": formset})
+        form = self.form_class(request.POST, request.FILES)
+        formset = NetworkInterfaceFormSet(request.POST, request.FILES)
+
+        # pozwala mieć osobne przyciski jeśli kiedyś dodasz
+        action = request.POST.get("_action", "save_all")
+        save_element = action in ("save_all", "save_element")
+        save_ifaces  = action in ("save_all", "save_ifaces")
+
+        form_valid = (not save_element) or form.is_valid()
+        formset_valid = (not save_ifaces) or formset.is_valid()
+
+        if form_valid and formset_valid:
+            try:
+                with transaction.atomic():
+                    # 1) najpierw tworzysz element (jeśli trzeba)
+                    if save_element:
+                        self.object = form.save()
+                    else:
+                        # teoretycznie dla create nie ma sensu,
+                        # ale zostawiamy dla spójności API
+                        self.object = Element.objects.create(**{})
+
+                    # 2) zapisujesz formset z commit=False + przypięcie FK
+                    if save_ifaces:
+                        instances = formset.save(commit=False)
+
+                        for i, f in enumerate(formset.forms):
+                            if f.has_changed():
+                                print(f"iface#{i} changed fields:", f.changed_data)
+
+                        for obj in instances:
+                            obj.element = self.object
+                            obj.save()
+
+                        # przy create zwykle pusto, ale obsłużmy nawykiem
+                        for obj in formset.deleted_objects:
+                            obj.delete()
+
+                        formset.save_m2m()  # zwykle niepotrzebne
+
+                messages.success(request, "Element i interfejsy utworzone pomyślnie.")
+                return redirect(self.get_success_url())
+
+            except Exception as e:
+                messages.error(request, f"Wystąpił błąd podczas zapisu: {e}")
+
+        # komunikaty gdy coś poszło nie tak
+        if form.errors:
+            for field, errs in form.errors.items():
+                for err in errs:
+                    messages.error(request, f"Błąd w polu elementu '{field}': {err}")
+
+        for i, fe in enumerate(formset.forms):
+            if fe.errors:
+                for field, errs in fe.errors.items():
+                    for err in errs:
+                        messages.error(request, f"Interfejs #{i+1} – pole '{field}': {err}")
+
+        for err in formset.non_form_errors():
+            messages.error(request, f"Błąd formsetu: {err}")
+
+        return self.form_invalid(form, formset)
+
+    def form_invalid(self, form, formset):
+        return render(
+            self.request,
+            self.template_name,
+            {"form": form, "formset": formset},
+        )
+
 
 class ElementUpdateView(UpdateView):
     """Update Element with inline NetworkInterface formset."""
@@ -134,6 +201,10 @@ class ElementUpdateView(UpdateView):
     form_class = ElementForm
     template_name = "devices/element_form.html"
     context_object_name = "element"
+    success_url = None
+
+    def get_success_url(self):
+        return reverse("element_list")
 
     def get(self, request, *args, **kwargs):
         element = self.get_object()
@@ -143,14 +214,66 @@ class ElementUpdateView(UpdateView):
 
     def post(self, request, *args, **kwargs):
         element = self.get_object()
-        form = self.form_class(request.POST, instance=element)
-        formset = NetworkInterfaceFormSet(request.POST, instance=element)
-        if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            return redirect(reverse("element_list"))
-        return render(request, self.template_name, {"form": form, "formset": formset, "element": element})
+        form = self.form_class(request.POST, request.FILES, instance=element)
+        formset = NetworkInterfaceFormSet(request.POST, request.FILES, instance=element)
 
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    self.object = form.save()
+
+                    # BARDZO pomocne przy debugowaniu:
+                    for i, f in enumerate(formset.forms):
+                        if f.has_changed():
+                            print(f"iface#{i} changed fields:", f.changed_data)
+
+                    # Ręczne zapisanie zmian w formsecie
+                    instances = formset.save(commit=False)
+
+                    # Ustaw FK i zapisz zmienione/nowe
+                    for obj in instances:
+                        # upewnij się, że FK jest ustawiony
+                        if getattr(obj, "element_id", None) is None:
+                            obj.element = self.object
+                        obj.save()
+
+                    # Usuń zaznaczone do skasowania
+                    for obj in formset.deleted_objects:
+                        obj.delete()
+
+                    # Jeśli formset miałby M2M (tu raczej nie), to:
+                    formset.save_m2m()
+
+                messages.success(request, "Element i interfejsy zapisane pomyślnie.")
+                return redirect(self.get_success_url())
+            except Exception as e:
+                messages.error(request, f"Wystąpił błąd podczas zapisywania: {e}")
+                # lecimy do rendera poniżej
+
+        # komunikaty o błędach
+        if form.errors:
+            for field, errs in form.errors.items():
+                for err in errs:
+                    messages.error(request, f"Błąd w polu elementu '{field}': {err}")
+
+        for i, fe in enumerate(formset.forms):
+            if fe.errors:
+                for field, errs in fe.errors.items():
+                    for err in errs:
+                        messages.error(request, f"Interfejs #{i+1} – pole '{field}': {err}")
+
+        for err in formset.non_form_errors():
+            messages.error(request, f"Błąd formsetu: {err}")
+
+        return self.form_invalid(form, formset)
+
+
+    def form_invalid(self, form, formset):
+        return render(
+            self.request,
+            self.template_name,
+            {"form": form, "formset": formset, "element": self.get_object()},
+        )
 
 
 class DeviceNamesAPIView(APIView):

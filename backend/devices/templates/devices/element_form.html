@@ -10,7 +10,17 @@
     {% if element %}Edit Element: {{ element.name }}{% else %}Add Element{% endif %}
   </h1>
 
-  <form method="post">
+  {# Opcjonalnie: globalne błędy #}
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">
+      {% for e in formset.non_form_errors %}{{ e }}<br>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
     <!-- Element form -->
@@ -57,34 +67,65 @@
     </div>
 
     <!-- Network interfaces formset -->
-    <h5 class="mb-3">Network Interfaces</h5>
-    {{ formset.management_form }}
-    <table class="table table-striped table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Network Type</th>
-          <th>MAC</th>
-          <th>Description</th>
-          <th>Active</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for f in formset.forms %}
-          <tr>
-            <td>{{ f.network_type|add_class:"form-select" }}</td>
-            <td>{{ f.mac_addr|add_class:"form-control" }}</td>
-            <td>{{ f.description|add_class:"form-control" }}</td>
-            <td class="text-center">{{ f.active }}</td>
-            <td class="text-center">{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Network Interfaces</h5>
+      </div>
+      <div class="card-body">
+        {{ formset.management_form }}
+        <table class="table table-striped table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Network Type</th>
+              <th>MAC</th>
+              <th>Description</th>
+              <th class="text-center">Active</th>
+              <th class="text-center">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in formset.forms %}
+              {# MUSI być: ukryte pola (id, fk, itp.) #}
+              {% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
 
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary">Save</button>
-      <a href="{% url 'element_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+              {# Per-form errors #}
+              {% if f.non_field_errors %}
+                <tr><td colspan="5" class="text-danger small">
+                  {% for e in f.non_field_errors %}{{ e }}<br>{% endfor %}
+                </td></tr>
+              {% endif %}
+
+              <tr>
+                <td>{{ f.network_type|add_class:"form-select" }}</td>
+                <td>{{ f.mac_addr|add_class:"form-control" }}</td>
+                <td>{{ f.description|add_class:"form-control" }}</td>
+                <td class="text-center">{{ f.active }}</td>
+                <td class="text-center">
+                  {# wyświetl DELETE tylko jeśli formset ma can_delete #}
+                  {% if formset.can_delete %}{{ f.DELETE }}{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-save me-2"></i>Save All Changes
+            </button>
+            <a href="{% url 'element_list' %}" class="btn btn-secondary ms-2">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+          <small class="text-muted">All changes (element and interfaces) will be saved together</small>
+        </div>
+      </div>
     </div>
   </form>
 {% endblock %}
