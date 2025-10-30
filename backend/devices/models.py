@@ -121,9 +121,15 @@ class NetworkInterface(models.Model):
     """
     element = models.ForeignKey(Element, on_delete=models.CASCADE, related_name="network_interfaces", verbose_name="Element")
     mac_addr = models.CharField(max_length=17, validators=[MAC_VALIDATOR], unique=True)
+    mac_norm = models.CharField(max_length=12, db_index=True, blank=True, null=True)
     network_type = models.CharField(max_length=4, choices=NETWORK_CHOICES, verbose_name="Network Type")
     description = models.CharField(max_length=120, blank=True, verbose_name="Description")
     active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        from .utils import normalize_mac
+        self.mac_norm = normalize_mac(self.mac_addr) or None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.element} | {self.mac_addr} ({self.network_type})"
@@ -144,6 +150,7 @@ class IpAssignment(models.Model):
     network_type = models.CharField(max_length=4, choices=NETWORK_CHOICES)
 
     mac_addr = models.CharField(max_length=17, validators=[MAC_VALIDATOR], db_index=True)
+    mac_norm = models.CharField(max_length=12, db_index=True, blank=True, null=True)
     ip_addr = models.GenericIPAddressField(protocol="IPv4", db_index=True)
     hostname = models.CharField(max_length=63, blank=True)
 
@@ -186,18 +193,37 @@ class IpAssignment(models.Model):
             if iface and iface.network_type != self.network_type:
                 raise ValidationError("interface.network_type must match IpAssignment.network_type.")
 
-    def relink(self):
-        """Spróbuj podlinkować po MAC do NetworkInterface."""
-        try:
-            self.interface = NetworkInterface.objects.get(mac_addr=self.mac_addr)
-        except NetworkInterface.DoesNotExist:
-            self.interface = None
-        self.save(update_fields=["interface"])
+    def relink(self) -> bool:
+        """
+        Podlinkuj interface po mac_norm (ignoruje case/separatory) i dopasuj network_type.
+        Zwraca True, jeśli zmieniono przypisanie.
+        """
+        from .models import NetworkInterface
 
-    def __str__(self):
-        tag = self.kind.lower()
-        host = f" {self.hostname}" if self.hostname else ""
-        return f"[{self.network_type}/{tag}] {self.ip_addr}{host} <- {self.mac_addr}"
+        # jeżeli nie mamy znormalizowanego MAC, to odpinamy
+        if not self.mac_norm:
+            new_key = None
+        else:
+            iface = (
+                NetworkInterface.objects
+                .filter(
+                    mac_norm=self.mac_norm,
+                    network_type=self.network_type,   # ważne ze względu na clean()
+                    active=True
+                )
+                .only("mac_addr")  # bo to jest to_field klucza
+                .first()
+            )
+            new_key = iface.mac_addr if iface else None  # << KLUCZ: to_field = mac_addr
+
+        if self.interface_id != new_key:
+            # Ponieważ to_field="mac_addr", interface_id oczekuje wartości mac_addr (string)
+            self.interface_id = new_key
+            # lub: self.interface = iface  (jeśli iface jest obiektem) – to też zadziała
+            self.save(update_fields=["interface"])
+            return True
+        return False
+
 
 
 GENDER_CHOICES = [
