@@ -22,7 +22,7 @@ NetworkInterfaceFormSet = inlineformset_factory(
     model=NetworkInterface,
     # form=NetworkInterfaceForm,
     fields=("network_type", "mac_addr", "description", "active"),
-    extra=0,
+    extra=1,
     can_delete=True,
     exclude=['id'],  # Wykluczamy pole id, Django sam się nim zajmie
 )

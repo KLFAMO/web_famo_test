@@ -118,7 +118,6 @@ from .forms import ElementForm, NetworkInterfaceFormSet
 from .models import Element
 
 class ElementFormsetMixin:
-    """Wspólna logika dla Create/Update z inline formsetem NetworkInterface."""
     form_class = ElementForm
     formset_class = NetworkInterfaceFormSet
     template_name = "devices/element_form.html"
@@ -128,14 +127,15 @@ class ElementFormsetMixin:
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # Do GET-a dodaj formset jeśli nie ma w kwargs
+        instance = getattr(self, "object", None)
         if "formset" not in ctx:
-            instance = getattr(self, "object", None)
             ctx["formset"] = self.formset_class(instance=instance)
+        if "form" not in ctx:
+            ctx["form"] = self.form_class(instance=instance)
+        ctx["element"] = instance
         return ctx
 
     def render_invalid(self, form, formset):
-        # Zbierz błędy do messages (czytelne na froncie)
         if form.errors:
             for field, errs in form.errors.items():
                 for err in errs:
@@ -155,16 +155,16 @@ class ElementFormsetMixin:
         })
 
     def post(self, request, *args, **kwargs):
-        # Ustal instance: Update ma obiekt, Create jeszcze nie
-        if hasattr(self, "get_object"):  # UpdateView
-            self.object = self.get_object()
-        else:  # CreateView
-            self.object = None
+        # Ustal, czy to update po obecności pk/slug w URL
+        pk_kw = getattr(self, "pk_url_kwarg", "pk")
+        slug_kw = getattr(self, "slug_url_kwarg", "slug")
+        is_update = (pk_kw in kwargs) or (slug_kw in kwargs)
+
+        self.object = self.get_object() if is_update else None
 
         form = self.form_class(request.POST, request.FILES, instance=self.object)
         formset = self.formset_class(request.POST, request.FILES, instance=self.object)
 
-        # Obsługa przycisków (opcjonalnie możesz mieć jeden)
         action = request.POST.get("_action", "save_all")
         save_element = action in ("save_all", "save_element")
         save_ifaces  = action in ("save_all", "save_ifaces")
@@ -175,15 +175,14 @@ class ElementFormsetMixin:
         if form_valid and formset_valid:
             try:
                 with transaction.atomic():
-                    # Zapis elementu
+                    # Zapis/utworzenie elementu
                     if save_element:
                         self.object = form.save()
                     elif self.object is None:
-                        # W CreateView bez zapisu elementu nie ma sensu zapisywać ifaces
-                        self.object = form.save(commit=False)
-                        self.object.save()
+                        # Create bez 'save_element' – i tak musimy mieć obiekt dla FK
+                        self.object = form.save()
 
-                    # Zapis formsetu (commit=False + FK + deleted)
+                    # Zapis formsetu
                     if save_ifaces:
                         instances = formset.save(commit=False)
                         for obj in instances:
@@ -199,9 +198,9 @@ class ElementFormsetMixin:
 
             except Exception as e:
                 messages.error(request, f"Wystąpił błąd podczas zapisu: {e}")
-                # i spadamy do render_invalid
 
         return self.render_invalid(form, formset)
+
 
 
 class ElementCreateView(ElementFormsetMixin, CreateView):
