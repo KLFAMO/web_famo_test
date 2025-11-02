@@ -49,6 +49,9 @@ class ElementTable(tables.Table):
         return mark_safe("".join(chunks))
 
     def render_actions(self, record: Element):
-        """Render action links (Edit)."""
-        url = reverse("element_edit", kwargs={"pk": record.pk})
-        return mark_safe(f'<a href="{url}">Edit</a>')
+        edit_url = reverse("element_edit", kwargs={"pk": record.pk})
+        connect_url = reverse("element_connect", kwargs={"pk": record.pk})
+        return mark_safe(
+            f'<a href="{edit_url}" class="me-2">Edit</a>'
+            f'<a href="{connect_url}">Connect</a>'
+        )

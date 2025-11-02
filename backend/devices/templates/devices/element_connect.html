@@ -1,0 +1,68 @@
+{# templates/devices/element_connect.html #}
+{% extends "devices/base.html" %}
+{% block title %}Connect: {{ element.name }}{% endblock %}
+
+{% block content %}
+  <h1 class="mb-3">Connect: <small class="text-muted">{{ element.name }}</small></h1>
+  <p class="text-muted mb-4">
+    Type: <strong>{{ element.element_type }}</strong>
+    {% if element.location %} | Location: <strong>{{ element.location }}</strong>{% endif %}
+  </p>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="d-flex align-items-center mb-2">
+        <h5 class="mb-0">Parameters</h5>
+        <div class="ms-auto d-flex gap-2">
+          <button class="btn btn-sm btn-outline-secondary" type="button" id="expandAllBtn">Expand all</button>
+          <button class="btn btn-sm btn-outline-secondary" type="button" id="collapseAllBtn">Collapse all</button>
+        </div>
+      </div>
+
+      <form>
+        <div id="paramTreeRoot" class="border rounded p-2">
+          {# UWAGA: label="" – etykiety bez eth_communication #}
+          {% include "devices/partials/param_tree.html" with node=param_tree path=param_root_path label="" %}
+        </div>
+      </form>
+
+      <small class="text-muted">* UI tylko do podglądu/edycji — bez wysyłki komend (na razie).</small>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <div class="accordion" id="jsonAccordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="jsonHeading">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#jsonCollapse" aria-expanded="false" aria-controls="jsonCollapse">
+              Raw JSON (type schema)
+            </button>
+          </h2>
+          <div id="jsonCollapse" class="accordion-collapse collapse" aria-labelledby="jsonHeading" data-bs-parent="#jsonAccordion">
+            <div class="accordion-body p-0">
+              <pre class="border-top p-2 m-0" style="white-space:pre; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.9rem;">{{ type_schema_json }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const root = document.getElementById('paramTreeRoot');
+      document.getElementById('expandAllBtn').addEventListener('click', () => {
+        root.querySelectorAll('[data-node]').forEach(el => el.style.display = 'block');
+      });
+      document.getElementById('collapseAllBtn').addEventListener('click', () => {
+        root.querySelectorAll('[data-node]').forEach(el => el.style.display = 'none');
+      });
+      root.addEventListener('click', (e) => {
+        const t = e.target.closest('[data-toggle="node"]');
+        if (!t) return;
+        const targetId = t.getAttribute('data-target');
+        const sec = document.getElementById(targetId);
+        if (sec) sec.style.display = (sec.style.display === 'none') ? 'block' : 'none';
+      });
+    })();
+  </script>
+{% endblock %}

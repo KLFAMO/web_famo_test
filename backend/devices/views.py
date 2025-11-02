@@ -5,16 +5,17 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DetailView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from .models import Device
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import sys
+import sys, json
 from io import StringIO
 from rest_framework import serializers, status
 import socket
@@ -108,14 +109,14 @@ class ElementListView(SingleTableMixin, FilterView):
         )
 
 # views.py
-from django.contrib import messages
-from django.db import transaction
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from django.views.generic.edit import CreateView, UpdateView
+# from django.contrib import messages
+# from django.db import transaction
+# from django.shortcuts import redirect, render
+# from django.urls import reverse
+# from django.views.generic.edit import CreateView, UpdateView
 
-from .forms import ElementForm, NetworkInterfaceFormSet
-from .models import Element
+# from .forms import ElementForm, NetworkInterfaceFormSet
+# from .models import Element
 
 class ElementFormsetMixin:
     form_class = ElementForm
@@ -211,6 +212,35 @@ class ElementCreateView(ElementFormsetMixin, CreateView):
 class ElementUpdateView(ElementFormsetMixin, UpdateView):
     model = Element
     # form_class, template i post bierzemy z mixina
+
+
+class ElementConnectView(DetailView):
+    """
+    Connect UI:
+    - renders a collapsible tree for eth_communication.parameters
+    - leaves (val/min/max) are editable inputs
+    """
+    model = Element
+    template_name = "devices/element_connect.html"
+    context_object_name = "element"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        el = self.object
+
+        type_schema = el.element_type.properties_template or {}
+
+        params = (
+            type_schema.get("eth_communication", {})
+                       .get("parameters", {})
+        )
+
+        ctx.update({
+            "type_schema_json": json.dumps(type_schema, indent=2, ensure_ascii=False),
+            "param_tree": params,
+            "param_root_path": "eth_communication:parameters",
+        })
+        return ctx
 
 
 

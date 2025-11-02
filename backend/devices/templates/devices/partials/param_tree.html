@@ -1,0 +1,17 @@
+
+
+{% for key, value in node.items %}
+  {# Zbuduj subpath (do name=...), zawsze pełny #}
+  {% with subpath=path|add:":"|add:key %}
+    {# Zbuduj label_next (do etykiety), bez eth_communication: na root label="" #}
+    {% if label %}
+      {% with label_next=label|add:":"|add:key %}
+        {% include "devices/partials/param_tree_item.html" with key=key value=value subpath=subpath label_next=label_next %}
+      {% endwith %}
+    {% else %}
+      {% with label_next=key %}
+        {% include "devices/partials/param_tree_item.html" with key=key value=value subpath=subpath label_next=label_next %}
+      {% endwith %}
+    {% endif %}
+  {% endwith %}
+{% endfor %}

@@ -33,6 +33,7 @@ urlpatterns = [
     path('elements/', devices.views.ElementListView.as_view(), name='element_list'),
     path('elements/add/', devices.views.ElementCreateView.as_view(), name='element_add'),
     path('elements/<int:pk>/edit/', devices.views.ElementUpdateView.as_view(), name='element_edit'),
+    path('elements/<int:pk>/connect/', devices.views.ElementConnectView.as_view(), name='element_connect'),
     path('elements/fetch-dhcp/', devices.views.run_fetch_dhcp, name='run_fetch_dhcp'),
     path('elements/relink-ips/', devices.views.run_relink_ips, name='run_relink_ips'),
     path('setdds/', devices.views.setdds, name='setdds'),

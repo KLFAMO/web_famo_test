@@ -1,0 +1,42 @@
+{# Helper partial: renderuje pojedynczy klucz (gałąź lub liść) #}
+{% if value.val is not None or value.min is not None or value.max is not None or value.readonly is not None %}
+  {# --- LIŚĆ --- #}
+  <div class="d-flex align-items-center gap-2 py-1 border-bottom">
+    <div class="flex-grow-1">
+      <code>{{ label_next }}</code>
+    </div>
+    <div class="input-group input-group-sm" style="width: 11rem;">
+      <span class="input-group-text">val</span>
+      <input type="number" step="any" class="form-control" name="{{ subpath }}:val"
+             value="{% if value.val is not None %}{{ value.val }}{% endif %}"
+             {% if value.readonly %}readonly{% endif %}>
+    </div>
+    <div class="input-group input-group-sm" style="width: 11rem;">
+      <span class="input-group-text">min</span>
+      <input type="number" step="any" class="form-control" name="{{ subpath }}:min"
+             value="{% if value.min is not None %}{{ value.min }}{% endif %}"
+             {% if value.readonly %}readonly{% endif %}>
+    </div>
+    <div class="input-group input-group-sm" style="width: 11rem;">
+      <span class="input-group-text">max</span>
+      <input type="number" step="any" class="form-control" name="{{ subpath }}:max"
+             value="{% if value.max is not None %}{{ value.max }}{% endif %}"
+             {% if value.readonly %}readonly{% endif %}>
+    </div>
+    {% if value.readonly %}
+      <span class="badge text-bg-secondary ms-1">RO</span>
+    {% endif %}
+  </div>
+{% else %}
+  {# --- GAŁĄŹ --- #}
+  {% with collapse_id="node_"|add:subpath|slugify %}
+    <div class="py-1">
+      <button type="button" class="btn btn-sm btn-outline-dark" data-toggle="node" data-target="{{ collapse_id }}">
+        {{ key }}
+      </button>
+      <div id="{{ collapse_id }}" data-node style="display:none; margin-left:1rem; border-left:2px solid #eee; padding-left:.75rem;">
+        {% include "devices/partials/param_tree.html" with node=value path=subpath label=label_next %}
+      </div>
+    </div>
+  {% endwith %}
+{% endif %}
