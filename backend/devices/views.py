@@ -8,7 +8,7 @@ from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 from django.views.generic import CreateView, UpdateView, DetailView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
@@ -18,7 +18,7 @@ from rest_framework.response import Response
 import sys, json
 from io import StringIO
 from rest_framework import serializers, status
-import socket
+import socket, ipaddress
 from .models import Element, NetworkInterface, IpAssignment
 from .tables import ElementTable
 from .filters import ElementFilter
@@ -213,6 +213,51 @@ class ElementUpdateView(ElementFormsetMixin, UpdateView):
     model = Element
     # form_class, template i post bierzemy z mixina
 
+
+class FreeIpListView(TemplateView):
+    """
+    Shows free IP addresses in 192.168.3.x (FAMO network),
+    excluding dynamic pool 192.168.3.50–80.
+    """
+    template_name = "devices/free_ips.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Full /24 network
+        network = ipaddress.ip_network("192.168.3.0/24")
+
+        # Active IPs in FAMO network within 192.168.3.x
+        used_ips = set(
+            IpAssignment.objects.filter(
+                active=True,
+                network_type="FAMO",
+                ip_addr__startswith="192.168.3.",
+            ).values_list("ip_addr", flat=True)
+        )
+
+        free_ips = []
+        for ip in network.hosts():  # 192.168.3.1–254
+            ip_str = str(ip)
+            last_octet = int(ip_str.split(".")[-1])
+
+            # Skip dynamic pool 192.168.3.50–80
+            if 50 <= last_octet <= 80:
+                continue
+
+            # Skip used addresses
+            if ip_str in used_ips:
+                continue
+
+            free_ips.append(ip_str)
+
+        context["free_ips"] = free_ips
+        context["total_free"] = len(free_ips)
+        context["subnet"] = "192.168.3.0/24"
+        context["excluded_range"] = "192.168.3.50–80"
+        return context
+
+    
 
 class ElementConnectView(DetailView):
     """

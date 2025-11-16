@@ -36,6 +36,7 @@ urlpatterns = [
     path('elements/<int:pk>/connect/', devices.views.ElementConnectView.as_view(), name='element_connect'),
     path('elements/fetch-dhcp/', devices.views.run_fetch_dhcp, name='run_fetch_dhcp'),
     path('elements/relink-ips/', devices.views.run_relink_ips, name='run_relink_ips'),
+    path('elements/free-ips/', devices.views.FreeIpListView.as_view(), name='free_ip_list'),
     path('setdds/', devices.views.setdds, name='setdds'),
     path('sidebands/', sidebandfitapp.views.index, name='sidebands'),
     path('lock689/', lock689.views.index, name='lock689'),

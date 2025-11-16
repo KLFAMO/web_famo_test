@@ -1,0 +1,38 @@
+{% extends "devices/base.html" %}
+
+{% block title %}Free IP addresses{% endblock %}
+
+{% block content %}
+  <h1 class="mb-3">Free IP addresses in {{ subnet }}</h1>
+
+  <p>
+    Total free addresses: <strong>{{ total_free }}</strong>
+  </p>
+
+  {% if free_ips %}
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>IP address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ip in free_ips %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><code>{{ ip }}</code></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-warning">
+      No free IP addresses available in this pool.
+    </div>
+  {% endif %}
+
+  <a href="{% url 'element_list' %}" class="btn btn-secondary mt-3">
+    ← Back to elements list
+  </a>
+{% endblock %}
