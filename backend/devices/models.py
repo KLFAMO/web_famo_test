@@ -199,6 +199,12 @@ class IpAssignment(models.Model):
         Zwraca True, jeśli zmieniono przypisanie.
         """
         from .models import NetworkInterface
+        from .utils import normalize_mac
+
+        # Upewnij się, że mamy mac_norm
+        if not self.mac_norm and self.mac_addr:
+            self.mac_norm = normalize_mac(self.mac_addr) or None
+            # nie musimy od razu zapisywać, zapis będzie na końcu przy zmianie interface
 
         # jeżeli nie mamy znormalizowanego MAC, to odpinamy
         if not self.mac_norm:
@@ -224,6 +230,10 @@ class IpAssignment(models.Model):
             return True
         return False
 
+    def save(self, *args, **kwargs):
+        from .utils import normalize_mac
+        self.mac_norm = normalize_mac(self.mac_addr) or None
+        super().save(*args, **kwargs)
 
 
 GENDER_CHOICES = [
