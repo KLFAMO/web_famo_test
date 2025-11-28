@@ -297,6 +297,54 @@ class DeviceNamesAPIView(APIView):
             queryset = queryset.filter(device_type__in=device_types)
         devices = queryset.values('name', 'ip_famo', 'device_type', 'description', 'location')
         return Response(list(devices)) 
+    
+
+class ElementNamesAPIView(APIView):
+    def get(self, request):
+        element_types = request.GET.getlist('element_type')
+
+        queryset = (
+            Element.objects
+            .select_related("location", "element_type")
+            .prefetch_related(
+                Prefetch(
+                    "network_interfaces",
+                    queryset=NetworkInterface.objects.filter(active=True).prefetch_related(
+                        Prefetch(
+                            "ip_assignments",
+                            queryset=IpAssignment.objects.filter(active=True),
+                            to_attr="active_ip"
+                        )
+                    ),
+                    to_attr="ifaces"
+                )
+            )
+        )
+
+        if element_types:
+            queryset = queryset.filter(element_type__name__in=element_types)
+
+        results = []
+
+        for el in queryset:
+            # --- wybór IP FAMO ---
+            ip_famo = None
+            for iface in el.ifaces:
+                if iface.network_type == "FAMO":
+                    if iface.active_ip:
+                        # zakładam, że 1 aktywne IP na interfejs
+                        ip_famo = iface.active_ip[0].ip_addr
+                        break
+
+            results.append({
+                "name": el.name,
+                "ip_famo": ip_famo,
+                "element_type": el.element_type.name if el.element_type else None,
+                "description": el.description,
+                "location": el.location.name if el.location else None,
+            })
+
+        return Response(results)
 
 
 class TelnetRequestSerializer(serializers.Serializer):

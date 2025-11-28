@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/anda/table_data', anda.views.TableData.as_view(), name='anda_table_data'),
     path('api/anda/script', anda.views.ScriptData.as_view(), name='anda_script'),
     path('api/devices', devices.views.DeviceNamesAPIView.as_view(), name='device_names_api'),
+    path('api/elements', devices.views.ElementNamesAPIView.as_view(), name='element_names_api'),
     path('api/telnet', devices.views.TelnetAPIView.as_view(), name='telnet_api'),
     path('freq_monitor/', freq_monitor.views.index, name='freq_monitor'),
     path('freq_monitor/get_data', freq_monitor.views.get_data),
