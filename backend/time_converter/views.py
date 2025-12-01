@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from django import forms
 import sys
 sys.path.append("~/svnSr/progs/mytools")
@@ -36,3 +37,21 @@ def convert_date(request):
         'mjd_result': mjd_result,
         'local_result': local_result,
     })
+
+
+def api_mjd(request):
+    """
+    API endpoint returning current server MJD as JSON.
+
+    Response example:
+    { "mjd": "60739" }
+    """
+    # getMJD returns a float; return the integer part as string to match existing UI expectations
+    try:
+        mjd_val = tim.getMJD()
+        mjd_str = str(float(mjd_val))
+    except Exception:
+        # On error, return 500 with helpful message
+        return JsonResponse({'error': 'failed to compute MJD'}, status=500)
+
+    return JsonResponse({'mjd': mjd_str})

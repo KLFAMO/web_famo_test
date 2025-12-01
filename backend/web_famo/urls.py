@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/devices', devices.views.DeviceNamesAPIView.as_view(), name='device_names_api'),
     path('api/elements', devices.views.ElementNamesAPIView.as_view(), name='element_names_api'),
     path('api/telnet', devices.views.TelnetAPIView.as_view(), name='telnet_api'),
+    path('api/mjd', time_converter.views.api_mjd, name='mjd_api'),
     path('freq_monitor/', freq_monitor.views.index, name='freq_monitor'),
     path('freq_monitor/get_data', freq_monitor.views.get_data),
     path('time_converter/', time_converter.views.convert_date, name='time_converter'),
