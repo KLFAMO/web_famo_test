@@ -1,6 +1,6 @@
-{# Helper partial: renderuje pojedynczy klucz (gałąź lub liść) #}
+{# Helper partial: render single leafe/branch #}
 {% if value.val is not None or value.min is not None or value.max is not None or value.readonly is not None %}
-  {# --- LIŚĆ --- #}
+  {# --- LEAFE --- #}
   <div class="d-flex align-items-center gap-2 py-1 border-bottom">
     <div class="flex-grow-1">
       <code>{{ label_next }}</code>
@@ -26,6 +26,13 @@
     {% if value.readonly %}
       <span class="badge text-bg-secondary ms-1">RO</span>
     {% endif %}
+
+    <button type="button"
+            class="btn btn-sm btn-outline-secondary ms-1 py-0 px-2 param-read-btn"
+            title="read"
+            data-param-path="{{ subpath }}">
+      R
+    </button>
   </div>
 {% else %}
   {# --- GAŁĄŹ --- #}

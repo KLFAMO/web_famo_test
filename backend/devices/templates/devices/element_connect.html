@@ -4,6 +4,10 @@
 
 {% block content %}
   <h1 class="mb-3">Connect: <small class="text-muted">{{ element.name }}</small></h1>
+  <p class="text-muted">
+    Debug IP: <code>{{ device_ip|default:"(brak)" }}</code>
+  </p>
+  
   <p class="text-muted mb-4">
     Type: <strong>{{ element.element_type }}</strong>
     {% if element.location %} | Location: <strong>{{ element.location }}</strong>{% endif %}
@@ -20,7 +24,7 @@
       </div>
 
       <form>
-        <div id="paramTreeRoot" class="border rounded p-2">
+        <div id="paramTreeRoot" class="border rounded p-2" data-device-ip="{{ device_ip|default_if_none:'' }}">
           {# UWAGA: label="" – etykiety bez eth_communication #}
           {% include "devices/partials/param_tree.html" with node=param_tree path=param_root_path label="" %}
         </div>
@@ -50,19 +54,167 @@
   <script>
     (function(){
       const root = document.getElementById('paramTreeRoot');
+      const deviceIp = root.dataset.deviceIp || "";
+      const telnetUrl = "{% url 'telnet_api' %}";
+  
+      // --- CSRF helper (standard Django) ---
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Czy ten cookie zaczyna się od name= ?
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie("csrftoken");
+  
       document.getElementById('expandAllBtn').addEventListener('click', () => {
         root.querySelectorAll('[data-node]').forEach(el => el.style.display = 'block');
       });
+  
       document.getElementById('collapseAllBtn').addEventListener('click', () => {
         root.querySelectorAll('[data-node]').forEach(el => el.style.display = 'none');
       });
+  
+      function extractNumber(text) {
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+        for (const line of lines) {
+          // pomiń prompt typu "relock_v2>"
+          if (line.includes(">")) continue;
+
+          // Zamiana przecinka na kropkę, gdyby kiedyś było 1,23
+          const candidate = line.replace(",", ".");
+
+          // Czy CAŁA linia to liczba?
+          if (/^[+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(candidate)) {
+            return candidate;   // ← pierwsza czysta liczba
+          }
+        }
+
+        return null;
+      }
+
+  
+      async function handleReadClick(btn) {
+        if (!deviceIp) {
+          console.error("Brak IP urządzenia (data-device-ip).");
+          return;
+        }
+  
+        const paramPath = btn.dataset.paramPath;   // np. "eth_communication:wlm:fset:val"
+        if (!paramPath) return;
+  
+        // Z paramPath usuwamy końcówkę :val / :min / :max
+        const parts = paramPath.split(":");
+        if (["val", "min", "max"].includes(parts[parts.length - 1])) {
+          parts.pop();
+        }
+  
+        // Jeśli pierwszy segment to eth_communication – zdejmujemy go,
+        // bo komenda powinna być np. "wlm:fset ?"
+        if (parts[0] === "eth_communication") {
+          parts.shift();
+        }
+        if (parts[0] === "parameters") {
+          parts.shift();
+        }
+
+  
+        const basePath = parts.join(":");   // np. "wlm:fset"
+        const command = basePath + " ?";
+  
+        console.log("DEBUG: telnet request payload:", {
+          command,
+          deviceIp,
+          port: 10,
+        });
+
+
+        try {
+            const resp = await fetch(telnetUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({
+              command: command,
+              ip: deviceIp,
+              port: 10,          // na sztywno 10
+            })
+          });
+
+          // 🔍 pełny debug odpowiedzi z API:
+          if (!resp.ok) {
+            let debugText;
+            try {
+              const errJson = await resp.json();
+              debugText = JSON.stringify(errJson);
+            } catch (e) {
+              debugText = await resp.text();
+            }
+            console.error("Telnet API error:", resp.status, debugText);
+            return;
+          }
+
+          const data = await resp.json();
+          const ans = data.response || "";
+
+          console.log("DEBUG: telnet read response:", JSON.stringify(ans));
+
+
+          // Jeśli backend zwraca komunikat o błędzie jako tekst – nie parsujemy go
+          if (typeof ans === "string" && ans.toLowerCase().includes("connection error")) {
+            console.error("Telnet connection error:", ans);
+            // opcjonalnie:
+            // alert("Nie udało się połączyć z urządzeniem: " + ans);
+            return;
+          }
+  
+          const num = extractNumber(ans);
+          if (num === null) {
+            console.warn("Nie znaleziono liczby w odpowiedzi telnetu:", ans);
+            return;
+          }
+  
+          // Szukamy inputa val w tej samej linii co przycisk
+          const row = btn.closest(".d-flex");
+          if (!row) return;
+          const valInput = row.querySelector('input[name$=":val"]');
+          if (valInput) {
+            valInput.value = num;
+          }
+        } catch (err) {
+          console.error("Błąd podczas telnet read:", err);
+        }
+      }
+  
       root.addEventListener('click', (e) => {
+        // 1) Klik w przycisk "read"
+        const readBtn = e.target.closest('.param-read-btn');
+        if (readBtn) {
+          handleReadClick(readBtn);
+          return; // nie przechodzimy do logiki toggle
+        }
+  
+        // 2) Klik w toggle gałęzi
         const t = e.target.closest('[data-toggle="node"]');
         if (!t) return;
         const targetId = t.getAttribute('data-target');
         const sec = document.getElementById(targetId);
-        if (sec) sec.style.display = (sec.style.display === 'none') ? 'block' : 'none';
+        if (sec) {
+          sec.style.display = (sec.style.display === 'none') ? 'block' : 'none';
+        }
       });
     })();
   </script>
+  
 {% endblock %}

@@ -280,10 +280,26 @@ class ElementConnectView(DetailView):
                        .get("parameters", {})
         )
 
+        device_ip = None
+        ip_row = (
+            IpAssignment.objects
+            .filter(
+                active=True,
+                network_type="FAMO",
+                interface__element=el,       # przez FK z IpAssignment.interface -> NetworkInterface.element
+            )
+            .order_by("kind")
+            .first()
+        )
+
+        if ip_row:
+            device_ip = ip_row.ip_addr
+
         ctx.update({
             "type_schema_json": json.dumps(type_schema, indent=2, ensure_ascii=False),
             "param_tree": params,
             "param_root_path": "eth_communication:parameters",
+            "device_ip": device_ip,
         })
         return ctx
 
