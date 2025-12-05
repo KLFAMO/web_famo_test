@@ -58,6 +58,41 @@ class IndexView(TemplateView):
         })
         return context
 
+class IndexView2(TemplateView):
+    template_name = "anda2.html"
+
+    def get_context_data(self, **kwargs):
+        from_mjd = self.request.GET.get('from_mjd', 1000000)
+        to_mjd = self.request.GET.get('to_mjd', 1000000)
+        table_name = self.request.GET.get('table_name', '')
+
+        print(from_mjd, to_mjd, table_name)
+
+        try:
+            from_mjd = float(from_mjd)
+            to_mjd = float(to_mjd)
+
+            data_from_db = sqd.getdata(table_name, from_mjd, to_mjd)
+            mjd_tab_json = json.dumps(data_from_db.mjd_tab().tolist())
+            val_tab_json = json.dumps(data_from_db.val_tab().tolist())
+        except Exception as e:
+            print('problem:', e)
+            mjd_tab_json = []
+            val_tab_json = []
+
+        # Kontekst dla szablonu
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'tables_names': sqd.gettables(),
+            'mjd_tab_json': mjd_tab_json,
+            'val_tab_json': val_tab_json,
+            'mjd_now': tim.getMJD(),
+            'last_from_mjd': from_mjd,
+            'last_to_mjd': to_mjd,
+            'last_table_name': table_name,
+        })
+        return context
+
 
 class UploadScript(TemplateView):
     template_name = "anda_script.html"

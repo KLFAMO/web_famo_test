@@ -44,6 +44,7 @@ urlpatterns = [
     path('lock689/get_param', lock689.views.get_param),
     path('lock689/set_param', lock689.views.set_param),
     path('anda/', anda.views.IndexView.as_view(), name='anda'),
+    path('anda2/', anda.views.IndexView2.as_view(), name='anda2'),
     path('anda/upload_script/', anda.views.UploadScript.as_view(), name='anda_upload_script'),
     path('api/anda/tables_names/', anda.views.DataTablesNames.as_view(), name='anda_tables'),
     path('api/anda/table_data', anda.views.TableData.as_view(), name='anda_table_data'),
