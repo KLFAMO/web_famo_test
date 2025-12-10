@@ -131,10 +131,11 @@
         const basePath = parts.join(":");   // np. "wlm:fset"
         const command = basePath + " ?";
   
+        const ethPort = {{ eth_port|default:'null' }};
         console.log("DEBUG: telnet request payload:", {
           command,
           deviceIp,
-          port: 10,
+          port: ethPort,
         });
 
 
@@ -148,7 +149,7 @@
             body: JSON.stringify({
               command: command,
               ip: deviceIp,
-              port: 10,          // na sztywno 10
+              port: ethPort,
             })
           });
 
@@ -196,16 +197,96 @@
           console.error("Błąd podczas telnet read:", err);
         }
       }
-  
+
+      async function handleWriteClick(btn) {
+        if (!deviceIp) {
+          console.error("Brak IP urządzenia (data-device-ip).");
+          return;
+        }
+
+        const paramPath = btn.dataset.paramPath;
+        if (!paramPath) return;
+
+        // Z paramPath usuwamy końcówkę :val / :min / :max
+        const parts = paramPath.split(":");
+        if (["val", "min", "max"].includes(parts[parts.length - 1])) {
+          parts.pop();
+        }
+        if (parts[0] === "eth_communication") {
+          parts.shift();
+        }
+        if (parts[0] === "parameters") {
+          parts.shift();
+        }
+        const basePath = parts.join(":");
+
+        // Pobierz wartość z inputa val w tej samej linii co przycisk
+        const row = btn.closest(".d-flex");
+        if (!row) return;
+        const valInput = row.querySelector('input[name$=":val"]');
+        if (!valInput) {
+          console.warn("Brak inputa :val przy write");
+          return;
+        }
+        const value = valInput.value;
+        if (!value) {
+          console.warn("Brak wartości do wysłania");
+          return;
+        }
+
+        const command = basePath + " " + value;
+        const ethPort = {{ eth_port|default:'null' }};
+        console.log("DEBUG: telnet write payload:", { command, deviceIp, port: ethPort });
+
+        try {
+          const resp = await fetch(telnetUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken,
+            },
+            body: JSON.stringify({
+              command: command,
+              ip: deviceIp,
+              port: ethPort,
+            })
+          });
+
+          if (!resp.ok) {
+            let debugText;
+            try {
+              const errJson = await resp.json();
+              debugText = JSON.stringify(errJson);
+            } catch (e) {
+              debugText = await resp.text();
+            }
+            console.error("Telnet API error:", resp.status, debugText);
+            return;
+          }
+
+          const data = await resp.json();
+          const ans = data.response || "";
+          console.log("DEBUG: telnet write response:", JSON.stringify(ans));
+          // Możesz dodać obsługę odpowiedzi np. alert lub status
+        } catch (err) {
+          console.error("Błąd podczas telnet write:", err);
+        }
+      }
+
       root.addEventListener('click', (e) => {
         // 1) Klik w przycisk "read"
         const readBtn = e.target.closest('.param-read-btn');
         if (readBtn) {
           handleReadClick(readBtn);
-          return; // nie przechodzimy do logiki toggle
+          return;
         }
-  
-        // 2) Klik w toggle gałęzi
+        // 2) Klik w przycisk "write"
+        const writeBtn = e.target.closest('.param-write-btn');
+        if (writeBtn) {
+          handleWriteClick(writeBtn);
+          return;
+        }
+        // 3) Klik w toggle gałęzi
         const t = e.target.closest('[data-toggle="node"]');
         if (!t) return;
         const targetId = t.getAttribute('data-target');

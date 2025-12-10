@@ -11,17 +11,33 @@
              value="{% if value.val is not None %}{{ value.val }}{% endif %}"
              {% if value.readonly %}readonly{% endif %}>
     </div>
-    <div class="input-group input-group-sm" style="width: 11rem;">
-      <span class="input-group-text">min</span>
-      <input type="number" step="any" class="form-control" name="{{ subpath }}:min"
-             value="{% if value.min is not None %}{{ value.min }}{% endif %}"
-             {% if value.readonly %}readonly{% endif %}>
-    </div>
-    <div class="input-group input-group-sm" style="width: 11rem;">
-      <span class="input-group-text">max</span>
-      <input type="number" step="any" class="form-control" name="{{ subpath }}:max"
-             value="{% if value.max is not None %}{{ value.max }}{% endif %}"
-             {% if value.readonly %}readonly{% endif %}>
+    <div class="d-flex flex-column align-items-end" style="min-width:4.5rem; max-width:6.5rem;">
+      <div class="d-flex align-items-center w-100 mb-1" style="font-size:0.68rem; color:#888;">
+        <span style="min-width:1.8rem; text-align:right; margin-right:2px;">min</span>
+        <input type="number" step="any"
+               class="form-control form-control-sm p-0 m-0"
+               name="{{ subpath }}:min"
+               value="{% if value.min is not None %}{{ value.min }}{% endif %}"
+               style="font-size: 0.68rem; height: 1.1em; max-width:4.2rem; background-color:#f3f3f3; color:#aaa; border:1px solid #e0e0e0; text-align:right;"
+               inputmode="decimal"
+               autocomplete="off"
+               readonly
+               onfocus="this.blur()"
+               >
+      </div>
+      <div class="d-flex align-items-center w-100" style="font-size:0.68rem; color:#888;">
+        <span style="min-width:1.8rem; text-align:right; margin-right:2px;">max</span>
+        <input type="number" step="any"
+               class="form-control form-control-sm p-0 m-0"
+               name="{{ subpath }}:max"
+               value="{% if value.max is not None %}{{ value.max }}{% endif %}"
+               style="font-size: 0.68rem; height: 1.1em; max-width:4.2rem; background-color:#f3f3f3; color:#aaa; border:1px solid #e0e0e0; text-align:right;"
+               inputmode="decimal"
+               autocomplete="off"
+               readonly
+               onfocus="this.blur()"
+               >
+      </div>
     </div>
     {% if value.readonly %}
       <span class="badge text-bg-secondary ms-1">RO</span>
@@ -32,6 +48,12 @@
             title="read"
             data-param-path="{{ subpath }}">
       R
+    </button>
+    <button type="button"
+            class="btn btn-sm btn-outline-primary ms-1 py-0 px-2 param-write-btn"
+            title="write"
+            data-param-path="{{ subpath }}">
+      W
     </button>
   </div>
 {% else %}
