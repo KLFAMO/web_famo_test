@@ -62,6 +62,56 @@
             <label class="form-label">{{ form.properties.label }}</label>
             {{ form.properties|add_class:"form-control" }}
           </div>
+
+          
+          {# --- NOWA SEKCJA: TAGI --- #}
+          <div class="col-12">
+            <label class="form-label d-block">{{ form.tag_names.label }}</label>
+
+            {# 1) aktualne tagi elementu jako „badge/pigułki” #}
+            {% if element and element.tags.all %}
+              <div class="mb-2">
+                {% for t in element.tags.all %}
+                  <span class="badge bg-secondary me-1 mb-1">
+                    {{ t.name }}
+                  </span>
+                {% empty %}
+                  <span class="text-muted">No tags assigned yet</span>
+                {% endfor %}
+              </div>
+            {% else %}
+              <div class="mb-2 text-muted">No tags assigned yet</div>
+            {% endif %}
+
+            {# 2) pole tekstowe z podpowiedziami (datalist) #}
+            {% if form.tag_names.errors %}
+              <div class="text-danger small mb-1">
+                {% for e in form.tag_names.errors %}{{ e }}<br>{% endfor %}
+              </div>
+            {% endif %}
+
+            <input
+              type="text"
+              name="{{ form.tag_names.html_name }}"
+              id="{{ form.tag_names.id_for_label }}"
+              value="{{ form.tag_names.value|default_if_none:'' }}"
+              class="form-control"
+              list="all_tags_datalist"
+              placeholder="Np.: laser, 689nm, critical"
+            >
+
+            <datalist id="all_tags_datalist">
+              {% for t in all_tags %}
+                <option value="{{ t.name }}">
+              {% endfor %}
+            </datalist>
+
+            {% if form.tag_names.help_text %}
+              <div class="form-text">{{ form.tag_names.help_text }}</div>
+            {% endif %}
+          </div>
+          {# --- KONIEC SEKCJI TAGÓW --- #}
+
         </div>
       </div>
     </div>

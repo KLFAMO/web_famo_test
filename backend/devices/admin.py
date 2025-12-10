@@ -3,6 +3,7 @@ from .models import (
     Connection,
     ConnectorType,
     Device,
+    ElementTag,
     ElementType,
     Element,
     ExposedPort,
@@ -11,7 +12,18 @@ from .models import (
     NetworkInterface,
     Port,
     PortType,
+    Tag,
 )
+
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug", "color"]
+    search_fields = ["name", "slug"]   # << to jest wymagane dla autocomplete_fields
+    ordering = ["name"]
+
+class ElementTagInline(admin.TabularInline):
+    model = ElementTag
+    extra = 1  # number of extra forms to display
+    autocomplete_fields = ["tag"]
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
@@ -28,8 +40,15 @@ class IpAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('network_type', 'kind', 'active')
     ordering = ('mac_addr',)
 
+@admin.register(Element)
+class ElementAdmin(admin.ModelAdmin):
+    list_display = ["name", "element_type", "location"]
+    inlines = [ElementTagInline]
+    search_fields = ["name"]
+
 admin.site.register(ElementType)
-admin.site.register(Element)
+admin.site.register(Tag, TagAdmin)
+admin.site.register(ElementTag)
 admin.site.register(PortType)
 admin.site.register(Port)
 admin.site.register(ConnectorType)

@@ -19,7 +19,7 @@ import sys, json
 from io import StringIO
 from rest_framework import serializers, status
 import socket, ipaddress
-from .models import Element, NetworkInterface, IpAssignment
+from .models import Element, NetworkInterface, IpAssignment, Tag, ElementTag
 from .tables import ElementTable
 from .filters import ElementFilter
 from .forms import ElementForm, NetworkInterfaceFormSet
@@ -106,6 +106,7 @@ class ElementFormsetMixin:
         if "form" not in ctx:
             ctx["form"] = self.form_class(instance=instance)
         ctx["element"] = instance
+        ctx["all_tags"] = Tag.objects.all().order_by("name")
         return ctx
 
     def render_invalid(self, form, formset):
@@ -148,14 +149,14 @@ class ElementFormsetMixin:
         if form_valid and formset_valid:
             try:
                 with transaction.atomic():
-                    # Zapis/utworzenie elementu
+                    # Save/create Element
                     if save_element:
                         self.object = form.save()
                     elif self.object is None:
-                        # Create bez 'save_element' – i tak musimy mieć obiekt dla FK
+                        # Create new Element without saving if not saving element
                         self.object = form.save()
 
-                    # Zapis formsetu
+                    # Save formset
                     if save_ifaces:
                         instances = formset.save(commit=False)
                         for obj in instances:
@@ -165,6 +166,9 @@ class ElementFormsetMixin:
                         for obj in formset.deleted_objects:
                             obj.delete()
                         formset.save_m2m()
+                
+                if save_element and hasattr(form, "save_tags"):
+                    form.save_tags(self.object)
 
                 messages.success(request, "Zapis zakończony pomyślnie.")
                 return redirect(self.get_success_url())

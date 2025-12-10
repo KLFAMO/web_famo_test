@@ -98,6 +98,13 @@ class Element(models.Model):
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="children")
     is_module = models.BooleanField(default=False)
 
+    tags = models.ManyToManyField(
+        "Tag",
+        through="ElementTag",
+        related_name="elements",
+        blank=True,
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,6 +119,57 @@ MAC_VALIDATOR = RegexValidator(
     regex=r"^[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}$",
     message="MAC in format XX:XX:XX:XX:XX:XX"
 )
+
+
+class Tag(models.Model):
+    """
+    Simple tag for categorizing elements.
+    """
+    name = models.CharField(max_length=80, unique=True, db_index=True)
+    slug = models.SlugField(max_length=80, unique=True)
+    description = models.TextField(blank=True)
+
+    # optionally, a color in hex format (e.g. "#RRGGBB")
+    color = models.CharField(max_length=7, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
+class ElementTag(models.Model):
+    """
+    Many-to-many relationship between Element and Tag.
+    1 tag can be assigned to multiple elements.
+    1 element can have multiple tags.
+    1 tag can be assigned to a given element only once.
+    1:N relationship with additional metadata (created_at).
+    1:N relationship implemented as a separate model.
+    """
+    element = models.ForeignKey(Element, on_delete=models.CASCADE, related_name="element_tags")
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name="element_tags")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            # unique tag per element
+            models.UniqueConstraint(
+                fields=["element", "tag"],
+                name="uq_element_tag_unique",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["element", "tag"]),
+            models.Index(fields=["tag"]),
+        ]
+
+    def __str__(self):
+        return f"{self.element} -> {self.tag}"
 
 
 class NetworkInterface(models.Model):
