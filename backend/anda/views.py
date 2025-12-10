@@ -18,10 +18,10 @@ import os
 TIMEOUT_S = 60 # maks time for script execution
 
 EXTRA_PATHS = [
-    str(getattr(settings, "BASE_DIR", "")),       # katalog projektu (z manage.py)
-    str(getattr(settings, "MYTOOLS_PATH", "")),   # gdzie le?y sqldata / time_tools
+    str(getattr(settings, "BASE_DIR", "")),
+    str(getattr(settings, "MYTOOLS_PATH", "")),
 ]
-EXTRA_PATHS = [p for p in EXTRA_PATHS if p]       # odfiltruj puste
+EXTRA_PATHS = [p for p in EXTRA_PATHS if p]       # filter empty paths
 
 class IndexView(TemplateView):
     template_name = "anda.html"
@@ -40,6 +40,7 @@ class IndexView(TemplateView):
             data_from_db = sqd.getdata(table_name, from_mjd, to_mjd)
             mjd_tab_json = json.dumps(data_from_db.mjd_tab().tolist())
             val_tab_json = json.dumps(data_from_db.val_tab().tolist())
+
         except Exception as e:
             print('problem:', e)
             mjd_tab_json = []
@@ -66,15 +67,19 @@ class IndexView2(TemplateView):
         to_mjd = self.request.GET.get('to_mjd', 1000000)
         table_name = self.request.GET.get('table_name', '')
 
-        print(from_mjd, to_mjd, table_name)
-
         try:
             from_mjd = float(from_mjd)
             to_mjd = float(to_mjd)
 
             data_from_db = sqd.getdata(table_name, from_mjd, to_mjd)
+            number_of_points = data_from_db.get_number_of_points()
+            if number_of_points > 1000:
+                period_s = int((to_mjd - from_mjd) * 86400 / 1000.0) + 1
+                data_from_db = data_from_db.resample(period_s=period_s)
+
             mjd_tab_json = json.dumps(data_from_db.mjd_tab().tolist())
             val_tab_json = json.dumps(data_from_db.val_tab().tolist())
+
         except Exception as e:
             print('problem:', e)
             mjd_tab_json = []
