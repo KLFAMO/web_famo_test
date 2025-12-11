@@ -10,12 +10,18 @@ class ElementTable(tables.Table):
     element_type = tables.Column(verbose_name="Type")
     location = tables.Column(verbose_name="Location")
     interfaces = tables.Column(empty_values=(), orderable=False, verbose_name="Interfaces / IPs")
+    tags = tables.Column(
+        empty_values=(),
+        orderable=False,
+        verbose_name="Tags",
+    )
     actions = tables.Column(empty_values=(), orderable=False)
 
     class Meta:
         model = Element
         template_name = "django_tables2/bootstrap.html"  # works also without Bootstrapa
-        fields = ("name", "element_type", "location")    # + nasze custom kolumny
+        fields = ("name", "element_type", "location")    # + our custom columns
+        sequence = ("name", "element_type", "location", "tags", "interfaces", "actions")
         attrs = {"class": "table table-striped table-hover table-sm"}  # simple styling
 
     def render_interfaces(self, record: Element):
@@ -48,10 +54,32 @@ class ElementTable(tables.Table):
             )
         return mark_safe("".join(chunks))
 
+    def render_tags(self, record: Element):
+        """
+        Render tags associated with the Element as badges.
+        """
+        tags = getattr(record, "tags", None)
+        if not tags:
+            return mark_safe('<span class="text-muted">—</span>')
+
+        tag_list = list(tags.all())
+        if not tag_list:
+            return mark_safe('<span class="text-muted">—</span>')
+
+        html = "".join(
+            f'<span class="badge bg-secondary me-1 mb-1">{t.name}</span>'
+            for t in tag_list
+        )
+        return mark_safe(html)
+
     def render_actions(self, record: Element):
         edit_url = reverse("element_edit", kwargs={"pk": record.pk})
         connect_url = reverse("element_connect", kwargs={"pk": record.pk})
         return mark_safe(
-            f'<a href="{edit_url}" class="me-2">Edit</a>'
-            f'<a href="{connect_url}">Connect</a>'
+            f'''
+            <div class="d-flex flex-column gap-1">
+                <a href="{edit_url}" class="btn btn-sm btn-primary">Edit</a>
+                <a href="{connect_url}" class="btn btn-sm btn-outline-secondary">Connect</a>
+            </div>
+            '''
         )

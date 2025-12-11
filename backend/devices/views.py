@@ -1,3 +1,5 @@
+# devices/views.py
+
 from django.conf import settings
 from django.core.management import call_command, CommandError
 from django.contrib import messages
@@ -76,7 +78,10 @@ class ElementListView(SingleTableMixin, FilterView):
         return (
             Element.objects
             .select_related("element_type", "location")
-            .prefetch_related(Prefetch("network_interfaces", queryset=iface_qs, to_attr="ifaces"))
+            .prefetch_related(
+                Prefetch("network_interfaces", queryset=iface_qs, to_attr="ifaces"),
+                "tags",
+            )
             .order_by("name")
         )
 
