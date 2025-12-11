@@ -112,6 +112,17 @@ class ElementFormsetMixin:
             ctx["form"] = self.form_class(instance=instance)
         ctx["element"] = instance
         ctx["all_tags"] = Tag.objects.all().order_by("name")
+
+        if "properties_json" not in ctx:
+            if instance is not None and instance.properties:
+                ctx["properties_json"] = json.dumps(
+                    instance.properties,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            else:
+                ctx["properties_json"] = "{}"
+
         return ctx
 
     def render_invalid(self, form, formset):
@@ -127,11 +138,16 @@ class ElementFormsetMixin:
         for err in formset.non_form_errors():
             messages.error(self.request, f"Błąd formsetu: {err}")
 
+        properties_json = self.request.POST.get("properties_json", "")
+
         return render(self.request, self.template_name, {
             "form": form,
             "formset": formset,
             "element": getattr(self, "object", None),
+            "properties_json": properties_json if properties_json else "{}",
+            "all_tags": Tag.objects.all().order_by("name"),
         })
+
 
     def post(self, request, *args, **kwargs):
         # Ustal, czy to update po obecności pk/slug w URL
@@ -151,6 +167,22 @@ class ElementFormsetMixin:
         form_valid = (not save_element) or form.is_valid()
         formset_valid = (not save_ifaces) or formset.is_valid()
 
+        # --- nowe: walidacja JSON-a z textarea ---
+        properties_raw = request.POST.get("properties_json", "").strip()
+        properties_parsed = None
+        json_valid = True
+        if properties_raw:
+            try:
+                properties_parsed = json.loads(properties_raw)
+            except json.JSONDecodeError as e:
+                json_valid = False
+                form.add_error(None, f"Niepoprawny JSON w polu właściwości elementu: {e}")
+        else:
+            properties_parsed = {}
+
+        if not json_valid:
+            return self.render_invalid(form, formset)
+
         if form_valid and formset_valid:
             try:
                 with transaction.atomic():
@@ -160,6 +192,11 @@ class ElementFormsetMixin:
                     elif self.object is None:
                         # Create new Element without saving if not saving element
                         self.object = form.save()
+
+                    # ustawiamy properties na sparsowany JSON
+                    if save_element:
+                        self.object.properties = properties_parsed
+                        self.object.save(update_fields=["properties"])
 
                     # Save formset
                     if save_ifaces:
@@ -182,7 +219,6 @@ class ElementFormsetMixin:
                 messages.error(request, f"Wystąpił błąd podczas zapisu: {e}")
 
         return self.render_invalid(form, formset)
-
 
 
 class ElementCreateView(ElementFormsetMixin, CreateView):
@@ -254,19 +290,23 @@ class ElementConnectView(DetailView):
         ctx = super().get_context_data(**kwargs)
         el = self.object
 
+        # 1) templaet typu elementu
+        # 2) effective properties (merged)
         type_schema = el.element_type.properties_template or {}
+        effective_schema = el.get_effective_properties()
 
-        eth_comm = type_schema.get("eth_communication", {})
+        eth_comm = effective_schema.get("eth_communication", {})
         params = eth_comm.get("parameters", {})
         port = eth_comm.get("port", None)
 
+        # --- get device IP FAMO ---
         device_ip = None
         ip_row = (
             IpAssignment.objects
             .filter(
                 active=True,
                 network_type="FAMO",
-                interface__element=el,       # przez FK z IpAssignment.interface -> NetworkInterface.element
+                interface__element=el,
             )
             .order_by("kind")
             .first()
@@ -275,15 +315,19 @@ class ElementConnectView(DetailView):
         if ip_row:
             device_ip = ip_row.ip_addr
 
-            ctx.update({
-                "type_schema_json": json.dumps(type_schema, indent=2, ensure_ascii=False),
-                "param_tree": params,
-                "param_root_path": "eth_communication:parameters",
-                "device_ip": device_ip,
-                "eth_port": port,
-            })
-        return ctx
+        ctx.update({
+            # for debugging
+            "type_schema_json": json.dumps(type_schema, indent=2, ensure_ascii=False),
+            "effective_schema_json": json.dumps(effective_schema, indent=2, ensure_ascii=False),
 
+            # this is used to render the param tree
+            "param_tree": params,
+            "param_root_path": "eth_communication:parameters",
+
+            "device_ip": device_ip,
+            "eth_port": port,
+        })
+        return ctx
 
 
 class DeviceNamesAPIView(APIView):
@@ -299,6 +343,7 @@ class DeviceNamesAPIView(APIView):
 class ElementNamesAPIView(APIView):
     def get(self, request):
         element_types = request.GET.getlist('element_type')
+        tag_names = [t.strip() for t in request.GET.getlist('tag') if t.strip()]
 
         queryset = (
             Element.objects
@@ -314,12 +359,19 @@ class ElementNamesAPIView(APIView):
                         )
                     ),
                     to_attr="ifaces"
-                )
+                ),
+                "tags",
             )
         )
 
         if element_types:
             queryset = queryset.filter(element_type__name__in=element_types)
+        
+        if tag_names:
+            tag_qs = Tag.objects.filter(name__in=tag_names)
+            for tag in tag_qs:
+                queryset = queryset.filter(tags=tag)
+            queryset = queryset.distinct()
 
         results = []
 

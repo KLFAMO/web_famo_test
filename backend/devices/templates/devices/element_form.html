@@ -58,10 +58,25 @@
             <label class="form-label">{{ form.description.label }}</label>
             {{ form.description|add_class:"form-control" }}
           </div>
+          {# --- WŁAŚCIWOŚCI ELEMENTU (JSON NADPISAŃ) --- #}
           <div class="col-12">
-            <label class="form-label">{{ form.properties.label }}</label>
-            {{ form.properties|add_class:"form-control" }}
+            <label for="id_properties_json" class="form-label">
+              Properies (JSON)
+            </label>
+            <textarea
+              id="id_properties_json"
+              name="properties_json"
+              class="form-control"
+              rows="16"
+              spellcheck="false"
+              style="font-family: monospace;"
+            >{{ properties_json }}</textarea>
+            <div class="form-text">
+              Write JSON to override default properties from the selected
+              <code>ElementType.properties_template</code>.
+            </div>
           </div>
+
 
           
           {# --- NOWA SEKCJA: TAGI --- #}

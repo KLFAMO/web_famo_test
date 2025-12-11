@@ -5,6 +5,7 @@ from django.db.models import Q, F
 import struct
 import socket
 from typing import Dict, Optional
+from .utils.json_merge import deep_merge
 
 
 NETWORK_CHOICES = [
@@ -110,6 +111,42 @@ class Element(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["is_module"])]
+    
+    def get_effective_properties(self):
+        """
+        Returns the merged properties:
+        effective = deep_merge(
+            self.element_type.properties_template or {},
+            self.properties or {}
+        )
+        """
+        base = self.element_type.properties_template or {}
+        override = self.properties or {}
+        return deep_merge(base, override)
+
+    def get_effective_eth_parameters(self):
+        """
+        Shortcut to get effective ethernet communication parameters.
+        Returns a dict with parameters or empty dict if not defined.
+        """
+        effective = self.get_effective_properties()
+        return (
+            effective
+            .get("eth_communication", {})
+            .get("parameters", {})
+        )
+    
+    def get_effective_eth_port(self):
+        """
+        Additional shortcut to get effective ethernet port number.
+        Returns port number (int) or None if not defined.
+        """
+        effective = self.get_effective_properties()
+        return (
+            effective
+            .get("eth_communication", {})
+            .get("port", None)
+        )
 
     def __str__(self):
         return self.name

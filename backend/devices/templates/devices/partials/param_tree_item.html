@@ -4,6 +4,11 @@
   <div class="d-flex align-items-center gap-2 py-1 border-bottom">
     <div class="flex-grow-1">
       <code>{{ label_next }}</code>
+      {% if value.label %}
+        <div class="mt-1" style="font-size: 0.78rem; color: #666;">
+          {{ value.label }}
+        </div>
+      {% endif %}
     </div>
     <div class="input-group input-group-sm" style="width: 11rem;">
       <span class="input-group-text">val</span>
