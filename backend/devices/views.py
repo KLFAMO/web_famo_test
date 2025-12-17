@@ -10,8 +10,7 @@ from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from django.views.generic import ListView, TemplateView
-from django.views.generic import CreateView, UpdateView, DetailView
+from django.views.generic import CreateView, UpdateView, DetailView, ListView, TemplateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 from .models import Device
@@ -21,10 +20,10 @@ import sys, json
 from io import StringIO
 from rest_framework import serializers, status
 import socket, ipaddress
-from .models import Element, NetworkInterface, IpAssignment, Tag, ElementTag
+from .models import Element, NetworkInterface, IpAssignment, Tag, ElementTag, ElementType
 from .tables import ElementTable
 from .filters import ElementFilter
-from .forms import ElementForm, NetworkInterfaceFormSet
+from .forms import ElementForm, NetworkInterfaceFormSet, ElementTypeForm
 
 sys.path.append(settings.MYTOOLS_PATH)
 import telnet
@@ -341,6 +340,14 @@ class DeviceNamesAPIView(APIView):
     
 
 class ElementNamesAPIView(APIView):
+    """ 
+    GET /api/elements
+    Optional query parameters:
+    - element_type: filter by one or more element types (by name)
+    - tag: filter by one or more tag names
+    ex. api/elements?element_type=type1&type2&tag=tag1&tag2
+
+    """
     def get(self, request):
         element_types = request.GET.getlist('element_type')
         tag_names = [t.strip() for t in request.GET.getlist('tag') if t.strip()]
@@ -386,6 +393,7 @@ class ElementNamesAPIView(APIView):
                         break
 
             results.append({
+                "id": el.id,
                 "name": el.name,
                 "ip_famo": ip_famo,
                 "element_type": el.element_type.name if el.element_type else None,
@@ -459,6 +467,123 @@ class TelnetAPIView(APIView):
             )
 
 
+def _dict(v):
+    return v if isinstance(v, dict) else {}
+
+
+def deep_merge(base: dict, override: dict) -> dict:
+    """
+    Rekurencyjny merge: override nadpisuje base.
+    """
+    base = _dict(base)
+    override = _dict(override)
+    out = dict(base)
+
+    for k, v in override.items():
+        if isinstance(v, dict) and isinstance(out.get(k), dict):
+            out[k] = deep_merge(out[k], v)
+        else:
+            out[k] = v
+    return out
+
+
+def deep_prune_equal(type_dict: dict, effective_dict: dict) -> dict:
+    """
+    Z effective_dict wycina wszystko, co jest identyczne jak w type_dict.
+    Wynik to minimalny dict nadpisań, który trzeba trzymać w el.properties.
+    """
+    type_dict = _dict(type_dict)
+    effective_dict = _dict(effective_dict)
+
+    out = {}
+    for k, v in effective_dict.items():
+        if k in type_dict:
+            tv = type_dict[k]
+            if isinstance(v, dict) and isinstance(tv, dict):
+                pruned = deep_prune_equal(tv, v)
+                if pruned:
+                    out[k] = pruned
+            else:
+                if v != tv:
+                    out[k] = v
+        else:
+            # typ tego klucza nie ma -> to jest "własność elementu", więc trzymamy
+            out[k] = v
+    return out
+
+
+class ElementPropertiesUpdateAPIView(APIView):
+    """
+    PATCH /api/elements/<id>/properties/update/
+    Body may contain:
+      - partial json with properties to patch
+      - or full json with all desired properties
+    Backend:
+      1) get current effective properties
+      2) put desired (patched) over current effective
+      3) reduce by removing all identical to type template
+      4) save minimal overrides to el.properties
+      5) return effective properties as response
+    """
+
+    @transaction.atomic
+    def patch(self, request, pk=None, element_id=None):
+        element_id = element_id if element_id is not None else pk
+
+        el = (
+            Element.objects
+            .select_related("element_type")
+            .only("id", "properties", "element_type__properties_template")
+            .get(pk=element_id)
+        )
+
+        payload = request.data or {}
+        incoming = payload.get("properties", payload)
+
+        if not isinstance(incoming, dict):
+            return Response(
+                {"detail": "Expected JSON object (either body itself or under 'properties')."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        type_template = el.element_type.properties_template or {}
+
+        # 1) merge current effective
+        current_effective = el.get_effective_properties()
+
+        # 2) put patched/incoming over current effective
+        desired_effective = deep_merge(current_effective, incoming)
+
+        # 3) remove all identical to type template
+        new_overrides = deep_prune_equal(type_template, desired_effective)
+
+        # 4) save minimal overrides
+        el.properties = new_overrides
+        el.save(update_fields=["properties"])
+
+        # 5) return effective properties
+        return Response(el.get_effective_properties(), status=status.HTTP_200_OK)
+
+
+
+class ElementPropertiesAPIView(APIView):
+    def get(self, request, element_id):
+        element_id = element_id if element_id is not None else pk
+
+        el = (
+            Element.objects
+            .select_related("element_type")
+            .only("id", "properties", "element_type__properties_template")
+            .get(pk=element_id)
+        )
+
+        # merge identycznie jak w ElementConnectView:
+        merged = el.get_effective_properties()
+
+        return Response(merged)
+
+
+
 @require_POST
 def run_fetch_dhcp(request):
     """
@@ -501,3 +626,50 @@ def run_relink_ips(request):
     except Exception as e:
         messages.error(request, f"Unexpected error in relink_ips: {e}")
     return redirect(reverse("element_list"))
+
+
+class ElementTypeListView(ListView):
+    model = ElementType
+    template_name = "devices/elementtype_list.html"
+    context_object_name = "types"
+    paginate_by = 50
+
+    def get_queryset(self):
+        qs = ElementType.objects.all().order_by("name", "vendor", "model")
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(
+                Q(name__icontains=q) |
+                Q(vendor__icontains=q) |
+                Q(model__icontains=q) |
+                Q(notes__icontains=q)
+            )
+        return qs
+
+
+class ElementTypeFormMixin:
+    model = ElementType
+    form_class = ElementTypeForm
+    template_name = "devices/elementtype_form.html"
+
+    def get_success_url(self):
+        # jeśli masz listę typów, podmień na swoją nazwę
+        return reverse("elementtype_edit", kwargs={"pk": self.object.pk})
+
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        messages.success(self.request, "Zapis typu elementu zakończony pomyślnie.")
+        return resp
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Formularz zawiera błędy. Popraw je i spróbuj ponownie.")
+        return super().form_invalid(form)
+
+
+class ElementTypeCreateView(ElementTypeFormMixin, CreateView):
+    pass
+
+
+class ElementTypeUpdateView(ElementTypeFormMixin, UpdateView):
+    pass
+

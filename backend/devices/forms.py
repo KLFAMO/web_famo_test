@@ -1,8 +1,9 @@
 # forms.py
+import json
 from django import forms
 from django.forms import inlineformset_factory
 from django.utils.text import slugify
-from .models import Element, NetworkInterface, Tag, ElementTag
+from .models import Element, NetworkInterface, Tag, ElementTag, ElementType
 
 class ElementForm(forms.ModelForm):
     """Main form for Element edit/create."""
@@ -107,3 +108,59 @@ NetworkInterfaceFormSet = inlineformset_factory(
     can_delete=True,
     exclude=['id'],  # Wykluczamy pole id, Django sam się nim zajmie
 )
+
+class ElementTypeForm(forms.ModelForm):
+    # Pole edycyjne jako tekst JSON
+    properties_template_json = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 28,
+            "class": "form-control font-monospace",
+            "spellcheck": "false",
+            "style": "white-space: pre; tab-size: 2;",
+        }),
+        help_text="Wprowadź poprawny JSON (obiekt).",
+        label="Properties template (JSON)"
+    )
+
+    class Meta:
+        model = ElementType
+        fields = ["name", "vendor", "model", "notes"]  # JSON obsługujemy osobno przez properties_template_json
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Inicjalizacja textarea aktualnym JSON-em z bazy
+        if self.instance and self.instance.pk:
+            self.fields["properties_template_json"].initial = json.dumps(
+                self.instance.properties_template or {},
+                indent=2,
+                ensure_ascii=False,
+            )
+        else:
+            self.fields["properties_template_json"].initial = "{}"
+
+    def clean_properties_template_json(self):
+        raw = (self.cleaned_data.get("properties_template_json") or "").strip()
+        if not raw:
+            return {}
+
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError as e:
+            raise forms.ValidationError(f"Niepoprawny JSON: {e}")
+
+        if not isinstance(parsed, dict):
+            raise forms.ValidationError("JSON musi być obiektem (dict), nie listą ani wartością prostą.")
+
+        return parsed
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+
+        # Przepisujemy sparsowany dict do JSONField
+        obj.properties_template = self.cleaned_data.get("properties_template_json") or {}
+
+        if commit:
+            obj.save()
+        return obj

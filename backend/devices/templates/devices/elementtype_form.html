@@ -1,0 +1,111 @@
+{% extends "devices/base.html" %}
+
+{% block title %}{% if object %}Edit ElementType{% else %}Add ElementType{% endif %}{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">
+    {% if object %}Edit ElementType: {{ object }}{% else %}Add ElementType{% endif %}
+  </h1>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% for e in form.name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">{{ form.vendor.label }}</label>
+            {{ form.vendor }}
+            {% for e in form.vendor.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">{{ form.model.label }}</label>
+            {{ form.model }}
+            {% for e in form.model.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">{{ form.notes.label }}</label>
+            {{ form.notes }}
+            {% for e in form.notes.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <strong>{{ form.properties_template_json.label }}</strong>
+          <div class="text-muted small">{{ form.properties_template_json.help_text }}</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="formatJson()">
+            Formatuj JSON
+          </button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="validateJson()">
+            Sprawdź JSON
+          </button>
+        </div>
+      </div>
+
+      <div class="card-body">
+        {{ form.properties_template_json }}
+        {% for e in form.properties_template_json.errors %}
+          <div class="text-danger small mt-2">{{ e }}</div>
+        {% endfor %}
+        <div id="jsonStatus" class="small mt-2"></div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Zapisz</button>
+      <a class="btn btn-secondary" href="javascript:history.back()">Anuluj</a>
+    </div>
+  </form>
+
+  <script>
+    function setStatus(ok, msg) {
+      const el = document.getElementById("jsonStatus");
+      el.textContent = msg;
+      el.className = ok ? "small mt-2 text-success" : "small mt-2 text-danger";
+    }
+
+    function formatJson() {
+      const ta = document.getElementById("id_properties_template_json");
+      try {
+        const obj = JSON.parse(ta.value || "{}");
+        ta.value = JSON.stringify(obj, null, 2);
+        setStatus(true, "JSON poprawnie sformatowany.");
+      } catch (e) {
+        setStatus(false, "Błąd JSON: " + e.message);
+      }
+    }
+
+    function validateJson() {
+      const ta = document.getElementById("id_properties_template_json");
+      try {
+        const obj = JSON.parse(ta.value || "{}");
+        if (obj !== null && typeof obj === "object" && !Array.isArray(obj)) {
+          setStatus(true, "JSON poprawny (obiekt).");
+        } else {
+          setStatus(false, "JSON poprawny składniowo, ale musi być obiektem (dict).");
+        }
+      } catch (e) {
+        setStatus(false, "Błąd JSON: " + e.message);
+      }
+    }
+  </script>
+{% endblock %}
