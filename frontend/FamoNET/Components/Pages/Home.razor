@@ -1,0 +1,47 @@
+﻿@page "/"
+@inject NavigationManager Navigation
+
+<div class="container">
+    <img src="/logo.png" alt="logo" style="height: 30vh; display: flex; margin: auto;" />
+</div>
+
+<div class="container is-display-flex is-flex-direction-row is-flex-wrap-wrap is-align-content-space-evenly" style="row-gap: 2em;">
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/browser"))">
+        <div>
+            <img src="/icons/icon_chart.svg" alt="icon chart" />
+        </div>
+        <h1 class="title">Data browser</h1>
+    </button>
+
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/charts"))">
+        <div>
+            <img src="/icons/icon_device.svg" alt="icon device" />
+        </div>
+        <h1 class="title">Remote spectrum</h1>
+    </button>
+
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/telnet"))">
+        <div>
+            <img src="/icons/icon_console.svg" alt="icon console" />
+        </div>
+        <h1 class="title">Telnet</h1>
+    </button>
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/ddscontrol"))">
+        <div>
+            <img src="/icons/icon_control.svg" alt="icon control" />
+        </div>
+        <h1 class="title">DDS</h1>
+    </button>
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/freqmonitor"))">
+        <div>
+            <img src="/icons/icon_monitor.svg" alt="icon monitor" />
+        </div>
+        <h1 class="title">Frequency monitor</h1>
+    </button>
+    <button class="homeButton box" style="margin:auto;" @onclick="@(() => Navigation.NavigateTo("/labbook"))">
+        <div>
+            <img src="/icons/icon_book.svg" alt="icon labbook" />
+        </div>
+        <h1 class="title">Lab book</h1>
+    </button>
+</div>

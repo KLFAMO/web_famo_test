@@ -1,0 +1,59 @@
+﻿/* == Components == */
+.card-header-title {
+    background-color: #f5f5f5;
+}
+
+.param-label {
+    margin-bottom: 0 !important;
+    font-weight: 700;
+    color: #363636;
+}
+
+/* Static Description Text */
+.param-desc {
+    font-size: 0.75rem;
+    color: #7a7a7a;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+}
+
+/* Static Channel Description Block */
+.channel-desc-block {
+    background-color: #f9f9f9;
+    border-left: 4px solid #3273dc;
+    padding: 0.75rem;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    color: #4a4a4a;
+    margin-bottom: 1.5rem;
+}
+
+/* Input Group Alignment */
+.field.has-addons .control .button,
+.field.has-addons .control .input {
+    height: 2.5em;
+}
+
+.action-btn {
+    min-width: 60px;
+    font-weight: 600;
+}
+
+/* Tighter Spacing for Min/Max labels below input */
+.field.has-addons.is-tight {
+    margin-bottom: 2px !important;
+}
+
+.is-tight .control{
+    margin-bottom: 0px !important;
+}
+
+.min-max-tag {
+    font-size: 1rem;
+    color: #b5b5b5;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0;
+    padding-left: 2px;
+    padding-right: 2px;
+}

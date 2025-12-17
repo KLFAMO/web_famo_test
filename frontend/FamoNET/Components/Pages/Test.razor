@@ -1,0 +1,198 @@
+﻿@page "/test"
+<div class="component-wrapper">
+
+    <div class="sidebar-column pl-4 pr-4">
+        <aside class="menu">
+            <p class="menu-label">Lab 1 (Rack A)</p>
+            <ul class="menu-list">
+                <li><a class="is-active">Lab-Oscillator-Alpha</a></li>
+                <li><a>Lab-Oscillator-Beta</a></li>
+            </ul>
+            <p class="menu-label">Settings</p>
+            <ul class="menu-list">
+                <li><a>Add New Device</a></li>
+            </ul>
+        </aside>
+    </div>
+
+    <div class="content-column">
+
+        <div class="level mb-5 header-box">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-4 has-text-grey-dark">
+                        <i class="fa-solid fa-server mr-3 has-text-grey-light"></i>
+                        SIGNAL CONTROLLER 3000
+                    </h1>
+                </div>
+                <div class="level-item ml-4">
+                    <span class="tag is-warning is-medium has-text-weight-bold has-text-dark">
+                        <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                        <span>CONFIGURATION MODE</span>
+                    </span>
+                </div>
+            </div>
+            <div class="level-right">
+                <div class="level-item">
+                    <button class="button is-small is-dark">
+                        <span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+                        <span>Back to Control</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="box mb-5 is-warning-mode" style="border-left: 5px solid #363636;">
+            <div class="columns is-vcentered is-mobile is-multiline">
+                <div class="column is-12-mobile is-4-tablet is-3-desktop">
+                    <p class="heading">Selected Device</p>
+                    <h3 class="title is-5">Lab-Oscillator-Alpha</h3>
+                </div>
+                <div class="column is-6-mobile is-3-tablet is-2-desktop">
+                    <p class="heading">IP Address</p>
+                    <code class="has-text-info">192.168.1.105</code>
+                </div>
+                <div class="column is-12-mobile is-5-tablet is-5-desktop">
+                    <p class="heading">Associated Tags</p>
+                    <div class="tags">
+                        <span class="tag is-info is-light">Rack-A</span>
+                        <span class="tag is-warning is-light">Maintenance-Req</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="columns is-multiline">
+
+            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
+                <div class="card is-warning-mode">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <span class="icon mr-2 has-text-dark"><i class="fa-solid fa-sliders"></i></span>
+                            Channel 01
+                        </p>
+                    </header>
+                    <div class="card-content">
+
+                        <div class="field mb-5">
+                            <div class="control">
+                                <textarea class="textarea channel-desc-textarea" rows="2">High Frequency Out: Primary carrier wave generation.</textarea>
+                            </div>
+                        </div>
+
+                        <div class="field mb-5">
+                            <label class="label param-label">Frequency (Hz)</label>
+                            <input class="input is-small is-desc" type="text" value="Base oscillation rate.">
+
+                            <div class="field has-addons mb-2">
+                                <p class="control"><a class="button is-static"><i class="fa-solid fa-wave-square"></i></a></p>
+                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="1000"></p>
+                            </div>
+
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="10"></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="20000"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="dropdown-divider">
+
+                        <div class="field mb-5">
+                            <label class="label param-label">Phase (°)</label>
+                            <input class="input is-small is-desc" type="text" value="Phase shift relative to master.">
+
+                            <div class="field has-addons mb-2">
+                                <p class="control"><a class="button is-static"><i class="fa-solid fa-circle-half-stroke"></i></a></p>
+                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0"></p>
+                            </div>
+
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="0"></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="360"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <footer class="card-footer">
+                        <a href="#" class="card-footer-item is-save-btn">
+                            <span class="icon mr-2"><i class="fa-solid fa-floppy-disk"></i></span>
+                            Save Configuration
+                        </a>
+                    </footer>
+                </div>
+            </div>
+
+            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
+                <div class="card is-warning-mode">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            <span class="icon mr-2 has-text-dark"><i class="fa-solid fa-sliders"></i></span>
+                            Channel 02
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="field mb-5">
+                            <div class="control">
+                                <textarea class="textarea channel-desc-textarea" rows="2">Auxiliary Output: Sync monitoring.</textarea>
+                            </div>
+                        </div>
+
+                        <div class="field mb-5">
+                            <label class="label param-label">Frequency (Hz)</label>
+                            <input class="input is-small is-desc" type="text" value="Base oscillation rate.">
+
+                            <div class="field has-addons mb-2">
+                                <p class="control"><a class="button is-static"><i class="fa-solid fa-wave-square"></i></a></p>
+                                <p class="control is-expanded"><input class="input is-config-input" type="number" value="500"></p>
+                            </div>
+
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="10"></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" value="20000"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="card-footer">
+                        <a href="#" class="card-footer-item is-save-btn">
+                            <span class="icon mr-2"><i class="fa-solid fa-floppy-disk"></i></span>
+                            Save Configuration
+                        </a>
+                    </footer>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

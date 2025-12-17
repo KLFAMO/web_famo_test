@@ -1,0 +1,51 @@
+﻿@page "/counter"
+@using FamoNET.Components.SubComponents
+@rendermode InteractiveServer
+
+
+
+<div class="container">                   
+    <div class="box has-text-centered">        
+        <h1 class="title is-1" id="Frequency">No data</h1>
+    </div>
+
+    <div class="box">
+        <FamoNET.Components.SubComponents.AllanVariance @ref="AllanVarianceComponent" />
+    </div>        
+
+    <div class="field is-horizontal has-addons">
+        <div class="field-body">
+            <p class="control">
+                <a class="button is-static">
+                    Filename
+                </a>
+            </p>
+            <div class="control">
+                <p>
+                    <input type="text" class="input" @bind-value="@Filename" />
+                </p>
+            </div>
+            <div class="control">
+                <p>
+                    @if (!IsSaving)
+                    {
+                        <button class="button" type="button" @onclick="((e) => StartSaving())">Save to file</button>
+                    }
+                    else
+                    {
+                        <button class="button" type="button" @onclick="((e) => StopSaving())">Stop</button>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+        
+    <FileManager @ref="FileManagerComponent" />
+    <div class="field is-horizontal">
+        <div class="field-label"></div>
+        <div class="field-body">
+            
+        </div>
+    </div>                    
+    
+</div>

@@ -1,0 +1,33 @@
+﻿<div class="modal @(IsVisible ? "is-active" : "")">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">File wizard</p>
+            <button class="delete" type="button" aria-label="close" @onclick=CloseModal></button>
+        </header>
+        <section class="modal-card-body">
+            <div class="field">
+                <div class="label">
+                    Name
+                </div>
+                <div class="control">
+                    <input class="input" type="text" @bind-value=Model.Name @bind-value:event="oninput" placeholder="Optional" />
+                </div>
+            </div>
+            <div class="field">
+                <div class="label">
+                    Description
+                </div>
+                <div class="control">
+                    <input class="input" type="text" @bind-value=Model.Description @bind-value:event="oninput" placeholder="Optional" />
+                </div>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <div class="buttons">
+                <button class="button is-success" type="button" aria-label="save" @onclick=SaveFile>Save</button>
+                <button class="button" type="button" aria-label="close" @onclick=CloseModal>Cancel</button>
+            </div>
+        </footer>
+    </div>
+</div>

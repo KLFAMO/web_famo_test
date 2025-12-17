@@ -1,0 +1,1 @@
+dotnet ef migrations add InitialMigration --startup-project FamoNET/FamoNET.csproj --project FamoNET.Database/FamoNET.Database.csproj

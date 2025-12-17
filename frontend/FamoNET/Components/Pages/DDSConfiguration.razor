@@ -1,0 +1,28 @@
+﻿@page "/ddsconfiguration"
+@rendermode InteractiveServer
+
+<div class="component-wrapper">
+
+    <div class="sidebar-column pl-4 pr-4">
+        <FamoNET.Components.SubComponents.DDS.DDSLocationList DeviceSelected="OnDeviceSelected"></FamoNET.Components.SubComponents.DDS.DDSLocationList>
+    </div>
+
+    <div class="content-column">
+        <div class="level mb-5 header-box">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-4 has-text-grey-dark">
+                        DDS CONFIGURATION
+                    </h1>
+                    <span class="tag is-warning is-medium is-light has-text-weight-bold" style="-webkit-animation: fast-blink 1s infinite;">
+                        <span class="icon"></span>
+                        <span>CONFIGURATION MODE</span>
+                    </span>
+                </div>
+            </div>
+        </div>        
+    <FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration DeviceId="DeviceId"></FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration>        
+    </div>
+</div>
+
+<FamoNET.Components.SubComponents.SystemMessageComponent></FamoNET.Components.SubComponents.SystemMessageComponent>

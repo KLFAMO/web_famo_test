@@ -1,0 +1,47 @@
+﻿.component-wrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: #fff;
+}
+
+/* == Header Background Wrapper == */
+/* Since the background is striped, we need a white box behind the title text */
+.header-box {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.sidebar-column {
+    background-color: #fff;
+    border-right: 1px solid #dbdbdb;
+    width: 200px;
+    min-width: 200px;
+    padding-top: 1.5rem !important;
+    display: flex;
+    flex-direction: column;   
+}
+
+.content-column {
+    flex: 1;
+    padding: 2rem 3rem !important;
+    /* Diagonal Stripes Pattern */
+    background-color: #fffaeb; /* Fallback light yellow */
+    background-image: repeating-linear-gradient( 45deg, #ffe08a, #ffe08a 20px, #ffd166 20px, #ffd166 40px );
+}
+
+@-webkit-keyframes fast-blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

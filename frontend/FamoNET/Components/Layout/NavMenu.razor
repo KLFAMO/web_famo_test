@@ -1,0 +1,83 @@
+﻿@inject IJSRuntime JS
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+        <a class="navbar-item" href="/">
+            <h1>FamoNET</h1>
+        </a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+    <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start">
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    Data browser
+                </a>
+
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="/browser">
+                        Browser
+                    </a>
+                    <a class="navbar-item" href="/live">
+                        Live
+                    </a>
+                </div>
+            </div>
+
+
+            <a class="navbar-item" href="/freqmonitor">
+                Monitor
+            </a>
+
+            @* <a class="navbar-item" href="/counter">
+                FXMCounter
+            </a> *@
+
+
+            <div class="navbar-item has-dropdown is-hoverable">
+                <a class="navbar-link">
+                    DDS
+                </a>
+
+                <div class="navbar-dropdown">
+                    <a class="navbar-item" href="/ddsconfiguration">
+                        Configuration
+                    </a>
+                    <a class="navbar-item" href="/ddscontrol">
+                        Control
+                    </a>
+                </div>
+            </div>
+
+            <a class="navbar-item" href="/telnet">
+                Telnet
+            </a>
+            <a class="navbar-item" href="/charts">
+                Device Charts
+            </a>
+            <a class="navbar-item" href="/labbook">
+                Lab book
+            </a>
+        </div>
+    </div>
+</nav>
+
+@code {
+    private IJSObjectReference? module;    
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {            
+            module = await JS.InvokeAsync<IJSObjectReference>("import",
+                "./Components/Layout/NavMenu.razor.js");
+        }
+    }
+}

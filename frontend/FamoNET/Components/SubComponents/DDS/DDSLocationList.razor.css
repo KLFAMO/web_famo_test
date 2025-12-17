@@ -1,0 +1,11 @@
+﻿/* Sidebar Link Tweaks */
+.menu-list a {
+    padding: 0.5em 0.75em;
+    font-size: 0.85rem;
+}
+
+/* Clean List Styles */
+.menu-list, .menu-list li {
+    list-style: none !important;
+    margin-left: 0;
+}

@@ -1,0 +1,4 @@
+﻿table td:nth-child(3), table th:nth-child(3) {
+    text-align: end !important;
+    padding-right: 4em !important;
+}

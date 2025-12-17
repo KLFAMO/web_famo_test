@@ -1,0 +1,136 @@
+﻿@if (Model == null && !IsLoading)
+{
+    <h1>Select dds device</h1>
+}
+else if (IsLoading)
+{
+
+}
+else if (Model != null)
+{
+    <div class="box mb-5 is-warning-mode" style="border-left: 5px solid #363636;">
+        <div class="columns is-vcentered is-mobile is-multiline">
+            <div class="column is-12-mobile is-4-tablet is-3-desktop">
+                <p class="heading">Selected Device</p>
+                <h3 class="title is-5">@Model.Name</h3>
+            </div>
+            <div class="column is-6-mobile is-3-tablet is-2-desktop">
+                <p class="heading">IP Address</p>
+                <code class="has-text-info">@Model.IP</code>
+            </div>
+            <div class="column is-12-mobile is-5-tablet is-5-desktop">
+                <p class="heading">Associated Tags</p>
+                <div class="tags">
+                    @if(!string.IsNullOrWhiteSpace(Model.Tags))
+                    {
+                        foreach(var tag in Model.Tags.Split(','))
+                        {
+                            <span class="tag is-info is-light">@tag</span>
+                        }
+                    }                                        
+                </div>
+            </div>
+            <div class="column is-6-mobile is-12-tablet is-2-desktop has-text-right-desktop">
+                <label class="checkbox is-danger-check has-text-weight-semibold">
+                    <input type="checkbox">
+                    Lock Control
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="columns is-multiline ml-2 mr-2">
+        @foreach(var channel in Model.Channels)
+        {
+            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
+                <div class="card is-warning-mode">
+                    <header class="card-header">
+                        <p class="card-header-title">Channel @channel.Id</p>
+                    </header>
+                    <div class="card-content">
+                        <div class="field mb-5">
+                            <div class="control">
+                                <textarea class="textarea channel-desc-textarea" rows="2" placeholder="Channel description...">@channel.Description</textarea>
+                            </div>
+                        </div>
+                        <div class="field mb-5">
+                            <label class="label param-label">Frequency</label>
+                            <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Frequency.Description>
+                            <div class="field has-addons mb-2">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0" @bind=channel.Frequency.Value></p>
+                            </div>
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Frequency.Min></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Frequency.Max></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <div class="field mb-5">
+                            <label class="label param-label">Phase</label>
+                            <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Phase.Description>
+                            <div class="field has-addons mb-2">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0" @bind=channel.Phase.Value></p>
+                            </div>
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Phase.Min></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Phase.Max></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="dropdown-divider">
+                        <div class="field">
+                            <label class="label param-label">Amplitude</label>
+                            <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Amplitude.Description>
+                            <div class="field has-addons main-control-row">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input" type="number" placeholder="0" @bind=channel.Amplitude.Value></p>
+                            </div>
+                            <div class="columns is-mobile is-variable is-1 limit-input-group">
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Min</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Amplitude.Min></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="field has-addons">
+                                        <p class="control"><a class="button is-small is-static">Max</a></p>
+                                        <p class="control is-expanded"><input class="input is-small" type="number" @bind=channel.Amplitude.Max></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a class="card-footer-item is-save-btn" @onclick=SaveSettings>
+                            <span class="icon mr-2"><i class="fa-solid fa-floppy-disk"></i></span>
+                            Save Channel Settings
+                        </a>
+                    </footer>
+                </div>
+            </div>
+        }
+                
+    </div>
+}

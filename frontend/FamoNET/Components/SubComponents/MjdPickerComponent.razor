@@ -1,0 +1,63 @@
+﻿@using FamoNET.Utils
+
+<div class="field has-addons">
+    @if (IsInMJDMode)
+    {
+        <p class="control">
+            <a class="button is-static">
+                MJD
+            </a>
+        </p>
+        <p class="control">
+            <input class="input" type="number" value="@StartMjd" step="0.0001" oninput="@OnStartMjdSet" placeholder="From" id="title" disabled=@IsUIDisabled />
+            <p class="is-small">
+                @StartDate
+            </p>
+        </p>
+        <p class="control">
+            <a class="button is-static">
+                -
+            </a>
+        </p>
+        <p class="control">
+            <input class="input" type="number" value="@EndMjd" step="0.0001" oninput="@OnEndMjdSet" placeholder="To" id="title" disabled=@IsUIDisabled />
+            <p class="is-small">
+                @EndDate
+            </p>
+        </p>
+    }
+    else
+    {
+        <p class="control">
+            <a class="button is-static">
+                Date
+            </a>
+        </p>
+
+        <p class="control">
+            <InputDate Type="InputDateType.DateTimeLocal" class="input" id="limit" @bind-Value="@StartDate" disabled=@IsUIDisabled />
+            <p class="is-small">
+                @StartMjd
+            </p>
+        </p>
+
+        <p class="control">
+            <a class="button is-static">
+                -
+            </a>
+        </p>
+
+        <div class="control">
+            <InputDate Type="InputDateType.DateTimeLocal" class="input" id="limit" @bind-Value="@EndDate" disabled=@IsUIDisabled />
+            <p class="is-small">
+                @EndMjd
+            </p>
+        </div>
+    }
+
+    <p class="control">
+        <button class="button" @onclick="@(() => IsInMJDMode = !IsInMJDMode)" style="background-image: url('/icons/icon_switch.svg'); background-repeat: no-repeat; background-position: center;" disabled=@IsUIDisabled>
+              <p><br /></p>
+        </button>
+    </p>    
+</div>

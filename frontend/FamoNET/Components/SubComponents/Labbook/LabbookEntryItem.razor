@@ -1,0 +1,28 @@
+﻿@if(!IsCollapsed)
+{
+    <tr style="margin-left: @(IsChild ? "0em" : "2em"); opacity: @(IsChild ? 0.6 : 1); line-height:@(IsChild ? "1em" : "2em");" @onclick="() => ToggleChildVisibility()">
+        <td>@(Entry.ParentId > 0 ? Entry.ParentId + "-" + Entry.Id : Entry.Id)</td>
+        <td>@Entry.StartMjd</td>
+        <td>@Entry.EndMjd</td>
+        <td>@Entry.Message</td>
+        <td>@Entry.Tag</td>
+        <td>@Entry.Extra</td>
+        <td>
+            @if (!IsChild)
+            {
+                <button class="button is-info" @onclick=@(() => LabbookEntryWizardModel.Load(Entry))>Edit</button>
+            }   
+            
+        </td>
+        <td>
+            @if (Entry.Child != null)
+            {
+                <img style="height: 100%" src="/icons/icon_history.svg" alt="icon history" />
+            }            
+        </td>
+    </tr>
+    @if (Entry.Child != null)
+    {        
+        <LabbookEntryItem @ref=ChildEntryItem Entry="Entry.Child" LabbookEntryWizardModel="LabbookEntryWizardModel" />                
+    }
+}

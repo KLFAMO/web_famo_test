@@ -1,0 +1,142 @@
+﻿/* == Layout == */
+.component-wrapper {
+    display: flex;
+    min-height: 100vh;
+    background-color: #fff;
+}
+
+.sidebar-column {
+    background-color: #fff;
+    border-right: 1px solid #dbdbdb;
+    width: 200px;
+    min-width: 200px;
+    padding-top: 1.5rem !important;
+    display: flex;
+    flex-direction: column;
+    z-index: 10; /* Keep sidebar above the stripes if overlap occurs */
+}
+
+.menu-list, .menu-list li {
+    list-style: none !important;
+    margin-left: 0;
+}
+
+/* == HAZARD BACKGROUND (THE WARNING INDICATOR) == */
+.content-column {
+    flex: 1;
+    padding: 2rem 3rem !important;
+    /* Diagonal Stripes Pattern */
+    background-color: #fffaeb; /* Fallback light yellow */
+    background-image: repeating-linear-gradient( 45deg, #ffe08a, #ffe08a 20px, #ffd166 20px, #ffd166 40px );
+}
+
+/* == CONFIG CARD STYLES == */
+
+/* High contrast cards to pop against the busy background */
+.card.is-warning-mode {
+    border-top: 4px solid #363636; /* Industrial Dark Grey */
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.3); /* Stronger shadow */
+}
+
+    .card.is-warning-mode .card-header {
+        background-color: #fff;
+        border-bottom: 2px solid #f5f5f5;
+    }
+
+/* Dashed inputs (Structural Editing) - WHITE background, not yellow */
+.input.is-config-input {
+    border: 1px dashed #b5b5b5;
+    background-color: #fff; /* Explicitly white */
+    box-shadow: none;
+}
+
+    .input.is-config-input:focus {
+        border-style: solid;
+        border-color: #363636;
+    }
+
+/* Channel Description Block */
+.channel-desc-textarea {
+    background-color: #fff;
+    border: 1px dashed #b5b5b5;
+    border-left: 4px solid #363636;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    color: #4a4a4a;
+    resize: vertical;
+    min-height: 60px;
+    box-shadow: none;
+}
+
+/* == Header Background Wrapper == */
+/* Since the background is striped, we need a white box behind the title text */
+.header-box {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #dbdbdb;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* == Standard Components == */
+.param-label {
+    margin-bottom: 0.25rem !important;
+}
+
+.input.is-desc {
+    border: 1px solid transparent;
+    background-color: transparent;
+    padding-left: 0;
+    font-style: italic;
+    color: #7a7a7a;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+    .input.is-desc:hover, .input.is-desc:focus {
+        background-color: #fff;
+        border-color: #dbdbdb;
+        padding-left: 0.5em;
+    }
+
+/* Controls Alignment */
+.field.has-addons .control .button,
+.field.has-addons .control .input {
+    height: 2.5em;
+}
+
+/* Min/Max Inputs */
+.limit-input-group .button.is-static {
+    background-color: #f5f5f5;
+    border-color: #dbdbdb;
+    color: #363636;
+    font-size: 0.75rem;
+    padding-right: 0.5em;
+    padding-left: 0;
+    font-weight: 600;
+}
+
+.limit-input-group .input {
+    border-color: #dbdbdb;
+    background-color: #fff;
+    color: #7a7a7a;
+    border-radius: 4px !important;
+}
+
+/* Save Button */
+.card-footer-item.is-save-btn {
+    background-color: #48c774;
+    color: white;
+    font-weight: bold;
+    border-top: 1px solid #3ec46d;
+    cursor: pointer;
+}
+
+    .card-footer-item.is-save-btn:hover {
+        background-color: #3ec46d;
+    }
+
+.menu-list a {
+    padding: 0.5em 0.75em;
+    font-size: 0.85rem;
+}

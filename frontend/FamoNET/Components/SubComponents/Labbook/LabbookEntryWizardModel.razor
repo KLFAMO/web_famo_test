@@ -1,0 +1,48 @@
+﻿@using FamoNET.Utils
+<div class="modal @(IsVisible ? "is-active" : "")">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">@(LabbookEntry?.Id > 0 ? "Edit entry" : "New entry")</p>
+            <button class="delete" aria-label="close" @onclick=CloseModal></button>
+        </header>
+        <section class="modal-card-body">
+            @if (LabbookEntry != null)
+            {
+                <MjdPickerComponent @bind-StartMjd=LabbookEntry.StartMjd @bind-EndMjd=LabbookEntry.EndMjd></MjdPickerComponent>                
+                
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">
+                        <label class="label">Message</label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field">
+                            <div class="control">
+                                <textarea class="textarea" @bind-value=LabbookEntry.Message @bind-value:event="oninput"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-horizontal">
+                    <div class="field-label is-normal">
+                        <label class="label">Tag</label>
+                    </div>
+                    <div class="field-body">
+                        <div class="field">
+                            <div class="control">
+                                <input class="input" type="text" @bind-value=LabbookEntry.Tag @bind-value:event="oninput" />
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+            }
+        </section>            
+        <footer class="modal-card-foot">
+            <div class="buttons">
+                <button class="button is-success" aria-label="submit" @onclick=Submit disabled="@(!IsValid)">Submit</button>
+                <button class="button" aria-label="close" @onclick=CloseModal>Close</button>
+            </div>
+        </footer>
+    </div>
+    
+</div>

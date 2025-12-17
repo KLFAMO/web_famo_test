@@ -1,0 +1,13 @@
+﻿.homeButton {
+    margin: auto;
+    min-width: 20%;
+    min-height: 20vh;
+}
+
+.homeButton img {
+    width: 8em;
+}
+
+    .homeButton:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+    }

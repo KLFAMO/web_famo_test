@@ -1,0 +1,10 @@
+﻿<div class="wrapper">
+    @foreach(var message in Messages)
+    {
+        <div class="notification has-text-weight-semibold @(message.Type == Model.SystemMessageType.Info ? "is-primary" : "is-danger")">
+            <button class="delete"></button>
+            @message.Message
+        </div>
+    }        
+</div>
+

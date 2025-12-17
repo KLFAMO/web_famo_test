@@ -1,0 +1,99 @@
+﻿@if(Model == null && !IsLoading)
+{
+    <h1>Select dds device</h1>
+}
+else if (IsLoading)
+{
+
+}
+else if (Model != null)
+{
+    <div class="box mb-5">
+        <div class="columns is-vcentered is-mobile is-multiline">
+            <div class="column is-12-mobile is-4-tablet is-3-desktop">
+                <p class="heading">Selected Device</p>
+                <h3 class="title is-5">@Model.Name</h3>
+            </div>
+            <div class="column is-6-mobile is-3-tablet is-2-desktop">
+                <p class="heading">IP Address</p>
+                <code class="has-text-info">@Model.IP</code>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.Tags))
+            {
+                <div class="column is-12-mobile is-5-tablet is-5-desktop">
+                    <p class="heading">Associated Tags</p>
+                    <div class="tags">
+                        @foreach (var tag in Model.Tags.Split(','))
+                        {
+                            <span class="tag is-info is-light">@tag</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="columns is-multiline ml-3 mr-3">
+        @foreach (var channel in Model.Channels)
+        {
+            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">@channel.Name</p>
+                    </header>
+                    <div class="card-content">
+                        <div class="channel-desc-block mb-5">
+                            @channel.Description
+                        </div>
+
+                        <div class="field mb-5">
+                            <label class="label param-label">Frequency</label>
+                            <p class="param-desc">@channel.Frequency.Description</p>
+                            <div class="field has-addons is-tight">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Frequency.Value placeholder="0"></p>
+                                <p class="control"><button class="button is-info is-light action-btn">GET</button></p>
+                                <p class="control"><button class="button is-link action-btn">SET</button></p>
+                            </div>
+                            <div class="min-max-tag">
+                                <span>Range: @channel.Frequency.Min-@channel.Frequency.Max</span>
+                            </div>
+                        </div>
+
+                        <hr class="dropdown-divider">
+
+                        <div class="field mb-5">
+                            <label class="label param-label">Phase</label>
+                            <p class="param-desc">@channel.Phase.Description</p>
+                            <div class="field has-addons is-tight">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Phase.Value placeholder="0"></p>
+                                <p class="control"><button class="button is-info is-light action-btn">GET</button></p>
+                                <p class="control"><button class="button is-link action-btn">SET</button></p>
+                            </div>
+                            <div class="min-max-tag">
+                                <span>Range: @channel.Phase.Min-@channel.Phase.Max</span>                                
+                            </div>
+                        </div>
+
+                        <hr class="dropdown-divider">
+
+                        <div class="field">
+                            <label class="label param-label">Amplitude</label>
+                            <p class="param-desc">@channel.Amplitude.Description</p>
+                            <div class="field has-addons is-tight">
+                                <p class="control"><a class="button is-static"></a></p>
+                                <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Amplitude.Value placeholder="0"></p>
+                                <p class="control"><button class="button is-info is-light action-btn">GET</button></p>
+                                <p class="control"><button class="button is-link action-btn">SET</button></p>
+                            </div>
+                            <div class="min-max-tag">
+                                <span>Range: @channel.Amplitude.Min-@channel.Amplitude.Max</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

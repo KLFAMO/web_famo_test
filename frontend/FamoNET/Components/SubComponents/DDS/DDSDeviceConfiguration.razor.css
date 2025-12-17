@@ -1,0 +1,95 @@
+﻿/* == CONFIG CARD STYLES == */
+
+/* High contrast cards to pop against the busy background */
+.card.is-warning-mode {
+    border-top: 4px solid #363636; /* Industrial Dark Grey */
+    box-shadow: 0 0.5em 1em -0.125em rgba(10, 10, 10, 0.3); /* Stronger shadow */
+}
+
+    .card.is-warning-mode .card-header {
+        background-color: #fff;
+        border-bottom: 2px solid #f5f5f5;
+    }
+
+/* Dashed inputs (Structural Editing) - WHITE background, not yellow */
+.input.is-config-input {
+    border: 1px dashed #b5b5b5;
+    background-color: #fff; /* Explicitly white */
+    box-shadow: none;
+}
+
+    .input.is-config-input:focus {
+        border-style: solid;
+        border-color: #363636;
+    }
+
+/* Channel Description Block */
+.channel-desc-textarea {
+    background-color: #fff;
+    border: 1px dashed #b5b5b5;
+    border-left: 4px solid #363636;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    color: #4a4a4a;
+    resize: vertical;
+    min-height: 60px;
+    box-shadow: none;
+}
+
+/* == Standard Components == */
+.param-label {
+    margin-bottom: 0.25rem !important;
+}
+
+.input.is-desc {
+    border: 1px solid transparent;
+    background-color: transparent;
+    padding-left: 0;
+    font-style: italic;
+    color: #7a7a7a;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+
+    .input.is-desc:hover, .input.is-desc:focus {
+        background-color: #fff;
+        border-color: #dbdbdb;
+        padding-left: 0.5em;
+    }
+
+/* Controls Alignment */
+.field.has-addons .control .button,
+.field.has-addons .control .input {
+    height: 2.5em;
+}
+
+/* Min/Max Inputs */
+.limit-input-group .button.is-static {
+    background-color: #f5f5f5;
+    border-color: #dbdbdb;
+    color: #363636;
+    font-size: 0.75rem;
+    padding-right: 0.5em;
+    padding-left: 0;
+    font-weight: 600;
+}
+
+.limit-input-group .input {
+    border-color: #dbdbdb;
+    background-color: #fff;
+    color: #7a7a7a;
+    border-radius: 4px !important;
+}
+
+/* Save Button */
+.card-footer-item.is-save-btn {
+    background-color: #48c774;
+    color: white;
+    font-weight: bold;
+    border-top: 1px solid #3ec46d;
+    cursor: pointer;
+}
+
+    .card-footer-item.is-save-btn:hover {
+        background-color: #3ec46d;
+    }

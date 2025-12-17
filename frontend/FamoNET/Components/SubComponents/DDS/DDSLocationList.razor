@@ -1,0 +1,15 @@
+﻿<aside class="menu">
+    @if (DevicesByLocation?.Count > 0)
+    {
+        @foreach(var pair in DevicesByLocation)
+        {
+            <p class="menu-label">@pair.Key</p>
+            <ul class="menu-list">
+                @foreach (var device in pair.Value)
+                {
+                    <li><a @onclick="@(() => OnDeviceSelect(device))">@device.Name</a></li>
+                }
+            </ul>
+        }        
+    }
+</aside>

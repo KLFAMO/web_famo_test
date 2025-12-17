@@ -1,0 +1,22 @@
+﻿@page "/ddscontrol"
+
+<div class="component-wrapper">
+    <div class="sidebar-column pl-4 pr-4">
+        <FamoNET.Components.SubComponents.DDS.DDSLocationList DeviceSelected="OnDeviceSelected"></FamoNET.Components.SubComponents.DDS.DDSLocationList>
+    </div>
+
+    <div class="content-column">
+        <div class="level mb-5">
+            <div class="level-left">
+                <div class="level-item">
+                    <h1 class="title is-4 has-text-grey-dark">
+                        DDS CONTROL
+                    </h1>
+                </div>
+            </div>
+        </div>
+        <FamoNET.Components.SubComponents.DDS.DDSDeviceControl DeviceId=DeviceId></FamoNET.Components.SubComponents.DDS.DDSDeviceControl>        
+    </div>
+</div>
+
+<FamoNET.Components.SubComponents.SystemMessageComponent></FamoNET.Components.SubComponents.SystemMessageComponent>

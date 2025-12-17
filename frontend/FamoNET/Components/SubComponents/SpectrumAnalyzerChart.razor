@@ -1,0 +1,270 @@
+﻿<div class="box">
+    <div class="is-flex is-align-items-end is-justify-content-flex-end">
+        <div>
+            <p>
+                <button class="button" type="button" @onclick="@(() => ChartCloseRequested.InvokeAsync(ComponentGuid))">
+                    <span class="icon">
+                        <i class="fa fa-trash"></i>
+                    </span>
+                </button>
+            </p>            
+        </div>
+    </div>
+    @if (IsInitialized && !IsLoading)
+    {
+        <div>
+            <div class="columns is-centered">                
+                <div class="column">
+                    <div class="columns">
+                        <div class="column is-narrow">
+                            <div class="field">
+                                <div class="control">
+                                    <button type="button" class="button" @onclick=@(() => IsFrozen = !IsFrozen)>@(IsFrozen ? "Continue" : "Freeze")</button>
+                                    <button type="button" class="button" @onclick=@SaveData disabled="@(!IsFrozen)">Save</button>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button type="button" class="button" @onclick=SetReference>Reference</button>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="control">
+                                    <button type="button" class="button" @onclick=@(() => _reference = null)>Clear reference</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <table class="table is-centered">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>RBW</th>
+                                        <th>Center</th>
+                                        <th>Span</th>
+                                        <th>VBW</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <p>Current</p>
+                                        </td>
+                                        <td>
+                                            @if (Model.RBW < 1000)
+                                            {
+                                                <p>@Model.RBW Hz</p>
+                                            }
+                                            else if (Model.RBW < 1000000)
+                                            {
+                                                <p>@(Model.RBW / 1000) KHz</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@(Model.RBW / 1000000) MHz</p>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (Model.CenterFrequency < 1000)
+                                            {
+                                                <p>@Model.CenterFrequency Hz</p>
+                                            }
+                                            else if (Model.CenterFrequency < 1000000)
+                                            {
+                                                <p>@(@Model.CenterFrequency / 1000) KHz</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@(@Model.CenterFrequency / 1000000) MHz</p>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (Model.Span < 1000)
+                                            {
+                                                <p>@Model.Span Hz</p>
+                                            }
+                                            else if (Model.Span < 1000000)
+                                            {
+                                                <p>@(@Model.Span / 1000) KHz</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@(@Model.Span / 1000000) MHz</p>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (Model.VBW < 1000)
+                                            {
+                                                <p>@Model.VBW Hz</p>
+                                            }
+                                            else if (Model.VBW < 1000000)
+                                            {
+                                                <p>@(@Model.VBW / 1000) KHz</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@(@Model.VBW / 1000000) MHz</p>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <p>New</p>
+                                        </td>
+                                        <td>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <div class="select">
+                                                        <select aria-label="Units" @bind="@NewRBW" disabled=@IsSettingParameters>
+                                                            <option value="1">1 Hz</option>
+                                                            <option value="3">3 Hz</option>
+                                                            <option value="10">10 Hz</option>
+                                                            <option value="30">30 Hz</option>
+                                                            <option value="100">100 Hz</option>
+                                                            <option value="300">300 Hz</option>
+                                                            <option value="1000">1 KHz</option>
+                                                            <option value="3000">3 KHz</option>
+                                                            <option value="10000">10 KHz</option>
+                                                            <option value="30000">30 KHz</option>
+                                                            <option value="100000">100 KHz</option>
+                                                            <option value="300000">300 KHz</option>
+                                                            <option value="1000000">1 MHz</option>
+                                                            <option value="3000000">3 MHz</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <input type="text" class="input" @bind-value="@NewCenterFrequency" @bind-value:event="oninput" placeholder="Value..." disabled=@IsSettingParameters />
+                                                </div>
+                                                <p class="control">
+                                                    <div class="select">
+                                                        <select aria-label="Units" @bind="@SelectedCenterFrequencyUnit" disabled=@IsSettingParameters>
+                                                            <option value="1">Hz</option>
+                                                            <option value="1000">KHz</option>
+                                                            <option value="1000000">MHz</option>
+                                                        </select>
+                                                    </div>
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <input type="text" class="input" @bind-value="@NewSpan" @bind-value:event="oninput" placeholder="Value..." disabled=@IsSettingParameters />
+                                                </div>
+                                                <p class="control">
+                                                    <div class="select">
+                                                        <select aria-label="Units" @bind="@SelectedSpanUnit" disabled=@IsSettingParameters>
+                                                            <option value="1">Hz</option>
+                                                            <option value="1000">KHz</option>
+                                                            <option value="1000000">MHz</option>
+                                                        </select>
+                                                    </div>
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <div class="select">
+                                                        <select aria-label="Units" @bind="@NewVBW" disabled=@IsSettingParameters>
+                                                            <option value="1">1 Hz</option>
+                                                            <option value="3">3 Hz</option>
+                                                            <option value="10">10 Hz</option>
+                                                            <option value="30">30 Hz</option>
+                                                            <option value="100">100 Hz</option>
+                                                            <option value="300">300 Hz</option>
+                                                            <option value="1000">1 KHz</option>
+                                                            <option value="3000">3 KHz</option>
+                                                            <option value="10000">10 KHz</option>
+                                                            <option value="30000">30 KHz</option>
+                                                            <option value="100000">100 KHz</option>
+                                                            <option value="300000">300 KHz</option>
+                                                            <option value="1000000">1 MHz</option>
+                                                            <option value="3000000">3 MHz</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>                        
+                    </div>
+                    <div class="field">
+                        <div class="label">
+                            Refresh rate (@(RefreshRate)ms):
+                        </div>
+                        <div class="control">
+                            <input type="range" min="20" max="2000" step="10" @bind-value=RefreshRate />
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button" type="button" @onclick="((e) => SetDeviceParameters())" disabled=@IsSettingParameters>Set</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="column" style="max-height:20vh; overflow: auto;">
+                    <FileManager @ref=FileManager></FileManager>
+                </div>
+            </div>
+        </div>
+    }
+    else if (IsLoading)
+    {
+        <progress class="progress is-large is-info" max="100">60%</progress>
+    }
+    else
+    {
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Devices
+                </a>
+            </p>
+            <p class="control">
+                <div class="select">
+                    <select aria-label="Choose device" @bind="@IP">
+                        <option selected>Choose device</option>
+                        @foreach (var device in Devices)
+                        {
+                            <option value="@device.IP">@device.Name @device.IP</option>
+                        }
+                    </select>
+                </div>
+            </p>
+        </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Manual IP
+                </a>
+            </p>
+            <p class="control">
+                <input type="text" class="input" style="max-width: 10em;" @bind-value="IP" @bind-value:event="oninput" placeholder="Use if device not in the list" />
+            </p>
+        </div>
+        <div class="field has-addons">
+            <p class="control">
+                <a class="button is-static">
+                    Port
+                </a>
+            </p>
+            <p class="control">                
+                <input type="text" class="input" style="max-width: 10em;" @bind-value="Port" @bind-value:event="oninput" placeholder="Optional" />                
+            </p>
+        </div>        
+        <div class="field">
+            <div class="control">
+                <button type="button" class="button" @onclick="() => Initialize()" disabled=@IsInitialized>Connect</button>
+            </div>
+        </div>
+    }
+    <div id="@ChartGuid" style="width: 100%; height: 500px"></div>
+</div>

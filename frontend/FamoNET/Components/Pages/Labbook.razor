@@ -1,0 +1,39 @@
+﻿@page "/labbook"
+@using FamoNET.Components.SubComponents.Labbook
+
+@if (IsLoading)
+{
+    <div class="container">
+        <progress class="progress is-large is-info" max="100">60%</progress>
+    </div>
+}
+else
+{
+    <div class="container">
+        <button class="button is-primary" @onclick=@(() => LabbookEntryWizardModel.Load())>Add</button>
+        <table class="table is-fullwidth is-striped is-hoverable is-narrow">
+            <thead>
+                <th>Id</th>
+                <th>Start MJD</th>
+                <th>End MJD</th>
+                <th>Message</th>
+                <th>Tag</th>
+                <th>Extra</th>
+                <th>Actions</th>
+                <th></th>
+            </thead>
+            <tbody>
+                @foreach (var entry in Entries)
+                {
+                    if (entry.ParentId == 0)
+                    {
+                        <LabbookEntryItem Entry="entry" IsCollapsed=false LabbookEntryWizardModel="LabbookEntryWizardModel" />
+                    }                    
+                }
+            </tbody>
+        </table>
+    </div>    
+}
+
+<FamoNET.Components.SubComponents.Labbook.LabbookEntryWizardModel @ref="LabbookEntryWizardModel"></FamoNET.Components.SubComponents.Labbook.LabbookEntryWizardModel>
+<FamoNET.Components.SubComponents.SystemMessageComponent />
