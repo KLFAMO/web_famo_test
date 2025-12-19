@@ -25,7 +25,7 @@ namespace FamoNET.Components.Pages
         private async Task LoadData()
         {
             Devices = await DevicesDataService.GetDevicesAsync();
-            DevicesFiltered = await DevicesDataService.GetDevicesAsync(new List<string> { "dds_kam" });
+            DevicesFiltered = await DevicesDataService.GetDevicesByTypeAsync(new List<string> { "dds_kam" });
             await InvokeAsync(() => StateHasChanged());
         }
     }

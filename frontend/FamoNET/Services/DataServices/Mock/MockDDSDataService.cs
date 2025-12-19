@@ -8,11 +8,8 @@ using System.Threading.Tasks;
 
 namespace FamoNET.Services.DataServices.Mock
 {
-    public class MockDDSDataService : IDDSDataService
-    {
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-
-        private IDevicesDataService _devicesDataService;
+    public class MockDDSDataService : DDSDataServiceBase, IDDSDataService
+    {             
         public List<DDSDevice> DDSs { get; set; } = new List<DDSDevice>()
         {
             new DDSDevice()
@@ -263,89 +260,7 @@ namespace FamoNET.Services.DataServices.Mock
             _devicesDataService = devicesDataService;
         }
 
-        public async Task SendDeviceConfiguration(int deviceId, List<DDSChannel> channels)
-        {
-            JsonObject root = new JsonObject();
-            JsonObject parameters = new JsonObject();
-            root["eth_communication"] = new JsonObject();
-            root["eth_communication"]["parameters"] = parameters;
-
-            var oldDdsDevice = await GetById(deviceId);
-
-            for (int i=0; i<channels.Count; i++) 
-            {
-                AddUpdate(parameters, channels[i].Frequency, oldDdsDevice.Channels[i].Frequency);
-                AddUpdate(parameters, channels[i].Phase, oldDdsDevice.Channels[i].Phase);
-                AddUpdate(parameters, channels[i].Amplitude, oldDdsDevice.Channels[i].Amplitude);
-            }
-
-            _logger.Debug(root);
-        }
-        private static void AddUpdate(JsonObject root, DDSValue newDdsValue, DDSValue oldDdsValue)
-        {
-            if (newDdsValue.Value == oldDdsValue.Value && 
-                newDdsValue.Min == oldDdsValue.Min && 
-                newDdsValue.Max == oldDdsValue.Max &&
-                string.Equals(newDdsValue.Description, oldDdsValue.Description))
-            {
-                return;
-            }
-
-            var parts = newDdsValue.Command.Split(':');
-
-            JsonObject current = root;
-
-            // Iterate until the second-to-last part (building structure)
-            for (int i = 0; i < parts.Length - 1; i++)
-            {
-                string propertyName = parts[i];
-
-                // Create a new child object, attach it, and move 'current' deeper
-                var next = new JsonObject();
-
-                
-                if (current[propertyName] == null)
-                {
-                    current[propertyName] = next;
-                    current = next;
-                }
-                else
-                {
-                    current = current[propertyName].AsObject();
-                }
-            }
-
-            // Handle different value types safely (assigning values)
-            if (newDdsValue.Value != oldDdsValue.Value)
-            {
-                current["val"] = ConvertToJsonValue(newDdsValue.Value);
-            }
-
-            if (newDdsValue.Min != oldDdsValue.Min)
-            {
-                current["min"] = ConvertToJsonValue(newDdsValue.Min);
-            }
-
-            if (newDdsValue.Max != oldDdsValue.Max)
-            {
-                current["max"] = ConvertToJsonValue(newDdsValue.Max);
-            }
-
-            if (!string.Equals(oldDdsValue.Description, newDdsValue.Description))
-            {
-                current["label"] = ConvertToJsonValue(newDdsValue.Description);
-            }
-        }
-        private static JsonNode ConvertToJsonValue(object value)
-        {
-            return value switch
-            {
-                int i => JsonValue.Create(i),
-                double d => JsonValue.Create(d),
-                string s => JsonValue.Create(s),
-                bool b => JsonValue.Create(b),
-                _ => JsonValue.Create(value?.ToString())
-            };
-        }
+        
+        
     }
 }

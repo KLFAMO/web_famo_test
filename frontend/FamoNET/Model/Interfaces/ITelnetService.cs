@@ -5,7 +5,7 @@ namespace FamoNET.Model.Interfaces
 {
     public interface ITelnetService
     {
-        Task<TelnetResponseDto> Send(string ip, int port, string message);
+        Task<TelnetResponseDto> Send(string ip, int port, string message, bool insertHistory = true);
         IEnumerable<TerminalCommand> GetHistoryForDevice(string ip, int port);
     }
 }

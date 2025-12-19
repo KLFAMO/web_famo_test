@@ -40,7 +40,7 @@ namespace FamoNET.Services.DataServices.Mock
             });
         }
 
-        public Task<List<Device>> GetDevicesAsync(List<string> types)
+        public Task<List<Device>> GetDevicesByTypeAsync(List<string> types)
         {
             return Task.FromResult(new List<Device>()
             {

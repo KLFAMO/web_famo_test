@@ -2,6 +2,7 @@
 FamoNET/bin
 FamoNET/obj
 FamoNET/Data
+FamoNET/wwwroot/canvas
 
 FamoNET.Scripts/.vscode/
 FamoNET.Scripts/node_modules/

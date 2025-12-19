@@ -63,7 +63,8 @@ namespace FamoNET.Converters
             // Map other fields if they exist in the incoming JSON, otherwise they remain null/default
             device.Id = (int?)root["id"] ?? 0;
             device.Name = root["name"]?.ToString();
-            device.IP = root["ip_famo"]?.ToString() ?? root["eth_communication"]?["ip"]?.ToString(); // Fallback logic example
+            device.IP = root["eth_communication"]?["ip"]?.ToString(); // Fallback logic example
+            device.Port = Int32.Parse(root["eth_communication"]?["port"]?.ToString());
 
             // 3. Navigate to the core data: eth_communication -> parameters -> DDS
             var ddsNode = root["eth_communication"]?["parameters"]?["DDS"];

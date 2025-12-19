@@ -64,6 +64,11 @@ namespace FamoNET.Components.SubComponents.DDS
             {
                 IsLoading = false;
             }
-        }        
+        }   
+        
+        private async Task SendCommand(DDSValue ddsValue)
+        {
+            await _telnetService.Send(Model.IP, Model.Port, ddsValue.Command, false);
+        }
     }
 }

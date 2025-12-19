@@ -51,7 +51,7 @@ namespace FamoNET.Services.DataServices
             }
         }
 
-        public async Task<List<Device>> GetDevicesAsync(List<string> types)
+        public async Task<List<Device>> GetDevicesByTypeAsync(List<string> types)
         {
             StringBuilder sb = new StringBuilder();
             sb.Append("?");
@@ -65,6 +65,53 @@ namespace FamoNET.Services.DataServices
                 }                
             }
             
+
+            HttpResponseMessage response = null;
+            try
+            {
+                response = await HttpClient.GetAsync(sb.ToString(), CancellationTokenSource.Token);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                throw;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Error($"Wrong status code: {response.StatusCode}. Address: {HttpClient.BaseAddress}");
+                return null;
+            }
+
+            try
+            {
+                var result = JsonSerializer.Deserialize<List<Device>>(await response.Content.ReadAsStringAsync());
+                if (result == null)
+                    throw new Exception("Failed to parse data from API");
+
+                return result.OrderBy(r => r.Name).ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex);
+                throw;
+            }
+        }
+
+        public async Task<List<Device>> GetDevicesByTagsAsync(List<string> tags)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("?");
+            for (int i = 0; i < tags.Count; ++i)
+            {
+                sb.Append("tag=");
+                sb.Append(tags[i]);
+                if (i < tags.Count - 1)
+                {
+                    sb.Append("&");
+                }
+            }
+
 
             HttpResponseMessage response = null;
             try

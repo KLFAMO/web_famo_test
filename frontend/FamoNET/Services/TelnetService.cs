@@ -29,7 +29,7 @@ namespace FamoNET.Services
             return _terminalCommandsRepository.GetForDevice(ip, port);
         }
 
-        public async Task<TelnetResponseDto> Send(string ip, int port, string message)
+        public async Task<TelnetResponseDto> Send(string ip, int port, string message, bool insertHistory = true)
         {            
             dynamic dto = new { ip = ip, port=port, command = message };
             var content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json");
@@ -56,13 +56,17 @@ namespace FamoNET.Services
                 messageToSave.Response = telnetResponse.Response;
                 messageToSave.ResponseType = (int)TerminalMessageType.Ok;
 
-                await _terminalCommandsRepository.AddAsync(messageToSave);
+                if (insertHistory)
+                    await _terminalCommandsRepository.AddAsync(messageToSave);
+
                 return telnetResponse;
             }
             catch(Exception ex)
             {
                 messageToSave.ResponseType = (int)TerminalMessageType.Error;
-                await _terminalCommandsRepository.AddAsync(messageToSave);
+
+                if (insertHistory)
+                    await _terminalCommandsRepository.AddAsync(messageToSave);
 
                 Logger.Error($"Failed to read response", ex);
                 return new TelnetResponseDto()
