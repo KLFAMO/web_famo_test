@@ -68,7 +68,24 @@ namespace FamoNET.Components.SubComponents.DDS
         
         private async Task SendCommand(DDSValue ddsValue)
         {
-            await _telnetService.Send(Model.IP, Model.Port, ddsValue.Command, false);
+            await _telnetService.Send(Model.IP, Model.Port, string.Concat(ddsValue.Command, $" {ddsValue.Value}"), false);
+            _systemNotificationService.SendSystemMessage(this, new SystemMessage("Value has been sent", SystemMessageType.Info));
+        }
+
+        private async Task ReadCommand(DDSValue ddsValue)
+        {
+            var telnetResponse = await _telnetService.Send(Model.IP, Model.Port, string.Concat(ddsValue.Command, $" ?"), false);
+            if (Double.TryParse(telnetResponse.Response, out var fetchedValue))
+            {
+                ddsValue.Value = fetchedValue;
+            }
+            else
+            {
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Failed to parse data.", SystemMessageType.Info));
+                _logger.Error($"Failed to parse data from telnet response. {telnetResponse.Response}");
+            }
+
+            StateHasChanged();
         }
     }
 }

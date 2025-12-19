@@ -31,6 +31,7 @@ namespace FamoNET.Model
             Name = d.Name;
             Description = d.Description;
             IP = d.IP;
+            Port = d.Port;
             DeviceType = d.DeviceType;
             Location = d.Location;
             Tags = d.Tags;

@@ -17,9 +17,9 @@ namespace FamoNET.Services.Mock
         public IEnumerable<TerminalCommand> GetHistoryForDevice(string ip, int port)
         {
             return _terminalCommandsRepository.GetForDevice(ip, port); 
-        }
+        }        
 
-        public async Task<TelnetResponseDto> Send(string ip, int port, string message)
+        public async Task<TelnetResponseDto> Send(string ip, int port, string message, bool insertHistory = true)
         {
             await Task.Delay(1000);
 
@@ -28,20 +28,22 @@ namespace FamoNET.Services.Mock
             //    Response = "Error!11!",
             //    Status = "error"
             //};
-            var objToAdd = new TerminalCommand() 
-            { 
-                Request = message, 
+            var objToAdd = new TerminalCommand()
+            {
+                Request = message,
                 Response = "Ok",
                 ResponseType = (int)TerminalMessageType.Ok,
-                IP = string.Concat(ip, ":", port) };
+                IP = string.Concat(ip, ":", port)
+            };
 
-            await _terminalCommandsRepository.AddAsync(objToAdd);
+            if (insertHistory)
+                await _terminalCommandsRepository.AddAsync(objToAdd);
 
             return new TelnetResponseDto()
             {
                 Response = "Succcess!11!",
                 Status = "ok"
             };
-        }                    
+        }
     }
 }

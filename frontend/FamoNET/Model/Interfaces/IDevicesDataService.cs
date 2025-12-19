@@ -4,7 +4,6 @@
     {
         Task<List<Device>> GetDevicesAsync();
         Task<List<Device>> GetDevicesByTypeAsync(List<string> types);
-        Task<List<Device>> GetDevicesByTagsAsync(List<string> tags);
-        Task<Device> GetById(int id);
+        Task<List<Device>> GetDevicesByTagsAsync(List<string> tags);       
     }
 }

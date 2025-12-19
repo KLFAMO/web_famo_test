@@ -10,5 +10,6 @@
         public string DevicesUri { get; set; }
         public string TelnetUri { get; set; }
         public string LabbookUri { get; set; }
+        public string ElementsUri { get; set; }
     }
 }

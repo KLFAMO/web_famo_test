@@ -1,6 +1,5 @@
 ﻿using FamoNET.Model;
 using FamoNET.Model.Interfaces;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -8,40 +7,52 @@ namespace FamoNET.Services.DataServices
 {
     public abstract class DDSDataServiceBase : DataServiceBase
     {
-        private IDevicesDataService _devicesDataService;
+        protected IDevicesDataService _devicesDataService;
+        private readonly string _endpoint;
 
         protected DDSDataServiceBase(string endpoint, IDevicesDataService devicesDataService) : base(endpoint)
         {
             _devicesDataService = devicesDataService;
+            _endpoint = endpoint;
         }
 
         public virtual async Task<DDSDevice> GetById(int id)
         {
-            var baseDevice = await _devicesDataService.GetById(id);
+            var baseDevice = (await _devicesDataService.GetDevicesByTagsAsync(new() { "dds" })).FirstOrDefault(d => d.Id == id);
+
+            if (baseDevice == null)
+                throw new InvalidDataException("Device with such ID not found. Make sure device has assigned 'dds' tag.");
 
             HttpResponseMessage response = null;
-            try
+            
+            HttpClient client = new HttpClient() //temp solution, backend needs to change endpoint name
             {
-                response = await HttpClient.GetAsync("", CancellationTokenSource.Token);
+                BaseAddress = new Uri(_endpoint.Substring(0, _endpoint.Length-2))
+            };
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
+
+            try
+            {                
+                response = await client.GetAsync($"{id}/properties", CancellationTokenSource.Token);
                 if (!response.IsSuccessStatusCode)
                 {
-                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {HttpClient.BaseAddress}");
-                    return null;
+                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {client.BaseAddress}/{id}/properties");
+                    throw new Exception("Device not found");
                 }
 
-                var result = JsonSerializer.Deserialize<List<DDSDevice>>(await response.Content.ReadAsStringAsync());
+                var result = JsonSerializer.Deserialize<DDSDevice>(await response.Content.ReadAsStringAsync());
                 if (result == null)
                     throw new Exception("Failed to parse data from API");
 
 
-                return result.OrderBy(r => r.Name).ToList();
+                return new DDSDevice(baseDevice) { Channels = result.Channels, Port = result.Port };
 
             }                                    
             catch (Exception ex)
             {
                 Logger.Error(ex);
                 throw;
-            }           
+            }                  
         }
 
         protected async Task<JsonObject> GetJsonRequest(int deviceId, List<DDSChannel> channels)
@@ -59,9 +70,10 @@ namespace FamoNET.Services.DataServices
                 AddUpdate(parameters, channels[i].Phase, oldDdsDevice.Channels[i].Phase);
                 AddUpdate(parameters, channels[i].Amplitude, oldDdsDevice.Channels[i].Amplitude);
             }
-
-            Logger.Debug(root);
+            
+            return root;            
         }
+
         private static void AddUpdate(JsonObject root, DDSValue newDdsValue, DDSValue oldDdsValue)
         {
             if (newDdsValue.Value == oldDdsValue.Value &&

@@ -9,12 +9,7 @@ namespace FamoNET.Services.DataServices
     {        
         public DevicesDataService(string endpoint) : base(endpoint)
         {
-        }
-
-        public Task<Device> GetById(int id)
-        {
-            throw new NotImplementedException();
-        }
+        }        
 
         public async Task<List<Device>> GetDevicesAsync()
         {

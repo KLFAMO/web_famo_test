@@ -3,8 +3,6 @@ using FamoNET.Model;
 using FamoNET.Model.Interfaces;
 using NLog;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace FamoNET.Services.DataServices.Mock
 {
@@ -189,7 +187,7 @@ namespace FamoNET.Services.DataServices.Mock
             }
         };
 
-        public async Task<DDSDevice> GetById(int id)
+        public override async Task<DDSDevice> GetById(int id)
         {
             string json = @"{
   ""device_type"": ""dds_kam"",
@@ -240,7 +238,7 @@ namespace FamoNET.Services.DataServices.Mock
     }
   }
 }";
-            var baseDevice = await _devicesDataService.GetById(id);
+            var baseDevice = (await _devicesDataService.GetDevicesAsync()).FirstOrDefault(d => d.Id == id);
             var options = new JsonSerializerOptions();
             options.Converters.Add(new DDSDeviceConverter()); // Uncomment if you removed the attribute
 
@@ -255,7 +253,14 @@ namespace FamoNET.Services.DataServices.Mock
             return await _devicesDataService.GetDevicesAsync();
         }
 
-        public MockDDSDataService(IDevicesDataService devicesDataService)
+        public Task SendDeviceConfiguration(int deviceId, List<DDSChannel> channels)
+        {
+            var json = GetJsonRequest(deviceId, channels);
+            Logger.Debug(json);
+            return Task.CompletedTask;
+        }
+
+        public MockDDSDataService(IDevicesDataService devicesDataService) : base("http://localhost", devicesDataService)
         {
             _devicesDataService = devicesDataService;
         }

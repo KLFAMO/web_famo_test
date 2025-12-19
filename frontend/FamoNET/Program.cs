@@ -1,5 +1,4 @@
 using FamoNET.Components;
-using FamoNET.Controllers;
 using FamoNET.Controllers.Mock;
 using FamoNET.Database;
 using FamoNET.Database.Extensions;
@@ -8,7 +7,6 @@ using FamoNET.Database.Repositories.Implementations;
 using FamoNET.DataProviders;
 using FamoNET.DataProviders.Mock;
 using FamoNET.Factories;
-using FamoNET.Factories.Mock;
 using FamoNET.Model;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
@@ -44,6 +42,7 @@ namespace FamoNET
             builder.Services.AddScoped<ILabbookDataService>((s) => new LabbookDataService(s.GetService<IOptions<EndpointsOptions>>().Value.LabbookUri));
             builder.Services.AddScoped<ITelnetService>((s) => new TelnetService(s.GetService<IOptions<EndpointsOptions>>().Value.TelnetUri, s.GetService<ITerminalCommandsRepository>()));            
             builder.Services.AddScoped<IRemoteChartsDeviceFactory>((s) => new RemoteChartsDeviceFactory());
+            builder.Services.AddScoped<IDDSDataService>((s) => new DDSDataService(s.GetService<IOptions<EndpointsOptions>>().Value.ElementsUri, s.GetRequiredService<IDevicesDataService>()));
 #else
             builder.Services.AddScoped<IAndaDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddSingleton<IFreqMonitorDataService>((s) => new MockFreqMonitorDataService());

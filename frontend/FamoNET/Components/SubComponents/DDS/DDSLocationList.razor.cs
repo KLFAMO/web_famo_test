@@ -31,13 +31,13 @@ namespace FamoNET.Components.SubComponents.DDS
 
                 foreach (var device in devices)
                 {
-                    if (DevicesByLocation.TryGetValue(device.Location, out var collection))
+                    if (DevicesByLocation.TryGetValue(device.Location ?? "Unknown", out var collection))
                     {
                         collection.Add(device);
                     }
                     else
                     {
-                        DevicesByLocation.Add(device.Location, new List<Device>() { device });
+                        DevicesByLocation.Add(device.Location ?? "Unknown", new List<Device>() { device });
                     }
                 }
 
