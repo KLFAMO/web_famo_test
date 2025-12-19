@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/anda/table_data', anda.views.TableData.as_view(), name='anda_table_data'),
     path('api/anda/script', anda.views.ScriptData.as_view(), name='anda_script'),
     path('api/devices', devices.views.DeviceNamesAPIView.as_view(), name='device_names_api'),
+    path('api/device/<int:element_id>', devices.views.DeviceNameByIdAPIView.as_view(), name='device_name_api'),
     path('api/elements', devices.views.ElementNamesAPIView.as_view(), name='element_names_api'),
     path('api/element/<int:element_id>/properties', devices.views.ElementPropertiesAPIView.as_view(), name='element_properties_api'),
     path('api/element/<int:element_id>/properties/update', devices.views.ElementPropertiesUpdateAPIView.as_view(), name='update_element_properties_api'),

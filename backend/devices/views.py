@@ -335,8 +335,17 @@ class DeviceNamesAPIView(APIView):
         queryset = Device.objects.all()
         if device_types:
             queryset = queryset.filter(device_type__in=device_types)
-        devices = queryset.values('name', 'ip_famo', 'device_type', 'description', 'location')
+        devices = queryset.values('id', 'name', 'ip_famo', 'device_type', 'description', 'location')
         return Response(list(devices)) 
+    
+class DeviceNameByIdAPIView(APIView):
+    def get(self, request, element_id):        
+        queryset = Device.objects.filter(id=element_id)        
+        device = queryset.values('id', 'name', 'ip_famo', 'device_type', 'description', 'location').first()
+        if (device is None):
+            return Response({"detail": "Device not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(device)
     
 
 class ElementNamesAPIView(APIView):
