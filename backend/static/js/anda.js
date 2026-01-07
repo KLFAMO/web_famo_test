@@ -1,9 +1,10 @@
+import { CanvasPlot } from "/static/lib/CanvasPlot/dist/index.js";
 
-let dataPlot = null;
+let plot = null;
 
 function getDataArrays() {
-    const { x_tab, y_tab } = window.andaData;
-    return { x_tab, y_tab };
+  const { x_tab, y_tab } = window.andaData;
+  return { x_tab, y_tab };
 }
 
 // Ograniczamy liczbę etykiet
@@ -72,23 +73,23 @@ function createOrUpdatePlot() {
 }
 
 function export_data_to_csv() {
-    const { x_tab, y_tab } = getDataArrays();
+  const { x_tab, y_tab } = getDataArrays();
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "mjd,val\n";
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "mjd,val\n";
 
-    x_tab.forEach((x_value, index) => {
-        const y_value = y_tab[index];
-        csvContent += `${x_value},${y_value}\n`;
-    });
+  x_tab.forEach((x_value, index) => {
+    const y_value = y_tab[index];
+    csvContent += `${x_value},${y_value}\n`;
+  });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "data_export.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "data_export.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 window.addEventListener('DOMContentLoaded', () => {

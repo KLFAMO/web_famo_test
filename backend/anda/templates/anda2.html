@@ -20,7 +20,7 @@
     <script>
         window.andaData = {
             x_tab: {{ mjd_tab_json|safe }},
-            y_tab: {{ val_tab_json|safe }} 
+            y_tab: {{ val_tab_json|safe }}
         };
     </script>
 
@@ -70,6 +70,22 @@
             <input id="btn_export" type="button" value="Export to CSV" onclick="export_data_to_csv()">
         </div>
     </div>
+
+    <div class="plot-container">
+        <h1>TSPlot minimal test (Django)</h1>
+        <canvas id="c"></canvas>
+
+        <script type="module">
+            import { CanvasPlot } from "{% static 'lib/tsplot/dist/index.js' %}";
+
+            const canvas = document.getElementById("c");
+            // const plot = new CanvasPlot(canvas, { background: "#eeeeee" });
+
+            // console.log("CanvasPlot instance:", plot);
+            // window._plot = plot;
+        </script>
+    </div>
+    
 
 </div>
 </body>
