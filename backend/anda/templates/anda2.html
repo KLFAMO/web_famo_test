@@ -8,20 +8,15 @@
 
     {% load static %}
 
-    <!-- uPlot CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/uplot/dist/uPlot.min.css">
-
     <!-- Project stylesheet -->
-    <link rel="stylesheet" href="{% static 'css/anda.css' %}">
-
-    <!-- uPlot JS -->
-    <script src="https://unpkg.com/uplot/dist/uPlot.iife.min.js"></script>
+    <link rel="stylesheet" href="{% static 'css/anda2.css' %}">
 
     <script>
         window.andaData = {
             x_tab: {{ mjd_tab_json|safe }},
             y_tab: {{ val_tab_json|safe }}
         };
+        console.log("andaData:", window.andaData);
     </script>
 
     <!-- Projekt JS scripts -->
@@ -41,14 +36,14 @@
                 >{{table_name}}</option>
             {% endfor %}
         </select>
-        <br><br>
+        <br>
 
         <label for="from_mjd">From MJD: </label>
         <input type="number" id="from_mjd" name="from_mjd"
                step="0.0000001"
                ondblclick="this.value=Math.round({{mjd_now}});"
                value="{{last_from_mjd}}">
-        <br><br>
+        <br>
 
         <label for="to_mjd">To MJD: </label>
         <input type="number" id="to_mjd" name="to_mjd"
@@ -58,33 +53,23 @@
 
         <br>
         <input type="submit" value="Plot">
+
+        MJD Today: {{mjd_now}}
+
     </form>
 
-    <p>MJD Today: {{mjd_now}}</p>
 
-    <div class="plot-container">
-        <div class="plot-title">Data plot</div>
-        <div id="data_plot"></div>
+    <canvas id="c"></canvas>
 
-        <div class="controls-row">
-            <input id="btn_export" type="button" value="Export to CSV" onclick="export_data_to_csv()">
-        </div>
-    </div>
+    <script type="module">
+        import { CanvasPlot } from "{% static 'lib/tsplot/dist/index.js' %}";
 
-    <div class="plot-container">
-        <h1>TSPlot minimal test (Django)</h1>
-        <canvas id="c"></canvas>
+        const canvas = document.getElementById("c");
+        const plot = new CanvasPlot(canvas);
 
-        <script type="module">
-            import { CanvasPlot } from "{% static 'lib/tsplot/dist/index.js' %}";
-
-            const canvas = document.getElementById("c");
-            // const plot = new CanvasPlot(canvas, { background: "#eeeeee" });
-
-            // console.log("CanvasPlot instance:", plot);
-            // window._plot = plot;
-        </script>
-    </div>
+        console.log("CanvasPlot instance:", plot);
+        window._plot = plot;
+    </script>
     
 
 </div>
