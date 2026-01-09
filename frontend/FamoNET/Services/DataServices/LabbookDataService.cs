@@ -57,8 +57,8 @@ namespace FamoNET.Services.DataServices
             }
             HttpResponseMessage response = null;
             try
-            {
-                response = await HttpClient.GetAsync(keyValuePairs.Count() > 0 ? "?" + keyValuePairs.ToString() : "", CancellationTokenSource.Token);
+            {                
+                response = await HttpClient.GetAsync(keyValuePairs.ToString(), CancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
