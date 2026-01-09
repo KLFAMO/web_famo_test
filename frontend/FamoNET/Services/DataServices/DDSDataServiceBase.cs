@@ -27,7 +27,7 @@ namespace FamoNET.Services.DataServices
             
             HttpClient client = new HttpClient() //temp solution, backend needs to change endpoint name
             {
-                BaseAddress = new Uri(_endpoint.Substring(0, _endpoint.Length-2))
+                BaseAddress = new Uri(_endpoint.Substring(0, _endpoint.Length - 2) + '/')
             };
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
@@ -36,7 +36,7 @@ namespace FamoNET.Services.DataServices
                 response = await client.GetAsync($"{id}/properties", CancellationTokenSource.Token);
                 if (!response.IsSuccessStatusCode)
                 {
-                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {client.BaseAddress}/{id}/properties");
+                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {client.BaseAddress}{id}/properties");
                     throw new Exception("Device not found");
                 }
 

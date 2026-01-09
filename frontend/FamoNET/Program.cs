@@ -25,6 +25,7 @@ namespace FamoNET
         {
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
+            builder.Services.Configure<CredentialsOptions>(builder.Configuration.GetSection(CredentialsOptions.SectionName));
             
             builder.Services.AddScoped<ISystemNotificationService>((s) => new SystemNotificationService());
             builder.Services.AddScoped((s) => new TimeService());
@@ -34,6 +35,7 @@ namespace FamoNET
             builder.Services.AddSingleton((s) => new CounterDataService(s.GetService<IOptions<EndpointsOptions>>().Value.FXMCounterUri));            
             builder.Services.AddScoped<ICSVDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddScoped<ITerminalCommandsRepository, TerminalCommandsRepository>();
+            builder.Services.AddScoped<IDDSDevicesRepository, DDSDevicesRepository>();
 
 #if (!DEBUG)
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));

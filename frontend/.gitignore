@@ -3,6 +3,7 @@ FamoNET/bin
 FamoNET/obj
 FamoNET/Data
 FamoNET/wwwroot/canvas
+FamoNET/appsettings.json
 
 FamoNET.Scripts/.vscode/
 FamoNET.Scripts/node_modules/

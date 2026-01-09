@@ -45,3 +45,20 @@
         opacity: 1;
     }
 }
+
+/* Wrapper to ensure the component takes full height 
+           and utilizes flexbox for vertical centering.
+        */
+.login-component-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #f5f5f5; /* Match Bulma has-background-light */
+}
+
+/* Optional tweaks for the box appearance */
+.login-box {
+    box-shadow: 0 1em 2em -0.5em rgba(10, 10, 10, 0.1);
+    border-top: 4px solid #3273dc; /* Info Blue accent */
+}

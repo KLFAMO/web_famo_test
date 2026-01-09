@@ -7,6 +7,7 @@ namespace FamoNET.Model
     public class DDSDevice : Device
     {        
         public List<DDSChannel> Channels { get; set; }
+        public bool IsLocked { get; set; }
         public DDSDevice()
         {
             

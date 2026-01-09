@@ -1,28 +1,73 @@
 ﻿@page "/ddsconfiguration"
 @rendermode InteractiveServer
 
-<div class="component-wrapper">
+@if (Authorized)
+{
+    <div class="component-wrapper">
+        <div class="sidebar-column pl-4 pr-4">
+            <FamoNET.Components.SubComponents.DDS.DDSLocationList DeviceSelected="OnDeviceSelected"></FamoNET.Components.SubComponents.DDS.DDSLocationList>
+        </div>
 
-    <div class="sidebar-column pl-4 pr-4">
-        <FamoNET.Components.SubComponents.DDS.DDSLocationList DeviceSelected="OnDeviceSelected"></FamoNET.Components.SubComponents.DDS.DDSLocationList>
-    </div>
-
-    <div class="content-column">
-        <div class="level mb-5 header-box">
-            <div class="level-left">
-                <div class="level-item">
-                    <h1 class="title is-4 has-text-grey-dark">
-                        DDS CONFIGURATION
-                    </h1>
-                    <span class="tag is-warning is-medium is-light has-text-weight-bold" style="-webkit-animation: fast-blink 1s infinite;">
-                        <span class="icon"></span>
-                        <span>CONFIGURATION MODE</span>
-                    </span>
+        <div class="content-column">
+            <div class="level mb-5 header-box">
+                <div class="level-left">
+                    <div class="level-item">
+                        <h1 class="title is-4 has-text-grey-dark">
+                            DDS CONFIGURATION
+                        </h1>
+                        <span class="tag is-warning is-medium is-light has-text-weight-bold" style="-webkit-animation: fast-blink 1s infinite;">
+                            <span class="icon"></span>
+                            <span>CONFIGURATION MODE</span>
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>        
-    <FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration DeviceId="DeviceId"></FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration>        
+            <FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration DeviceId="DeviceId"></FamoNET.Components.SubComponents.DDS.DDSDeviceConfiguration>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div class="login-component-wrapper p-4">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-10-mobile is-6-tablet is-4-desktop">
+                    <div class="box login-box py-3 px-5">
+                        <div class="has-text-centered mb-5">
+                            <span class="icon is-large has-text-info mb-3">
+                                <i class="fa-solid fa-shield-halved fa-4x"></i>
+                            </span>
+                            <h3 class="title is-4">Device Access</h3>
+                            <p class="subtitle is-6 has-text-grey">Please authenticate to continue.</p>
+                        </div>
+
+                        <div class="field mb-5">
+                            <label class="label">Password</label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="password" @bind=Password placeholder="Enter Password" @bind:event="oninput" @onkeydown="@OnKeyEnter">
+                                <span class="icon is-small is-left">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-info is-medium is-fullwidth has-text-weight-bold" type="button" @onclick="(e) => Authorize()">
+                                    Unlock
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="has-text-centered is-size-7 mt-5 has-text-grey">
+                        Protected System. Authorized access only.
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 
 <FamoNET.Components.SubComponents.SystemMessageComponent></FamoNET.Components.SubComponents.SystemMessageComponent>

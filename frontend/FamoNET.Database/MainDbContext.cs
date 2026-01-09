@@ -7,6 +7,7 @@ namespace FamoNET.Database
     public class MainDbContext : DbContext
     {
         public DbSet<TerminalCommand> TerminalCommands { get; set; }
+        public DbSet<DDSDevice> DDSDevices { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
         {
@@ -26,7 +27,16 @@ namespace FamoNET.Database
                 entity.Property(e => e.CreatedOn).IsRequired();
                 entity.Property(e => e.ResponseType).IsRequired();
                 entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
-            });            
+            });
+
+            modelBuilder.Entity<DDSDevice>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.IsLocked).IsRequired();
+                entity.Property(e => e.DeviceId).IsRequired();
+                entity.Property(e => e.CreatedOn).IsRequired();                
+                entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
+            });
         }
     }
 }

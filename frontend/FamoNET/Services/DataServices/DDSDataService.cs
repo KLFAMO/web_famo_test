@@ -1,5 +1,6 @@
 ﻿using FamoNET.Model;
 using FamoNET.Model.Interfaces;
+using NLog;
 using System.Text;
 using System.Text.Json;
 
@@ -7,6 +8,7 @@ namespace FamoNET.Services.DataServices
 {
     public class DDSDataService : DDSDataServiceBase, IDDSDataService
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private readonly string _endpoint;
         public DDSDataService(string endpoint, IDevicesDataService devicesDataService) : base(endpoint, devicesDataService)
         {
@@ -42,29 +44,26 @@ namespace FamoNET.Services.DataServices
 
         public async Task SendDeviceConfiguration(int deviceId, List<DDSChannel> channels)
         {
-            var updateJson = GetJsonRequest(deviceId, channels);
+            var updateJson = await GetJsonRequest(deviceId, channels);
             var content = new StringContent(updateJson.ToString(), Encoding.UTF8, "application/json");
-
+            
+            _logger.Info($"Sending DDS configuration update: {updateJson.ToString()}");
             HttpResponseMessage response = null;
 
             HttpClient client = new HttpClient() //temp solution, backend needs to change endpoint name
             {
-                BaseAddress = new Uri(_endpoint.Substring(0, _endpoint.Length - 2))
+                BaseAddress = new Uri(_endpoint.Substring(0, _endpoint.Length - 2) + '/')
             };
             client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
             try
             {                
-                response = await client.PatchAsync($"{deviceId}/update", content);
+                response = await client.PatchAsync($"{deviceId}/properties/update", content);
                 if (!response.IsSuccessStatusCode)
                 {
-                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {client.BaseAddress}/{deviceId}/update");
+                    Logger.Error($"Wrong status code: {response.StatusCode}. Address: {client.BaseAddress}{deviceId}/properties/update");
                     return;
-                }
-
-                var result = JsonSerializer.Deserialize<List<Device>>(await response.Content.ReadAsStringAsync());
-                if (result == null)
-                    throw new Exception("Failed to parse data from API");
+                }                
 
                 if (!response.IsSuccessStatusCode)
                 {

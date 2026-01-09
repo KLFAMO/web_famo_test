@@ -1,4 +1,5 @@
-﻿using FamoNET.Model;
+﻿using FamoNET.Database.Model.Interfaces;
+using FamoNET.Model;
 using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using Microsoft.AspNetCore.Components;
@@ -11,6 +12,8 @@ namespace FamoNET.Components.SubComponents.DDS
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         [Inject]
         private IDDSDataService _ddsDataService { get; set; }
+        [Inject]
+        private IDDSDevicesRepository _ddsDevicesRepository { get; set; }
         [Inject]
         private ITelnetService _telnetService { get; set; }
         [Inject]
@@ -49,11 +52,13 @@ namespace FamoNET.Components.SubComponents.DDS
             }
 
             _lastDeviceId = DeviceId;
+            var rep_device = await _ddsDevicesRepository.GetByDeviceIdAsync(DeviceId);
 
             try
             {
                 IsLoading = true;
                 Model = await _ddsDataService.GetById(DeviceId);
+                Model.IsLocked = rep_device?.IsLocked ?? false;
             }
             catch (Exception ex)
             {
@@ -68,20 +73,26 @@ namespace FamoNET.Components.SubComponents.DDS
         
         private async Task SendCommand(DDSValue ddsValue)
         {
+            if (!ddsValue.IsValid)
+            {
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Invalid value. Check format and range.", SystemMessageType.Error));
+                return;
+            }
+
             await _telnetService.Send(Model.IP, Model.Port, string.Concat(ddsValue.Command, $" {ddsValue.Value}"), false);
             _systemNotificationService.SendSystemMessage(this, new SystemMessage("Value has been sent", SystemMessageType.Info));
         }
 
         private async Task ReadCommand(DDSValue ddsValue)
         {
-            var telnetResponse = await _telnetService.Send(Model.IP, Model.Port, string.Concat(ddsValue.Command, $" ?"), false);
-            if (Double.TryParse(telnetResponse.Response, out var fetchedValue))
+            var telnetResponse = await _telnetService.Send(Model.IP, Model.Port, string.Concat(ddsValue.Command, $" ?"), false);            
+            if (Double.TryParse(new string(telnetResponse.Response.Where(c => char.IsDigit(c) || c == '.' || c== ',').ToArray()), out var fetchedValue))
             {
                 ddsValue.Value = fetchedValue;
             }
             else
             {
-                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Failed to parse data.", SystemMessageType.Info));
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Failed to parse data.", SystemMessageType.Error));
                 _logger.Error($"Failed to parse data from telnet response. {telnetResponse.Response}");
             }
 
