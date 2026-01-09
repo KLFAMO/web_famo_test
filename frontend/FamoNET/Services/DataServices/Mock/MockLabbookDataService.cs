@@ -63,8 +63,9 @@ namespace FamoNET.Services.DataServices.Mock
             {
                 return _entries;
             }
-            
-            return _entries.Where(e => e.StartMjd >= from && e.EndMjd <= to).ToList();
+
+            //return _entries.Where(e => e.StartMjd >= from && e.EndMjd <= to).ToList();
+            return _entries;
         }
 
         public Task<bool> PostAsync(LabbookEntry entry)

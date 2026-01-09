@@ -9,24 +9,28 @@ else if (IsLoading)
 else if (Model != null)
 {
     <div class="box mb-5">
-        <div class="columns is-vcentered is-mobile is-multiline">
+        <div class="columns is-mobile is-multiline">
             <div class="column is-12-mobile is-4-tablet is-3-desktop">
                 <p class="heading">Selected Device</p>
                 <h3 class="title is-5">@Model.Name</h3>
             </div>
             <div class="column is-6-mobile is-3-tablet is-2-desktop">
                 <p class="heading">IP Address</p>
-                <code class="has-text-info">@Model.IP</code>
+                <h3 class="title is-5">
+                    <code class="has-text-info">@Model.IP</code>
+                </h3>                
             </div>
             @if (!string.IsNullOrWhiteSpace(Model.Tags))
             {
                 <div class="column is-12-mobile is-5-tablet is-5-desktop">
                     <p class="heading">Associated Tags</p>
                     <div class="tags">
-                        @foreach (var tag in Model.Tags.Split(','))
-                        {
-                            <span class="tag is-info is-light">@tag</span>
-                        }
+                        <h3 class="title is-5">
+                            @foreach (var tag in Model.Tags.Split(','))
+                            {
+                                <span class="tag is-info is-light">@tag</span>
+                            }
+                        </h3>
                     </div>
                 </div>
             }

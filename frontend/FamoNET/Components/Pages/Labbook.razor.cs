@@ -2,6 +2,7 @@
 using FamoNET.Model;
 using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
+using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
 using NLog;
 
@@ -16,6 +17,9 @@ namespace FamoNET.Components.Pages
         private ISystemNotificationService _systemNotificationService { get; set; }
         
         private LabbookEntryWizardModel LabbookEntryWizardModel;
+
+        public double StartMjd { get; set; } = Math.Round(TimeService.GetMJD(DateTime.UtcNow.AddDays(-1)), 4);
+        public double EndMjd { get; set; } = Math.Round(TimeService.GetMJD(DateTime.UtcNow), 4);
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -56,7 +60,7 @@ namespace FamoNET.Components.Pages
         protected async Task LoadDataAsync()
         {
             IsLoading = true;
-            Entries = await _labbookDataService.GetEntriesAsync();
+            Entries = await _labbookDataService.GetEntriesAsync(StartMjd, EndMjd);
             foreach (var entry in new List<LabbookEntry>(Entries))
             {
                 if (entry.ParentId > 0)

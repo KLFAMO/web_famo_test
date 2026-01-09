@@ -16,18 +16,22 @@ else if (Model != null)
             </div>
             <div class="column is-6-mobile is-3-tablet is-2-desktop">
                 <p class="heading">IP Address</p>
-                <code class="has-text-info">@Model.IP</code>
+                <h3 class="title is-5">
+                    <code class="has-text-info">@Model.IP</code>
+                </h3>                
             </div>
             <div class="column is-12-mobile is-5-tablet is-5-desktop">
                 <p class="heading">Associated Tags</p>
                 <div class="tags">
+                    <h3 class="title is-5">
                     @if(!string.IsNullOrWhiteSpace(Model.Tags))
                     {
                         foreach(var tag in Model.Tags.Split(','))
                         {
                             <span class="tag is-info is-light">@tag</span>
                         }
-                    }                                        
+                    }
+                    </h3>
                 </div>
             </div>
             <div class="column is-6-mobile is-12-tablet is-2-desktop has-text-right-desktop">
@@ -57,7 +61,7 @@ else if (Model != null)
                             <label class="label param-label">Frequency</label>
                             <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Frequency.Description>
                             <div class="field has-addons mb-2">
-                                <p class="control"><a class="button is-static">Value</a></p>
+                                <p class="control"><a class="button is-static">Default</a></p>
                                 <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0" @bind=channel.Frequency.Value></p>
                             </div>
                             <div class="columns is-mobile is-variable is-1 limit-input-group">
@@ -80,7 +84,7 @@ else if (Model != null)
                             <label class="label param-label">Phase</label>
                             <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Phase.Description>
                             <div class="field has-addons mb-2">
-                                <p class="control"><a class="button is-static">Value</a></p>
+                                <p class="control"><a class="button is-static">Default</a></p>
                                 <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0" @bind=channel.Phase.Value></p>
                             </div>
                             <div class="columns is-mobile is-variable is-1 limit-input-group">
@@ -103,7 +107,7 @@ else if (Model != null)
                             <label class="label param-label">Amplitude</label>
                             <input class="input is-small is-desc" type="text" placeholder="Parameter description..." @bind=channel.Amplitude.Description>
                             <div class="field has-addons main-control-row">
-                                <p class="control"><a class="button is-static">Value</a></p>
+                                <p class="control"><a class="button is-static">Default</a></p>
                                 <p class="control is-expanded"><input class="input" type="number" placeholder="0" @bind=channel.Amplitude.Value></p>
                             </div>
                             <div class="columns is-mobile is-variable is-1 limit-input-group">

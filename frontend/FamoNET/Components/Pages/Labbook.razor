@@ -9,13 +9,20 @@
 }
 else
 {
+    <div class="container is-flex is-flex-direction-row">
+        <FamoNET.Components.SubComponents.MjdPickerComponent @bind-StartMjd=StartMjd @bind-EndMjd=EndMjd @bind-IsUIDisabled=IsLoading />
+        <div class="ml-2">
+            <button class="button is-primary" @onclick="@(() => LoadDataAsync())" disabled=@IsLoading>Fetch</button>
+        </div>        
+    </div>
+    
     <div class="container">
         <button class="button is-primary" @onclick=@(() => LabbookEntryWizardModel.Load())>Add</button>
         <table class="table is-fullwidth is-striped is-hoverable is-narrow">
             <thead>
                 <th>Id</th>
-                <th>Start MJD</th>
-                <th>End MJD</th>
+                <th>Start time</th>
+                <th>End time</th>
                 <th>Message</th>
                 <th>Tag</th>
                 <th>Extra</th>

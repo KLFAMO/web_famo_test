@@ -2,8 +2,14 @@
 {
     <tr style="margin-left: @(IsChild ? "0em" : "2em"); opacity: @(IsChild ? 0.6 : 1); line-height:@(IsChild ? "1em" : "2em");" @onclick="() => ToggleChildVisibility()">
         <td>@(Entry.ParentId > 0 ? Entry.ParentId + "-" + Entry.Id : Entry.Id)</td>
-        <td>@Entry.StartMjd</td>
-        <td>@Entry.EndMjd</td>
+        <td>
+            <span>@Entry.StartMjd</span><br/>
+            <span style="font-size: 0.8em;">@StartDate</span>
+        </td>
+        <td>
+            <span>@Entry.EndMjd</span><br/>
+            <span style="font-size: 0.8em;">@EndDate</span>
+        </td>
         <td>@Entry.Message</td>
         <td>@Entry.Tag</td>
         <td>@Entry.Extra</td>

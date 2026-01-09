@@ -1,198 +1,300 @@
 ﻿@page "/test"
-<div class="component-wrapper">
+<div class="container is-fluid p-0">
 
-    <div class="sidebar-column pl-4 pr-4">
-        <aside class="menu">
-            <p class="menu-label">Lab 1 (Rack A)</p>
-            <ul class="menu-list">
-                <li><a class="is-active">Lab-Oscillator-Alpha</a></li>
-                <li><a>Lab-Oscillator-Beta</a></li>
-            </ul>
-            <p class="menu-label">Settings</p>
-            <ul class="menu-list">
-                <li><a>Add New Device</a></li>
-            </ul>
-        </aside>
+    <div class="data-bar">
+        <div class="level">
+            <div class="level-left">
+
+                <div class="control-group">
+                    <label class="toolbar-label">Source Table</label>
+                    <div class="field">
+                        <div class="control has-icons-left">
+                            <div class="select is-small">
+                                <select id="tableSelect">
+                                    <option>TELESCOPE_LOG_2023</option>
+                                    <option>SENSOR_MAIN_01</option>
+                                    <option>WEATHER_STATION_AUX</option>
+                                </select>
+                            </div>
+                            <span class="icon is-small is-left">
+                                <i class="fa-solid fa-database"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="toolbar-label">MJD Range (Start - End)</label>
+                    <div class="field has-addons">
+                        <p class="control">
+                            <a class="button is-static is-small">MJD</a>
+                        </p>
+                        <p class="control">
+                            <input class="input is-small" type="number" id="mjdStart" value="59000" style="width: 100px;">
+                        </p>
+                        <p class="control">
+                            <a class="button is-static is-small">to</a>
+                        </p>
+                        <p class="control">
+                            <input class="input is-small" type="number" id="mjdEnd" value="59001" style="width: 100px;">
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="level-right">
+                <button class="button is-link is-small has-text-weight-bold" onclick="fetchData()">
+                    <span class="icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                    <span>Fetch Data</span>
+                </button>
+            </div>
+        </div>
     </div>
 
-    <div class="content-column">
 
-        <div class="level mb-5 header-box">
+    <div class="chart-wrapper">
+        <div id="chartContainer" style="height: 100%; width: 100%;"></div>
+    </div>
+
+
+    <div class="toolbar-row has-background-white-ter">
+        <div class="level">
             <div class="level-left">
-                <div class="level-item">
-                    <h1 class="title is-4 has-text-grey-dark">
-                        <i class="fa-solid fa-server mr-3 has-text-grey-light"></i>
-                        SIGNAL CONTROLLER 3000
-                    </h1>
+
+                <div class="control-group" style="border-right: 1px solid #dbdbdb; padding-right: 2rem;">
+                    <label class="toolbar-label has-text-info-dark">X-Axis Format</label>
+                    <div class="field">
+                        <div class="control">
+                            <div class="select is-small is-info">
+                                <select id="xAxisFormat" class="format-select" onchange="changeAxisFormat()">
+                                    <option value="mjd">MJD (Raw)</option>
+                                    <option value="date">Date Time</option>
+                                    <option value="offset">Seconds from T0</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="level-item ml-4">
-                    <span class="tag is-warning is-medium has-text-weight-bold has-text-dark">
-                        <span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                        <span>CONFIGURATION MODE</span>
+
+                <div class="control-group">
+                    <label class="toolbar-label">Chart Title</label>
+                    <input class="input is-small" type="text" id="chartTitleInput" value="Data Overview" style="width: 180px;">
+                </div>
+
+                <div class="control-group">
+                    <label class="toolbar-label">X Range (View)</label>
+                    <div class="field has-addons">
+                        <p class="control"><input class="input is-small" id="xMin" placeholder="Min" style="width: 70px;"></p>
+                        <p class="control"><input class="input is-small" id="xMax" placeholder="Max" style="width: 70px;"></p>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label class="toolbar-label">Y Range (View)</label>
+                    <div class="field has-addons">
+                        <p class="control"><input class="input is-small" id="yMin" placeholder="Min" style="width: 70px;"></p>
+                        <p class="control"><input class="input is-small" id="yMax" placeholder="Max" style="width: 70px;"></p>
+                    </div>
+                </div>
+
+                <button class="button is-small is-white is-outlined has-text-grey-dark" style="margin-top: 1.2rem;" onclick="updateViewport()">
+                    <span class="icon"><i class="fa-solid fa-sync"></i></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar-row" style="border-left: 4px solid #48c774;">
+        <div class="level">
+            <div class="level-left">
+                <div class="control-group">
+                    <span class="icon-text has-text-success-dark">
+                        <span class="icon"><i class="fa-solid fa-calculator"></i></span>
+                        <span class="has-text-weight-bold is-size-7 is-uppercase">Math Engine</span>
                     </span>
+                </div>
+
+                <div class="control-group">
+                    <div class="select is-small">
+                        <select id="seriesSelector">
+                            <option value="0">Series 1</option>
+                            <option value="1">Series 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="field has-addons">
+                        <p class="control"><a class="button is-static is-small">f(x) =</a></p>
+                        <p class="control"><input class="input is-small is-formula" type="text" id="mathExpression" placeholder="x * 2 + 5"></p>
+                    </div>
                 </div>
             </div>
             <div class="level-right">
-                <div class="level-item">
-                    <button class="button is-small is-dark">
-                        <span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-                        <span>Back to Control</span>
-                    </button>
-                </div>
+                <button class="button is-success is-small" onclick="applyMath()">Calculate</button>
             </div>
-        </div>
-
-        <div class="box mb-5 is-warning-mode" style="border-left: 5px solid #363636;">
-            <div class="columns is-vcentered is-mobile is-multiline">
-                <div class="column is-12-mobile is-4-tablet is-3-desktop">
-                    <p class="heading">Selected Device</p>
-                    <h3 class="title is-5">Lab-Oscillator-Alpha</h3>
-                </div>
-                <div class="column is-6-mobile is-3-tablet is-2-desktop">
-                    <p class="heading">IP Address</p>
-                    <code class="has-text-info">192.168.1.105</code>
-                </div>
-                <div class="column is-12-mobile is-5-tablet is-5-desktop">
-                    <p class="heading">Associated Tags</p>
-                    <div class="tags">
-                        <span class="tag is-info is-light">Rack-A</span>
-                        <span class="tag is-warning is-light">Maintenance-Req</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="columns is-multiline">
-
-            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
-                <div class="card is-warning-mode">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            <span class="icon mr-2 has-text-dark"><i class="fa-solid fa-sliders"></i></span>
-                            Channel 01
-                        </p>
-                    </header>
-                    <div class="card-content">
-
-                        <div class="field mb-5">
-                            <div class="control">
-                                <textarea class="textarea channel-desc-textarea" rows="2">High Frequency Out: Primary carrier wave generation.</textarea>
-                            </div>
-                        </div>
-
-                        <div class="field mb-5">
-                            <label class="label param-label">Frequency (Hz)</label>
-                            <input class="input is-small is-desc" type="text" value="Base oscillation rate.">
-
-                            <div class="field has-addons mb-2">
-                                <p class="control"><a class="button is-static"><i class="fa-solid fa-wave-square"></i></a></p>
-                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="1000"></p>
-                            </div>
-
-                            <div class="columns is-mobile is-variable is-1 limit-input-group">
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Min</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="10"></p>
-                                    </div>
-                                </div>
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Max</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="20000"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr class="dropdown-divider">
-
-                        <div class="field mb-5">
-                            <label class="label param-label">Phase (°)</label>
-                            <input class="input is-small is-desc" type="text" value="Phase shift relative to master.">
-
-                            <div class="field has-addons mb-2">
-                                <p class="control"><a class="button is-static"><i class="fa-solid fa-circle-half-stroke"></i></a></p>
-                                <p class="control is-expanded"><input class="input is-config-input" type="number" placeholder="0"></p>
-                            </div>
-
-                            <div class="columns is-mobile is-variable is-1 limit-input-group">
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Min</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="0"></p>
-                                    </div>
-                                </div>
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Max</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="360"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <footer class="card-footer">
-                        <a href="#" class="card-footer-item is-save-btn">
-                            <span class="icon mr-2"><i class="fa-solid fa-floppy-disk"></i></span>
-                            Save Configuration
-                        </a>
-                    </footer>
-                </div>
-            </div>
-
-            <div class="column is-12-mobile is-12-tablet is-6-desktop is-4-widescreen">
-                <div class="card is-warning-mode">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            <span class="icon mr-2 has-text-dark"><i class="fa-solid fa-sliders"></i></span>
-                            Channel 02
-                        </p>
-                    </header>
-                    <div class="card-content">
-                        <div class="field mb-5">
-                            <div class="control">
-                                <textarea class="textarea channel-desc-textarea" rows="2">Auxiliary Output: Sync monitoring.</textarea>
-                            </div>
-                        </div>
-
-                        <div class="field mb-5">
-                            <label class="label param-label">Frequency (Hz)</label>
-                            <input class="input is-small is-desc" type="text" value="Base oscillation rate.">
-
-                            <div class="field has-addons mb-2">
-                                <p class="control"><a class="button is-static"><i class="fa-solid fa-wave-square"></i></a></p>
-                                <p class="control is-expanded"><input class="input is-config-input" type="number" value="500"></p>
-                            </div>
-
-                            <div class="columns is-mobile is-variable is-1 limit-input-group">
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Min</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="10"></p>
-                                    </div>
-                                </div>
-                                <div class="column">
-                                    <div class="field has-addons">
-                                        <p class="control"><a class="button is-small is-static">Max</a></p>
-                                        <p class="control is-expanded"><input class="input is-small" type="number" value="20000"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <footer class="card-footer">
-                        <a href="#" class="card-footer-item is-save-btn">
-                            <span class="icon mr-2"><i class="fa-solid fa-floppy-disk"></i></span>
-                            Save Configuration
-                        </a>
-                    </footer>
-                </div>
-            </div>
-
         </div>
     </div>
+
 </div>
+
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script>
+    // GLOBAL STATE
+    // We store the RAW MJD data here so we can toggle formats without losing precision
+    var rawSeriesData = {
+        series1: [],
+        series2: []
+    };
+    var currentFormat = 'mjd';
+
+    // 1. CHART INIT
+    var chart = new CanvasJS.Chart("chartContainer", {
+        theme: "light2",
+        animationEnabled: false,
+        zoomEnabled: true,
+        title: { text: "Data Overview" },
+        axisX: {
+            title: "MJD",
+            labelFontSize: 12,
+            gridColor: "#eee"
+        },
+        data: [
+            { type: "line", name: "Series 1", showInLegend: true, dataPoints: [] },
+            { type: "line", name: "Series 2", showInLegend: true, dataPoints: [] }
+        ]
+    });
+
+    // Initial Fetch Simulation
+    fetchData();
+
+    // 2. DATA FETCHING SIMULATION
+    function fetchData() {
+        var start = parseFloat(document.getElementById("mjdStart").value);
+        var end = parseFloat(document.getElementById("mjdEnd").value);
+        var steps = 100;
+        var stepSize = (end - start) / steps;
+
+        rawSeriesData.series1 = [];
+        rawSeriesData.series2 = [];
+
+        // Generate mock MJD data
+        for (var i = 0; i <= steps; i++) {
+            var currentMJD = start + (i * stepSize);
+
+            // Mock Math
+            var val1 = Math.sin(i * 0.1) * 10 + (Math.random() * 2);
+            var val2 = Math.cos(i * 0.1) * 5 + 5;
+
+            rawSeriesData.series1.push({ mjd: currentMJD, y: val1 });
+            rawSeriesData.series2.push({ mjd: currentMJD, y: val2 });
+        }
+
+        // Apply to chart using current format
+        changeAxisFormat();
+    }
+
+    // 3. AXIS FORMAT LOGIC
+    function changeAxisFormat() {
+        var format = document.getElementById("xAxisFormat").value;
+        currentFormat = format;
+
+        var dps1 = [];
+        var dps2 = [];
+
+        // Helper: MJD to JS Date
+        // Unix Epoch is MJD 40587
+        // 1 day = 86400000 ms
+        const mjdToDate = (mjd) => new Date((mjd - 40587) * 86400000);
+
+        var t0 = rawSeriesData.series1.length > 0 ? rawSeriesData.series1[0].mjd : 0;
+
+        // Transform Series 1
+        rawSeriesData.series1.forEach(pt => {
+            let xVal;
+            if (format === 'mjd') xVal = pt.mjd;
+            else if (format === 'date') xVal = mjdToDate(pt.mjd);
+            else if (format === 'offset') xVal = (pt.mjd - t0) * 86400; // 86400 sec per day
+
+            dps1.push({ x: xVal, y: pt.y });
+        });
+
+        // Transform Series 2
+        rawSeriesData.series2.forEach(pt => {
+            let xVal;
+            if (format === 'mjd') xVal = pt.mjd;
+            else if (format === 'date') xVal = mjdToDate(pt.mjd);
+            else if (format === 'offset') xVal = (pt.mjd - t0) * 86400;
+
+            dps2.push({ x: xVal, y: pt.y });
+        });
+
+        // Update Chart Config based on format
+        if (format === 'date') {
+            chart.options.axisX.valueFormatString = "DD MMM HH:mm";
+            chart.options.axisX.title = "Date Time";
+        } else if (format === 'offset') {
+            chart.options.axisX.valueFormatString = "#,##0.0 s";
+            chart.options.axisX.title = "Seconds from Start";
+        } else {
+            chart.options.axisX.valueFormatString = "#####.####";
+            chart.options.axisX.title = "MJD";
+        }
+
+        chart.options.data[0].dataPoints = dps1;
+        chart.options.data[1].dataPoints = dps2;
+
+        // Reset viewport to auto when format changes to avoid getting lost
+        chart.options.axisX.minimum = null;
+        chart.options.axisX.maximum = null;
+
+        chart.render();
+    }
+
+    // 4. VIEWPORT UPDATE
+    function updateViewport() {
+        var title = document.getElementById("chartTitleInput").value;
+        chart.title.set("text", title);
+
+        var xMin = document.getElementById("xMin").value;
+        var xMax = document.getElementById("xMax").value;
+
+        // Note: If using Dates, user needs to input timestamp, which is UX heavy.
+        // For this demo, manual range assumes numeric input is valid for current axis type.
+        if(xMin) chart.axisX[0].set("minimum", Number(xMin));
+        if(xMax) chart.axisX[0].set("maximum", Number(xMax));
+
+        var yMin = document.getElementById("yMin").value;
+        var yMax = document.getElementById("yMax").value;
+        if(yMin) chart.axisY[0].set("minimum", Number(yMin));
+        if(yMax) chart.axisY[0].set("maximum", Number(yMax));
+    }
+
+    // 5. MATH ENGINE
+    function applyMath() {
+        var seriesIndex = parseInt(document.getElementById("seriesSelector").value);
+        var expression = document.getElementById("mathExpression").value;
+        if(!expression) return;
+
+        try {
+            // Determine which raw series to modify
+            var targetSeries = (seriesIndex === 0) ? rawSeriesData.series1 : rawSeriesData.series2;
+            var func = new Function("x", "return " + expression);
+
+            // Modify the RAW data (y values)
+            // Note: The math uses 'x' as the variable, but technically applies to the y-value generation relative to index or time?
+            // Standard plotting math usually means y = f(x).
+            // Here 'x' in the formula will be the MJD value.
+
+            targetSeries.forEach(pt => {
+                pt.y = func(pt.mjd); // Recalculate Y based on MJD
+            });
+
+            // Re-render with current format
+            changeAxisFormat();
+
+        } catch(e) {
+            alert("Math Error: " + e.message);
+        }
+    }
+</script>
