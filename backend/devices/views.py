@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management import call_command, CommandError
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
@@ -24,6 +24,7 @@ from .models import Element, NetworkInterface, IpAssignment, Tag, ElementTag, El
 from .tables import ElementTable
 from .filters import ElementFilter
 from .forms import ElementForm, NetworkInterfaceFormSet, ElementTypeForm
+from .utils import normalize_mac
 
 sys.path.append(settings.MYTOOLS_PATH)
 import telnet
