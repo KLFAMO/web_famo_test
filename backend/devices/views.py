@@ -400,6 +400,7 @@ class ElementNamesAPIView(APIView):
                 "element_type": el.element_type.name if el.element_type else None,
                 "description": el.description,
                 "location": el.location.name if el.location else None,
+                "tags": ", ".join([t.name for t in el.tags.all()]),
             })
 
         return Response(results)
