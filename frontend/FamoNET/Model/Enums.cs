@@ -24,5 +24,18 @@
         Create,
         Update,
         Delete
-    }    
+    }
+    public enum AllanTauMode
+    {
+        AllTau = 1,
+        Octave = 2,
+        Decade = 10
+    }
+
+    public enum AllanType
+    {
+        Normal = 1,
+        Overlapping = 2,
+        Modified = 3
+    }
 }

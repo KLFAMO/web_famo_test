@@ -3,8 +3,7 @@
 
 <div class="box">
     @if(IsEditable)
-    {        
-        <EditForm Model="Model" OnSubmit="UpdateParameters" FormName="ChartWizard">
+    {                
             <div class="data-bar">
                 <div class="container">
                 <div class="level">
@@ -58,28 +57,31 @@
                         </div>
 
                         <div class="control-group">
-                            <button type="submit" class="button is-link has-text-weight-bold">Update</button>                            
+                            <button type="button" class="button is-link has-text-weight-bold">Update</button>                            
                         </div>
+                        <div class="control-gorup">
+                            <select class="select">
 
+                            </select>
+                        </div>
                     </div>
                 </div>
                 </div>
-            </div>            
-        </EditForm>
+            </div>                   
     }
         
     <div id="@ChartGuid" style="width: 100%; height: 500px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
     <div class="field is-grouped">
         <p class="control">
             <button class="button is-primary" type="button" @onclick=SendToAllan>
-                Allan
+                Load Allan
             </button>
         </p>
     </div>
     @if (EnableAllan)
     {
         <div class="box">
-            <AllanVariance @rendermode="new InteractiveServerRenderMode(prerender: false)" @ref="AllanVariance" />
+            <AllanVariance @ref="AllanVariance" @key=ChartGuid />
         </div>
     }
     

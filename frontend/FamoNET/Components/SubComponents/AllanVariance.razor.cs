@@ -1,70 +1,105 @@
 ﻿using FamoNET.Components.SubComponents.Chart;
 using FamoNET.Model;
+using FamoNET.Utils;
 using NLog;
 
 namespace FamoNET.Components.SubComponents
 {
     public partial class AllanVariance : ChartComponentBase<double>
-    {                
+    {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private List<DataPoint<double>> _data;
+        private int _tauMode = (int)AllanTauMode.Decade;
+        private int _allanType = (int)FamoNET.Model.AllanType.Normal;
+
+        public int TauMode 
+        { 
+            get => _tauMode; 
+            set 
+            {
+                if (value == _tauMode) return;
+
+                _tauMode = value;
+                
+                _ = LoadData(_data);
+            }
+        }
+        public int AllanType 
+        {
+            get => _allanType;
+            set
+            {
+                if (value ==  _allanType) return;
+                
+                _allanType = value;
+                _ = LoadData(_data);
+            }
+        }
+
+        public bool IsLoading { get; set; } = false;
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             await base.OnAfterRenderAsync(firstRender);
 
             if (firstRender)
             {
-                Logger.Debug($"Allan guid: {ChartGuid}");
+                _logger.Debug("Allan:" + ChartGuid);
                 await Initialize(new ChartParameters<double>() { Title = "Allan deviation", Logarithmic = true, AxisMode=AxisMode.Mjd, DisableEvents = true });
             }            
         }
 
         public override async Task LoadData(List<DataPoint<double>> data)
         {
-            var allanData = CalculateAllan(data);
+            if (data == null)
+                return;
 
-            await ChartManagerService.AddDataSet(ChartGuid, allanData);
-            await ChartManagerService.ResetViewport(ChartGuid);           
-        }
-
-        private List<DataPoint<double>> CalculateAllan(List<DataPoint<double>> dataPoints)
-        {            
-            if (dataPoints.Count < 2)
-                return null;            
-
-            var frequencies = dataPoints.Select(dp => dp.Y).ToList();
-
-            var dt = 0.01;
-            var data = new List<DataPoint<double>>();
+            _data = data;
             
-            for(double tau = 0.1; tau < frequencies.Count/2; tau*=1.5)
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
+
+            List<DataPoint<double>> allanData = null;
+            double tau0 = (FamoMath.Convert_MJDToDateTime(data[1].X) - FamoMath.Convert_MJDToDateTime(data[0].X)).TotalSeconds;
+            switch(AllanType)
             {
-                var n = (int)(tau / dt);                
-                var M = (int)(frequencies.Count / n);
-                if (M < 2)
-                    continue;
+                case (int)FamoNET.Model.AllanType.Modified:
+                    allanData = FamoMath.ModifiedAllan(data.Select(d => d.Y).ToList(), tau0, (AllanTauMode)TauMode);
+                    break;
 
-                
-                var y = new List<double>();
-                for (int i=0; i < M-1; ++i)
-                {                    
-                    //ySum += Math.Pow(frequency.Slice((int)(i * n), n).Average(), 2);                    
-                    y.Add(frequencies.Slice((int)(i*n), n).Average());
-                }
-
-                var ySum = 0.0;
-                for (int i=0; i<y.Count-1; ++i)
-                {
-                    ySum += Math.Pow((y[i + 1] - y[i]), 2);
-                }
-
-                var finalY = Math.Log10(Math.Sqrt((1.0 / (2.0 * (M - 1.0))) * ySum));
-                if (finalY == double.PositiveInfinity || finalY == double.NegativeInfinity)
-                    continue;
-
-                data.Add(new DataPoint<double>(Math.Log10(tau), finalY));
+                case (int)FamoNET.Model.AllanType.Overlapping:
+                    allanData = FamoMath.OverlappingAllan(data.Select(d => d.Y).ToList(), tau0, (AllanTauMode)TauMode);
+                    break;
+                                
+                default:
+                    allanData = FamoMath.Allan(data.Select(d => d.Y).ToList(), tau0, (AllanTauMode)TauMode);
+                    break;
+            }
+            
+            try
+            {
+                await ChartManagerService.ClearDataSets(ChartGuid, false);
+            }
+            catch(Microsoft.JSInterop.JSException)
+            {
+                //expected on init
             }
 
-            return data;
+            await ChartManagerService.AddDataSet(ChartGuid, allanData);
+
+            try
+            {
+                await ChartManagerService.ResetViewport(ChartGuid);
+            }
+            catch (Microsoft.JSInterop.JSException)
+            {
+                //expected on init
+            }
+
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
+
+        
 
         public override Task SetViewport(ViewportParams<double> viewport)
         {

@@ -1,7 +1,52 @@
 ﻿@using FamoNET.Components.SubComponents.Chart
+@using FamoNET.Model
 @inherits ChartComponentBase<double>
 
+@if (_data != null)
+{
+    <div class="data-bar">
+        <div class="container">
+            <div class="level">
+                <div class="level-left">
+                    <div class="control-group">
+                        <label class="toolbar-label">Tau mode</label>
+                        <div class="field has-addons">
+                            <p class="control">
+                                <div class="select">
+                                    <select @bind="@TauMode">
+                                        <option selected value="@((int)(AllanTauMode.Decade))">Decade</option>
+                                        <option value="@((int)(AllanTauMode.Octave))">Octave</option>
+                                        <option value="@((int)(AllanTauMode.AllTau))">AllTau</option>
+                                    </select>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
 
-<div class="container">
-    <div id="@ChartGuid" style="width: 100%; height: 500px"></div>
-</div>
+                    <div class="control-gorup">
+                        <label class="toolbar-label">Allan type</label>
+                        <div class="field has-addons">
+                            <p class="control">
+                                <div class="select">
+                                    <select class="select" @bind="@AllanType">
+                                        <option selected value="@((int)(FamoNET.Model.AllanType.Normal))">Allan</option>
+                                        <option value="@((int)(FamoNET.Model.AllanType.Overlapping))">Overlapping</option>
+                                        <option value="@((int)(FamoNET.Model.AllanType.Modified))">Modified</option>
+                                    </select>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @if (IsLoading)
+            {
+                <div class="container">
+                    <progress class="progress is-large is-info" max="100">60%</progress>
+                </div>
+            }
+        </div>
+    </div>    
+}
+
+<div id="@ChartGuid" style="width: 100%; height: 500px; @(_data == null ? "display:none;" : "display:block;")"></div>

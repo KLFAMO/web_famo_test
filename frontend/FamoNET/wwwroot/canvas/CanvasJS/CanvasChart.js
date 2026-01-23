@@ -10,6 +10,23 @@ export class CanvasChart extends EventTarget {
         this.disableEvents = false;
         this.chartGuid = "";
         this.axisMode = AxisMode.MJD;
+        this.toLogString = (e) => {
+            const val = Math.log10(e.value);
+            // Simple superscript map
+            const supers = {
+                '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+                '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+            };
+            const valStr = val.toString();
+            let result = "10";
+            if (valStr.length > 1) {
+                return ' ';
+            }
+            for (let char of valStr) {
+                result += supers[char] || char;
+            }
+            return result;
+        };
         this.dotNetReference = dotNetReference;
     }
     InitializeChart(guid, chartParameters) {
@@ -21,49 +38,87 @@ export class CanvasChart extends EventTarget {
             return;
         }
         this.disableEvents = chartParameters.DisableEvents;
-        this.mainChart = new CanvasJS.Chart(container, {
-            colorSet: "customColorSet1",
-            zoomEnabled: true,
-            zoomType: "xy",
-            title: {
-                text: chartParameters.Title
-            },
-            data: [],
-            axisX: {
-                labelFontColor: chartParameters.DisableXLabels === true ? "transparent" : "#000000",
-                valueFormatString: chartParameters.Logarithmic ? "#.####E+0" : null,
-                gridThickness: 1,
-                interval: chartParameters.Logarithmic ? 1 : null, // Interval between ticks (logarithmic interval)
-                minimum: chartParameters.Logarithmic ? 0.1 : null, // Minimum value
-                maximum: chartParameters.Logarithmic ? 1000 : null, // Maximum value
-                logarithmic: chartParameters.Logarithmic,
-                crosshair: {
-                    enabled: true,
-                    color: "orange",
-                    labelFontColor: "#F8F8F8"
-                }
-            },
-            axisY: {
-                logarithmic: chartParameters.Logarithmic,
-                valueFormatString: chartParameters.Logarithmic ? "#.####E+0" : null,
-                reversed: chartParameters.InvertYAxis
-            },
-            rangeChanged: (e) => {
-                if (this.disableEvents === true) {
-                    return;
-                }
-                let newVP = new ViewportParameters(e.axisX[0].viewportMinimum, e.axisX[0].viewportMaximum, e.axisY[0].viewportMinimum, e.axisY[0].viewportMaximum, this.axisMode);
-                this.RaiseRangeChanged(newVP);
-                if (e.type === "reset") {
-                    this.dispatchEvent(new CustomEvent('RangeReset', {
-                        detail: {
-                            guid: this.chartGuid
-                        }
-                    }));
-                }
-            },
-            stripLines: []
-        });
+        this.mainChart = undefined;
+        if (chartParameters.Logarithmic) {
+            this.mainChart = new CanvasJS.Chart(container, {
+                colorSet: "customColorSet1",
+                zoomEnabled: true,
+                animationEnabled: true,
+                zoomType: "xy",
+                title: {
+                    text: chartParameters.Title
+                },
+                data: [],
+                axisX: {
+                    labelFontColor: chartParameters.DisableXLabels === true ? "transparent" : "#000000",
+                    gridThickness: 0,
+                    //interval: 10, // Interval between ticks (logarithmic interval)
+                    //minimum: 0.1, // Minimum value
+                    //maximum: 1000, // Maximum value
+                    logarithmic: chartParameters.Logarithmic,
+                    crosshair: {
+                        enabled: true,
+                        color: "orange",
+                        labelFontColor: "#F8F8F8"
+                    },
+                    labelFormatter: this.toLogString
+                },
+                toolTip: {
+                    contentFormatter: function (e) {
+                        // Custom tooltip to show readable numbers
+                        var x = e.entries[0].dataPoint.x;
+                        var y = e.entries[0].dataPoint.y;
+                        return "τ: <strong>" + x.toExponential(2) + " s</strong><br/>σ: <strong>" + y.toExponential(2) + "</strong>";
+                    }
+                },
+                axisY: {
+                    tickThickness: 0,
+                    logarithmic: chartParameters.Logarithmic,
+                    reversed: chartParameters.InvertYAxis,
+                    labelFormatter: this.toLogString,
+                    gridThickness: 0,
+                },
+                stripLines: []
+            });
+        }
+        else {
+            this.mainChart = new CanvasJS.Chart(container, {
+                colorSet: "customColorSet1",
+                zoomEnabled: true,
+                zoomType: "xy",
+                title: {
+                    text: chartParameters.Title
+                },
+                data: [],
+                axisX: {
+                    labelFontColor: chartParameters.DisableXLabels === true ? "transparent" : "#000000",
+                    gridThickness: 1,
+                    crosshair: {
+                        enabled: true,
+                        color: "orange",
+                        labelFontColor: "#F8F8F8"
+                    }
+                },
+                axisY: {
+                    reversed: chartParameters.InvertYAxis
+                },
+                rangeChanged: (e) => {
+                    if (this.disableEvents === true) {
+                        return;
+                    }
+                    let newVP = new ViewportParameters(e.axisX[0].viewportMinimum, e.axisX[0].viewportMaximum, e.axisY[0].viewportMinimum, e.axisY[0].viewportMaximum, this.axisMode);
+                    this.RaiseRangeChanged(newVP);
+                    if (e.type === "reset") {
+                        this.dispatchEvent(new CustomEvent('RangeReset', {
+                            detail: {
+                                guid: this.chartGuid
+                            }
+                        }));
+                    }
+                },
+                stripLines: []
+            });
+        }
         this.Render();
     }
     GetViewportParameters() {
@@ -229,6 +284,12 @@ export class CanvasChart extends EventTarget {
         };
         return result;
     }
+    getStartDecade(min) {
+        if (min <= 0)
+            return 0.1; // Safety for Log scale
+        var exponent = Math.floor(Math.log10(min));
+        return Math.pow(10, exponent);
+    }
     AddMinorLogarithmicGridLines() {
         const viewportParameters = this.GetViewportParameters();
         if (!viewportParameters || viewportParameters.MinX instanceof Date || viewportParameters.MaxX instanceof Date) {
@@ -236,38 +297,34 @@ export class CanvasChart extends EventTarget {
             return;
         }
         const xGridLines = [];
+        var xStart = this.getStartDecade(viewportParameters.MinX);
         // Generate minor grid lines for x-axis
-        for (var decade = 1; decade < viewportParameters.MaxX; decade *= 10) {
-            for (var multiplier = 2; multiplier <= 9; multiplier++) {
+        for (var decade = xStart; decade < viewportParameters.MaxX; decade *= 10) {
+            for (var multiplier = 2; multiplier <= 10; multiplier++) {
                 var x = decade * multiplier;
                 if (x > viewportParameters.MaxX)
                     break;
                 xGridLines.push({
                     value: x,
-                    type: "line",
-                    axisXType: "logarithmic",
-                    axisYType: "logarithmic",
-                    toolTipContent: null,
-                    lineThickness: 0.5, // Thinner lines for minor grid
-                    color: "#000000", // Light gray color					
+                    lineDashType: multiplier == 10 ? "line" : "dot",
+                    thickness: multiplier == 10 ? 1 : 0.8,
+                    color: multiplier == 10 ? "#000000" : "#808080"
                 });
             }
         }
         const yGridLines = [];
+        var yStart = this.getStartDecade(viewportParameters.MinY);
         // Generate minor grid lines for y-axis
-        for (var decade = 1; decade < viewportParameters.MaxY; decade *= 10) {
-            for (var multiplier = 2; multiplier <= 9; multiplier++) {
-                var x = decade * multiplier;
-                if (x > viewportParameters.MaxY)
+        for (var decade = yStart; decade < viewportParameters.MaxY; decade *= 10) {
+            for (var multiplier = 2; multiplier <= 10; multiplier++) {
+                var y = decade * multiplier;
+                if (y > viewportParameters.MaxY)
                     break;
                 yGridLines.push({
-                    value: x,
-                    type: "line",
-                    axisXType: "logarithmic",
-                    axisYType: "logarithmic",
-                    toolTipContent: null,
-                    lineThickness: 0.5,
-                    color: "#000000",
+                    value: y,
+                    lineDashType: multiplier == 10 ? "line" : "dot",
+                    thickness: multiplier == 10 ? 1 : 0.8,
+                    color: multiplier == 10 ? "#000000" : "#808080"
                 });
             }
         }

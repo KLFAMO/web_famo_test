@@ -23,7 +23,7 @@ namespace FamoNET.Services
         {
             _module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", "./canvas/interop.js");
             await _module.InvokeVoidAsync("SetDotNetReference", containerGuid.ToString(), DotNetObjectReference.Create(this) );
-            await _module.InvokeAsync<string>("InitializeChart", containerGuid.ToString(), chartParameters);
+            await _module.InvokeAsync<string>("InitializeChart", containerGuid.ToString(), chartParameters);            
         }
 
         public async Task AddDataSet<T>(Guid containerGuid, List<DataPoint<T>> dataPoints, bool instantRender = true)

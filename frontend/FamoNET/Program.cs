@@ -1,4 +1,4 @@
-using FamoNET.Components;
+﻿using FamoNET.Components;
 using FamoNET.Controllers.Mock;
 using FamoNET.Database;
 using FamoNET.Database.Extensions;
@@ -7,15 +7,18 @@ using FamoNET.Database.Repositories.Implementations;
 using FamoNET.DataProviders;
 using FamoNET.DataProviders.Mock;
 using FamoNET.Factories;
+using FamoNET.Factories.Mock;
 using FamoNET.Model;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using FamoNET.Services.DataServices;
 using FamoNET.Services.DataServices.Mock;
 using FamoNET.Services.Mock;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using System.Globalization;
 
 namespace FamoNET
 {
@@ -54,7 +57,7 @@ namespace FamoNET
             builder.Services.AddScoped<ITelnetService, MockTelnetService>();
             builder.Services.AddScoped<IRemoteChartsDeviceFactory>((s) => new RemoteChartsDeviceFactory());
             builder.Services.AddScoped<IDDSDataService>((s) => new MockDDSDataService(s.GetRequiredService<IDevicesDataService>()));
-            //builder.Services.AddScoped<IRemoteChartsDeviceFactory>((s) => new MockRemoteChartsDeviceFactory());
+            builder.Services.AddScoped<IRemoteChartsDeviceFactory>((s) => new MockRemoteChartsDeviceFactory());
 #endif
 
             builder.Services.AddScoped((s) => new AndaDataService(s.GetService<IAndaDataProvider>()));            
@@ -67,14 +70,20 @@ namespace FamoNET
 
             // Add services to the container.
             builder.Services.AddRazorComponents()
-                .AddInteractiveServerComponents();
-
-            //builder.Logging.ClearProviders();
-            //builder.Logging.SetMinimumLevel(LogLevel.Trace);
-            //builder.Host.UseNLog();
+                .AddInteractiveServerComponents();            
             
             var app = builder.Build();
+            
             app.CheckDatabase(app.Services.GetRequiredService<IDbContextFactory<MainDbContext>>());
+
+            var supportedCultures = new[] { new CultureInfo("pl-PL"), new CultureInfo("en-US") };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {                
+                DefaultRequestCulture = new RequestCulture("pl-PL"),             
+                SupportedCultures = supportedCultures,                
+                SupportedUICultures = supportedCultures
+            });
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
