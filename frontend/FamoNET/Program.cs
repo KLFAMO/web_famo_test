@@ -39,6 +39,7 @@ namespace FamoNET
             builder.Services.AddScoped<ICSVDataProvider>((s) => new MockAndaDataProvider(@"TestData\data_export(5).csv"));
             builder.Services.AddScoped<ITerminalCommandsRepository, TerminalCommandsRepository>();
             builder.Services.AddScoped<IDDSDevicesRepository, DDSDevicesRepository>();
+            builder.Services.AddScoped<IDDSChannelsRepository, DDSChannelRepository>();
 
 #if (!DEBUG)
             builder.Services.AddScoped<IAndaDataProvider>((s) => new AndaDataProvider(s.GetService<IOptions<EndpointsOptions>>().Value.AndaUri));

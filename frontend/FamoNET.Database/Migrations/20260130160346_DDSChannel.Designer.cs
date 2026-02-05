@@ -4,6 +4,7 @@ using FamoNET.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FamoNET.Database.Migrations
 {
     [DbContext(typeof(MainDbContext))]
-    partial class MainDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260130160346_DDSChannel")]
+    partial class DDSChannel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -48,7 +51,7 @@ namespace FamoNET.Database.Migrations
 
                     b.HasIndex("DeviceId");
 
-                    b.ToTable("DDSChannels");
+                    b.ToTable("DDSChannel");
                 });
 
             modelBuilder.Entity("FamoNET.Database.Model.Classes.DDSDevice", b =>
@@ -59,11 +62,11 @@ namespace FamoNET.Database.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ApiDeviceId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<int>("DeviceId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsLocked")
                         .HasColumnType("tinyint(1)");

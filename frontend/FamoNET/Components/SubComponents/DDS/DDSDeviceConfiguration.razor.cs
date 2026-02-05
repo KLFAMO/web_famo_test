@@ -14,6 +14,8 @@ namespace FamoNET.Components.SubComponents.DDS
         [Inject]
         private IDDSDevicesRepository _ddsDevicesRepository { get; set; }
         [Inject]
+        private IDDSChannelsRepository _ddsChannelRepository { get; set; }
+        [Inject]
         private ISystemNotificationService _systemNotificationService { get; set; }
         public DDSDevice Model { get; set; }
 
@@ -34,35 +36,52 @@ namespace FamoNET.Components.SubComponents.DDS
 
         }
         
-        private async void OnLockChange(ChangeEventArgs e)
+        private async void OnChannelLockChange(ChangeEventArgs e, DDSChannel channel)
+        {
+            channel.IsLocked = Boolean.Parse(e.Value.ToString());
+            try
+            {
+                var fetchedChannel = await _ddsChannelRepository.GetSingleAsync(channel.Name, _lastDeviceId);
+                if (fetchedChannel == null)
+                {
+                    await _ddsChannelRepository.InsertAsync(new Database.Model.Classes.DDSChannel() { Device = new () { Id = _lastDeviceId }, Name=channel.Name, IsLocked = channel.IsLocked });
+                }
+
+                if (channel.IsLocked)
+                {
+                    await _ddsChannelRepository.LockChannel(channel.Id);
+                    _systemNotificationService.SendSystemMessage(this, new SystemMessage("Channel locked", SystemMessageType.Info));
+                }
+                else
+                {
+                    await _ddsChannelRepository.UnlockChannel(channel.Id);
+                    _systemNotificationService.SendSystemMessage(this, new SystemMessage("Channel unlocked", SystemMessageType.Info));
+                }
+
+            }
+            catch(Exception ex)
+            {
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage(ex.Message, SystemMessageType.Error));
+                _logger.Error(ex);
+            }
+        }
+
+        private async void OnDeviceLockChange(ChangeEventArgs e)
         {
             try
             {
                 Model.IsLocked = Boolean.Parse(e.Value.ToString());
 
-                var device = await _ddsDevicesRepository.GetByDeviceIdAsync(DeviceId);
-                if (device == null)
-                {
-                    await _ddsDevicesRepository.InsertAsync(new Database.Model.Classes.DDSDevice { DeviceId = Model.Id, IsLocked = Model.IsLocked });
-                }
-                else
-                {
-                    if (Model.IsLocked)
-                    {
-                        await _ddsDevicesRepository.LockDevice(DeviceId);                        
-                    }
-                    else
-                    {
-                        await _ddsDevicesRepository.UnlockDevice(DeviceId);                        
-                    }
-                }
+                var device = await _ddsDevicesRepository.GetByApiDeviceIdAsync(DeviceId);                            
 
                 if (Model.IsLocked)
                 {
+                    await _ddsDevicesRepository.LockDevice(DeviceId);
                     _systemNotificationService.SendSystemMessage(this, new SystemMessage("Device locked", SystemMessageType.Info));
                 }
                 else
                 {
+                    await _ddsDevicesRepository.UnlockDevice(DeviceId);
                     _systemNotificationService.SendSystemMessage(this, new SystemMessage("Device unlocked", SystemMessageType.Info));
                 }
             }
@@ -106,13 +125,31 @@ namespace FamoNET.Components.SubComponents.DDS
             }
 
             _lastDeviceId = DeviceId;
-            var rep_device = await _ddsDevicesRepository.GetByDeviceIdAsync(DeviceId);
+            var rep_device = await _ddsDevicesRepository.GetByApiDeviceIdAsync(DeviceId);            
             
+            if (rep_device == null)
+            {
+                await _ddsDevicesRepository.InsertAsync(new Database.Model.Classes.DDSDevice { ApiDeviceId = Model.Id, IsLocked = false });                
+            }
+
+            var rep_channels = await _ddsChannelRepository.GetByDeviceIdAsync(DeviceId);
+
+
+
             try
             {
                 IsLoading = true;
                 Model = await _ddsDataService.GetById(DeviceId);
                 Model.IsLocked = rep_device?.IsLocked ?? false;
+                
+                if (Model.Channels?.Count > 0 && rep_channels?.Count > 0)
+                {
+                    foreach (var channel in Model.Channels)
+                    {
+                        channel
+                        channel.IsLocked = rep_channels.FirstOrDefault(c => c.Name == channel.Name)?.IsLocked ?? false;
+                    }
+                }
             }
             catch (Exception ex)
             {

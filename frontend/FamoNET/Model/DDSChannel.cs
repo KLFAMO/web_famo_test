@@ -8,5 +8,6 @@
         public DDSValue Frequency { get; set; }
         public DDSValue Amplitude { get; set; }
         public DDSValue Phase { get; set; }
+        public bool IsLocked { get; set; }
     }
 }

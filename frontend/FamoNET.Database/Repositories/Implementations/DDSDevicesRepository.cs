@@ -9,9 +9,9 @@ namespace FamoNET.Database.Repositories.Implementations
         {
         }
 
-        public Task<DDSDevice> GetByDeviceIdAsync(int deviceId)
+        public Task<DDSDevice> GetByApiDeviceIdAsync(int deviceId)
         {
-            return Task.FromResult(Context.DDSDevices.Where(d => d.DeviceId == deviceId).FirstOrDefault());
+            return Task.FromResult(Context.DDSDevices.Where(d => d.ApiDeviceId == deviceId).FirstOrDefault());
         }
 
         public async Task<int> InsertAsync(DDSDevice device)
@@ -26,7 +26,7 @@ namespace FamoNET.Database.Repositories.Implementations
 
         public async Task LockDevice(int deviceId)
         {
-            var device = Context.DDSDevices.Where(d => d.DeviceId == deviceId).FirstOrDefault();
+            var device = Context.DDSDevices.Where(d => d.ApiDeviceId == deviceId).FirstOrDefault();
 
             if (device == null)
             {
@@ -40,7 +40,7 @@ namespace FamoNET.Database.Repositories.Implementations
 
         public async Task UnlockDevice(int deviceId)
         {
-            var device = Context.DDSDevices.Where(d => d.DeviceId == deviceId).FirstOrDefault();
+            var device = Context.DDSDevices.Where(d => d.ApiDeviceId == deviceId).FirstOrDefault();
 
             if (device == null)
             {

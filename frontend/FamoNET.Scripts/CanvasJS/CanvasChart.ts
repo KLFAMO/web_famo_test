@@ -23,18 +23,29 @@ export class CanvasChart extends EventTarget {
 	}
 
 	toLogString = (e) => {
-		const val = Math.log10(e.value);
-		// Simple superscript map
+		// 1. Safety Check: No logs for <= 0
+		if (e.value <= 0) return "";
+
+		// 2. Calculate the Logarithm
+		const logValue = Math.log10(e.value);
+
+		// 3. Integer Check: Only allow if it's close to an integer
+		// We use a small epsilon for float safety (e.g., 2.99999999 -> 3)
+		if (Math.abs(logValue % 1) > 0.00001 && Math.abs(logValue % 1) < 0.99999) {
+			return ""; // Return empty string to hide label
+		}
+
+		// 4. Round to handle floating point drift (e.g., 2.999 -> 3)
+		const exponent = Math.round(logValue);
+
+		// 5. Superscript Mapping
 		const supers = {
 			'-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
 			'5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
 		};
-		const valStr = val.toString();
+
 		let result = "10";
-		if (valStr.length > 1) {
-			return ' ';
-		}			
-		for (let char of valStr) {
+		for (let char of exponent.toString()) {
 			result += supers[char] || char;
 		}
 		return result;
@@ -285,9 +296,17 @@ export class CanvasChart extends EventTarget {
 
 		const chartParams = this.GetViewportParameters();
 		const minMaxValues = this.FindYMinMaxValue(chartParams);
-
-		let visibleOffset = ((minMaxValues.MaxValue - minMaxValues.MinValue) / 2) * 0.1;
-		this.SetViewportParameters(new ViewportParameters(chartParams.MinX, chartParams.MaxX, minMaxValues.MinValue - visibleOffset, minMaxValues.MaxValue + visibleOffset, this.axisMode))
+		let visibleOffset = 0;
+		if (this.mainChart.axisX[0].get("logarithmic") === true) {
+			visibleOffset = ((minMaxValues.MaxValue - minMaxValues.MinValue) / 2) * 0.1;
+			this.SetViewportParameters(new ViewportParameters(chartParams.MinX, chartParams.MaxX, this.getStartDecade(minMaxValues.MinValue), this.getEndDecade(minMaxValues.MaxValue), this.axisMode))
+		}
+		else {
+			visibleOffset = ((minMaxValues.MaxValue - minMaxValues.MinValue) / 2) * 0.1;
+			this.SetViewportParameters(new ViewportParameters(chartParams.MinX, chartParams.MaxX, minMaxValues.MinValue - visibleOffset, minMaxValues.MaxValue + visibleOffset, this.axisMode))
+		}
+		
+		
 	}
 
 	//canvasjs RaiseChanged is only raised when user interacts with chart. This function is a default way of handling RangeChanged either by interaction or logic.
@@ -357,9 +376,15 @@ export class CanvasChart extends EventTarget {
 		return result;
 	}
 
-	getStartDecade(min: number): number {
+	getStartDecade(min: number): number {		
 		if (min <= 0) return 0.1; // Safety for Log scale
 		var exponent = Math.floor(Math.log10(min));
+		return Math.pow(10, exponent);
+	}
+
+	getEndDecade(max: number): number {		
+		if (max <= 0) return 0.1; // Safety for Log scale
+		var exponent = Math.ceil(Math.log10(max));
 		return Math.pow(10, exponent);
 	}
 
@@ -376,7 +401,7 @@ export class CanvasChart extends EventTarget {
 		var xStart = this.getStartDecade(viewportParameters.MinX);
 		// Generate minor grid lines for x-axis
 		for (var decade = xStart; decade < viewportParameters.MaxX; decade *= 10) {
-			for (var multiplier = 2; multiplier <= 10; multiplier++) {
+			for (var multiplier = 1; multiplier <= 10; multiplier++) {
 				var x = decade * multiplier;
 				if (x > viewportParameters.MaxX) break;
 
@@ -393,7 +418,7 @@ export class CanvasChart extends EventTarget {
 		var yStart = this.getStartDecade(viewportParameters.MinY);
 		// Generate minor grid lines for y-axis
 		for (var decade = yStart; decade < viewportParameters.MaxY; decade *= 10) {
-			for (var multiplier = 2; multiplier <= 10; multiplier++) {
+			for (var multiplier = 1; multiplier <= 10; multiplier++) {
 				var y = decade * multiplier;
 				if (y > viewportParameters.MaxY) break;
 				yGridLines.push({

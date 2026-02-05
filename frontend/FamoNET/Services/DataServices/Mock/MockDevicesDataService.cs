@@ -9,6 +9,7 @@ namespace FamoNET.Services.DataServices.Mock
         {
             return Task.FromResult(new Device()
             {
+                Id = id,
                 IP = "192.168.3.1",
                 Description = "Jakiś tam opis 1",
                 Location = "SR1",
@@ -23,6 +24,7 @@ namespace FamoNET.Services.DataServices.Mock
             {
                 new Device()
                 {
+                    Id = 1,
                     IP = "192.168.3.1",
                     Description = "Jakiś tam opis 1",
                     Location = "SR1",
@@ -31,6 +33,7 @@ namespace FamoNET.Services.DataServices.Mock
                 },
                 new Device()
                 {
+                    Id = 2,
                     IP = "192.168.3.2",
                     Description = "Jakiś tam opis 2",
                     Location = "SR2",
@@ -46,6 +49,7 @@ namespace FamoNET.Services.DataServices.Mock
             {
                 new Device()
                 {
+                    Id = 1,
                     IP = "192.168.3.1",
                     Description = "Jakiś tam opis 1",
                     Location = "SR1",
@@ -54,6 +58,7 @@ namespace FamoNET.Services.DataServices.Mock
                 },
                 new Device()
                 {
+                    Id = 2,
                     IP = "192.168.3.2",
                     Description = "Jakiś tam opis 2",
                     Location = "SR2",
@@ -66,9 +71,10 @@ namespace FamoNET.Services.DataServices.Mock
         public Task<List<Device>> GetDevicesByTypeAsync(List<string> types)
         {
             return Task.FromResult(new List<Device>()
-            {
+            {                
                 new Device()
                 {
+                    Id = 1,
                     IP = "192.168.3.1",
                     Description = "Jakiś tam opis 1",
                     Location = "SR1",
@@ -77,6 +83,7 @@ namespace FamoNET.Services.DataServices.Mock
                 },
                 new Device()
                 {
+                    Id = 2,
                     IP = "192.168.3.2",
                     Description = "Jakiś tam opis 2",
                     Location = "SR2",

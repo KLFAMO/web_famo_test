@@ -8,6 +8,7 @@ namespace FamoNET.Database
     {
         public DbSet<TerminalCommand> TerminalCommands { get; set; }
         public DbSet<DDSDevice> DDSDevices { get; set; }
+        public DbSet<DDSChannel> DDSChannels { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
         {
@@ -29,14 +30,26 @@ namespace FamoNET.Database
                 entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
             });
 
+            modelBuilder.Entity<DDSChannel>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.IsLocked).IsRequired();                
+                entity.Property(e => e.CreatedOn).IsRequired();
+                entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
+                entity.HasOne(e => e.Device);
+            });
+
             modelBuilder.Entity<DDSDevice>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.IsLocked).IsRequired();
-                entity.Property(e => e.DeviceId).IsRequired();
+                entity.Property(e => e.ApiDeviceId).IsRequired();
                 entity.Property(e => e.CreatedOn).IsRequired();                
                 entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
+                entity.HasMany(e => e.Channels);
             });
+
+            
         }
     }
 }

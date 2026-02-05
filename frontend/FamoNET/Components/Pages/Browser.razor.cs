@@ -66,13 +66,17 @@ namespace FamoNET.Components.Pages
 
         private async void DataWizardComponent_DataAvailable(object sender, List<DataPoint<double>> e)
         {            
-            if (e == null)
+            if (e == null || e.Count < 1)
             {
-                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Invalid data", SystemMessageType.Error));
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Invalid data or empty data", SystemMessageType.Error));
+                return;
             }
-            await Chart_MJD.LoadData(e);
-            await Chart_Date.LoadData(e);
-            await Chart_Offset.LoadData(e);
+            else
+            {
+                await Chart_MJD.LoadData(e);
+                await Chart_Date.LoadData(e);
+                await Chart_Offset.LoadData(e);
+            }                
             
             IsFetchingData = false;
             IsDataLoaded = true;

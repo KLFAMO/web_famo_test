@@ -36,7 +36,7 @@ else if (Model != null)
             </div>
             <div class="column is-6-mobile is-12-tablet is-2-desktop has-text-right-desktop">
                 <label class="checkbox is-danger-check has-text-weight-semibold">
-                    <input type="checkbox" @onchange="OnLockChange" checked="@Model.IsLocked">
+                    <input type="checkbox" @onchange="OnDeviceLockChange" checked="@Model.IsLocked">
                     Lock Control
                 </label>
             </div>
@@ -50,8 +50,9 @@ else if (Model != null)
                 <div class="card is-warning-mode">
                     <header class="card-header">
                         <p class="card-header-title">Channel @channel.Id</p>
+                        <input type="checkbox" @onchange="(e) => OnChannelLockChange(e, channel)" checked="@channel.IsLocked">
                     </header>
-                    <div class="card-content">
+                    <div clasDevices="card-content">
                         <div class="field mb-5">
                             <div class="control">
                                 <textarea class="textarea channel-desc-textarea" rows="2" placeholder="Channel description...">@channel.Description</textarea>

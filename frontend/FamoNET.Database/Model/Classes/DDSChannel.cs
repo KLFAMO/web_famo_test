@@ -2,14 +2,13 @@
 
 namespace FamoNET.Database.Model.Classes
 {
-    public class DDSDevice : IDbObject
+    public class DDSChannel : IDbObject
     {
         public int Id { get; set; }
+        public string Name { get; set; }
         public DateTime CreatedOn { get; set; }
         public int State { get; set; }
-
         public bool IsLocked { get; set; }
-        public int ApiDeviceId { get; set; }
-        public List<DDSChannel> Channels { get; set; }
+        public DDSDevice Device { get; set; }
     }
 }

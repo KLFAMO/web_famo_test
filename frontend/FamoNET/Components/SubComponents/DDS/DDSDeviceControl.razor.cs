@@ -52,7 +52,7 @@ namespace FamoNET.Components.SubComponents.DDS
             }
 
             _lastDeviceId = DeviceId;
-            var rep_device = await _ddsDevicesRepository.GetByDeviceIdAsync(DeviceId);
+            var rep_device = await _ddsDevicesRepository.GetByApiDeviceIdAsync(DeviceId);
 
             try
             {

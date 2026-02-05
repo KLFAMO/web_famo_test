@@ -74,8 +74,13 @@ namespace FamoNET.Components.SubComponents.Chart
             {
                 DataFetching.Invoke(this, EventArgs.Empty);
                 var data = await _andaDataService.GetDataAsync(StartMjd, EndMjd, _selectedTableName);
+                if (data == null || data.Count < 1)
+                {
+                    _notificationService.SendSystemMessage(this, new SystemMessage("Empty dataset", SystemMessageType.Error));
+                    return;
+                }
 
-                DataAvailable?.Invoke(this, data);
+                DataAvailable?.Invoke(this, data ?? new List<DataPoint<double>>());
             }   
             catch(Exception ex)
             {

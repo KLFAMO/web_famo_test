@@ -88,7 +88,7 @@ namespace FamoNET.Components.SubComponents
 
             try
             {
-                await ChartManagerService.ResetViewport(ChartGuid);
+                await ChartManagerService.AdjustToVisible(ChartGuid);
             }
             catch (Microsoft.JSInterop.JSException)
             {
