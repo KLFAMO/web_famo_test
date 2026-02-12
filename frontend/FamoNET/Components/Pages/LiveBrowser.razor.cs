@@ -56,10 +56,10 @@ namespace FamoNET.Components.Pages
                     AddToAllanCollection(data);
 
                     await Chart_MJD.ClearChart(false);
-                    await Chart_MJD.LoadData(data);
+                    await Chart_MJD.LoadData(data, SelectedTableName);
 
                     await AllanVarianceComponent.ClearChart();
-                    await AllanVarianceComponent.LoadData(AllanCollection);
+                    await AllanVarianceComponent.LoadData(AllanCollection, SelectedTableName);
                    
                     await Task.Delay(2000);
                 }

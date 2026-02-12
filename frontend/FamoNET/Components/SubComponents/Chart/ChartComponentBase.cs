@@ -84,7 +84,7 @@ namespace FamoNET.Components.SubComponents.Chart
             }
         }
 
-        public abstract Task LoadData(List<DataPoint<double>> data);
+        public abstract Task LoadData(List<DataPoint<double>> data, string title);
         public abstract Task SetViewport(ViewportParams<double> viewport);
         protected abstract void ChartManagerService_OnViewportChanged(object sender, EventArgs e);        
     }

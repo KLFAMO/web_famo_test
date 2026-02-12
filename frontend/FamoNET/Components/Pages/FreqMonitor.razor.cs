@@ -5,11 +5,11 @@ namespace FamoNET.Components.Pages
 {
     public partial class FreqMonitor : ComponentBase
     {
-        private const double sr88 = 429228066418007;
-        private const double n = 1716959;
-        private const double f0 = 35000000;        
-        private const double sr1 = 429228470332607;
-        private const double aomSr1 = 84000000;
+        private const double sr88 = 429228066418007.0;
+        private const double n = 1716959.0;
+        private const double f0 = 35000000.0;        
+        private const double sr1 = 429228470332607.0;
+        private const double aomSr1 = 84000000.0;
         private string _selectedCounter = "5";
         
         private List<double> _values;

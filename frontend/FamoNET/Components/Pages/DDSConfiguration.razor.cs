@@ -15,10 +15,10 @@ namespace FamoNET.Components.Pages
 
         private bool Authorized = false;
         protected string Password = String.Empty; //simple password
-        private int DeviceId { get; set; } = -1;
+        private int ApiDeviceId { get; set; } = -1;
         public void OnDeviceSelected(Device device)
         {
-            DeviceId = device.Id;
+            ApiDeviceId = device.Id;
             StateHasChanged();
         }
 

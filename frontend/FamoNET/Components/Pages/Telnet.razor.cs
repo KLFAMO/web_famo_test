@@ -92,7 +92,7 @@ namespace FamoNET.Components.Pages
 
         private async Task LoadData()
         {
-            Devices = await _devicesDataService.GetDevicesAsync();            
+            Devices = await _devicesDataService.GetDevicesByTagsAsync(["telnet"]);            
 
             await InvokeAsync(() => StateHasChanged());
         }

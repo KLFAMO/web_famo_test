@@ -10,9 +10,9 @@ namespace FamoNET.Database.Repositories.Implementations
         {
         }
 
-        public Task<DDSChannel> GetSingleAsync(string name, int deviceId)
+        public Task<DDSChannel> GetByApiDeviceIdAndNameAsync(string name, int apiDeviceId)
         {
-            return Task.FromResult(Context.DDSChannels.SingleOrDefault(c => c.Device.Id == deviceId && c.Name == name));
+            return Task.FromResult(Context.DDSChannels.SingleOrDefault(c => c.Device.ApiDeviceId == apiDeviceId && c.Name == name));
         }
 
         public Task<List<DDSChannel>> GetByDeviceIdAsync(int deviceId)
@@ -20,9 +20,17 @@ namespace FamoNET.Database.Repositories.Implementations
             return Task.FromResult(Context.DDSChannels.Where(c => c.Device.Id == deviceId).ToList());
         }
 
+        public Task<List<DDSChannel>> GetByApiDeviceIdAsync(int apiDeviceId)
+        {
+            return Task.FromResult(Context.DDSChannels.Where(c => c.Device.ApiDeviceId == apiDeviceId).ToList());
+        }
+
         public async Task<int> InsertAsync(DDSChannel channel)
         {
             channel.CreatedOn = DateTime.Now;
+
+            var existingDevice = Context.DDSDevices.SingleOrDefault(d => d.ApiDeviceId == channel.Device.ApiDeviceId);
+            channel.Device = existingDevice;
 
             Context.DDSChannels.Add(channel);
             await Context.SaveChangesAsync();

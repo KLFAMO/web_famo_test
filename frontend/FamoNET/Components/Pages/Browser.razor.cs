@@ -22,7 +22,7 @@ namespace FamoNET.Components.Pages
         private Chart_MJD Chart_MJD;
         private Chart_Date Chart_Date;
         private Chart_Offset Chart_Offset;
-        private PythonConsole PythonConsoleComponent;
+        //private PythonConsole PythonConsoleComponent;
         private DataWizard DataFetchWizardComponent;        
         #endregion
 
@@ -72,10 +72,10 @@ namespace FamoNET.Components.Pages
                 return;
             }
             else
-            {
-                await Chart_MJD.LoadData(e);
-                await Chart_Date.LoadData(e);
-                await Chart_Offset.LoadData(e);
+            {                
+                await Chart_MJD.LoadData(e, DataFetchWizardComponent.SelectedTableName);
+                await Chart_Date.LoadData(e, DataFetchWizardComponent.SelectedTableName);
+                await Chart_Offset.LoadData(e, DataFetchWizardComponent.SelectedTableName);
             }                
             
             IsFetchingData = false;

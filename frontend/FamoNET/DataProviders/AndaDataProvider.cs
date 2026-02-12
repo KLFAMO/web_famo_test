@@ -71,7 +71,7 @@ namespace FamoNET.DataProviders
             }
         }
 
-        public async Task<List<DataPoint<double>>> GetData(string query)
+        public Task<List<DataPoint<double>>> GetData(string query)
         {
             throw new NotImplementedException();
         }

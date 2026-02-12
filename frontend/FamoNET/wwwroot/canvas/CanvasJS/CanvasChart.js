@@ -49,8 +49,9 @@ export class CanvasChart extends EventTarget {
         if (chartParameters.Logarithmic) {
             this.mainChart = new CanvasJS.Chart(container, {
                 colorSet: "customColorSet1",
-                zoomEnabled: true,
+                zoomEnabled: false,
                 animationEnabled: true,
+                exportEnabled: true,
                 zoomType: "xy",
                 title: {
                     text: chartParameters.Title
@@ -93,6 +94,7 @@ export class CanvasChart extends EventTarget {
                 colorSet: "customColorSet1",
                 zoomEnabled: true,
                 zoomType: "xy",
+                exportEnabled: true,
                 title: {
                     text: chartParameters.Title
                 },

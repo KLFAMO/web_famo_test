@@ -21,15 +21,16 @@ namespace FamoNET.Components.SubComponents.Chart
                 await Initialize(new ChartParameters<DateTime>() { Title = "No data", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Date });
             }
         }
-        public override async Task LoadData(List<DataPoint<double>> data)
-        {            
+        public override async Task LoadData(List<DataPoint<double>> data, string title)
+        {
             var convertedData = new List<DataPoint<DateTime>>();
-            foreach (var point in data) 
+            foreach (var point in data)
             {
                 convertedData.Add(new DataPoint<DateTime>(FamoMath.Convert_MJDToDateTime(point.X), point.Y));
             }
 
             OriginalCollection = convertedData;
+            await ChartManagerService.SetChartParameters(ChartGuid, new ChartParameters<DateTime>() { Title = title }, false);
             await ChartManagerService.AddDataSet<DateTime>(base.ChartGuid, convertedData);
             
             var mjdVP = await ChartManagerService.GetViewportParameters(ChartGuid);
@@ -82,7 +83,7 @@ namespace FamoNET.Components.SubComponents.Chart
                 allanData.Add(new DataPoint<double>(FamoMath.Convert_DateTimeToMjd(dp.X), dp.Y));
             }
 
-            await AllanVariance.LoadData(allanData);
+            await AllanVariance.LoadData(allanData, "Allan deviation");
         }
     }
 }

@@ -9,6 +9,7 @@ namespace FamoNET.Database
         public DbSet<TerminalCommand> TerminalCommands { get; set; }
         public DbSet<DDSDevice> DDSDevices { get; set; }
         public DbSet<DDSChannel> DDSChannels { get; set; }
+        public DbSet<RemoteChartFile> RemoteChartsFiles { get; set; }
 
         public MainDbContext(DbContextOptions<MainDbContext> options) : base(options)
         {
@@ -49,7 +50,13 @@ namespace FamoNET.Database
                 entity.HasMany(e => e.Channels);
             });
 
-            
+            modelBuilder.Entity<RemoteChartFile>(entity => 
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ApiDeviceId).IsRequired();
+                entity.Property(e => e.CreatedOn).IsRequired();
+                entity.Property(e => e.State).HasDefaultValue((int)DbRecordState.Enabled);
+            });
         }
     }
 }

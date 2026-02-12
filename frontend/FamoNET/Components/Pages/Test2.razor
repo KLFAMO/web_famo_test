@@ -1,163 +1,132 @@
 ﻿@page "/test2"
-<div class="container is-fluid mt-5">
-    <div class="columns is-centered">
-        <div class="column is-10-desktop is-11-widescreen">
-            <div class="chart-box">
-                <header class="p-3 has-background-white" style="border-bottom: 1px solid #f0f0f0;">
-                    <div class="level mb-0">
-                        <div class="level-left">
-                            <h3 class="title is-5 has-text-grey-dark">
-                                <i class="fa-solid fa-wave-square has-text-info mr-2"></i>
-                                Allan Deviation σᵧ(τ)
-                            </h3>
-                        </div>
-                        <div class="level-right">
-                            <span class="tag is-info is-light">Log-Log Scale</span>
-                        </div>
-                    </div>
+<div class="box">
+    <div class="columns">
+        <div class="column">
+            <div class="card mb-5">
+                <header class="card-header is-math">
+                    <p class="card-header-title has-text-link-dark is-size-6">
+                        <span class="icon mr-2"><i class="fa fa-solid fa-layer-group"></i></span>
+                        Available Series
+                    </p>
                 </header>
+                <div class="card-content pt-4 pb-4">
 
-                <div id="adevChartContainer" class="chart-container"></div>
+                    <label class="panel-block is-active">
+                        <input type="radio" name="selectedSeries" value="0" checked onchange="selectSeries(0)">
+                        <span class="ml-2 has-text-weight-semibold">TELESCOPE_LOG_2023</span>
+                        <span class="delete-btn" title="Remove Series" onclick="deleteSeries(0)">
+                            <i class="fa fa-solid fa-trash"></i>
+                        </span>
+                    </label>
 
-                <div class="controls-panel">
-                    <div class="level">
-                        <div class="level-left">
-                            <div class="mr-6">
-                                <label class="control-label">Tau (τ) Range (Powers of 10)</label>
-                                <div class="field has-addons">
-                                    <p class="control"><a class="button is-static is-small">10^</a></p>
-                                    <p class="control"><input class="input is-small power-input" type="number" id="tauStart" value="-1" placeholder="Min"></p>
-                                    <p class="control"><a class="button is-static is-small">to 10^</a></p>
-                                    <p class="control"><input class="input is-small power-input" type="number" id="tauEnd" value="4" placeholder="Max"></p>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="control-label">Oscillator Type</label>
-                                <div class="select is-small">
-                                    <select id="oscType" onchange="regenerateChart()">
-                                        <option value="rubidium">Rubidium (Atomic)</option>
-                                        <option value="crystal">OCXO (Crystal)</option>
-                                        <option value="cesium">Cesium Beam</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="level-right">
-                            <button class="button is-info is-outlined" onclick="regenerateChart()">
-                                <span class="icon"><i class="fa-solid fa-rotate"></i></span>
-                                <span>Recalculate Plot</span>
-                            </button>
+                    <label class="panel-block">
+                        <input type="radio" name="selectedSeries" value="1" onchange="selectSeries(1)">
+                        <span class="ml-2">SENSOR_MAIN_01</span>
+                        <span class="delete-btn" title="Remove Series" onclick="deleteSeries(1)">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </span>
+                    </label>
+
+                    <label class="panel-block">
+                        <input type="radio" name="selectedSeries" value="2" onchange="selectSeries(2)">
+                        <span class="ml-2">WEATHER_AUX</span>
+                        <span class="delete-btn" title="Remove Series" onclick="deleteSeries(2)">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card mb-5">
+                <header class="card-header is-math">
+                    <p class="card-header-title has-text-link-dark is-size-6">
+                        <span class="icon mr-2 has-text-primary-dark"><i class="fa fa-solid fa-calculator"></i></span>
+                        Transform Selection
+                    </p>
+                </header>
+                <div class="card-content pt-4 pb-4">
+
+                    <p class="help mb-3 is-italic" id="mathTargetLabel">Target: <strong>TELESCOPE_LOG_2023</strong></p>
+
+                    <div class="field mb-2">
+                        <div class="field has-addons">
+                            <p class="control"><a class="button is-static is-small math-label">x' =</a></p>
+                            <p class="control is-expanded">
+                                <input class="input is-small is-formula" type="text" placeholder="x (no change)">
+                            </p>
                         </div>
                     </div>
+
+                    <div class="field mb-3">
+                        <div class="field has-addons">
+                            <p class="control"><a class="button is-static is-small math-label">y' =</a></p>
+                            <p class="control is-expanded">
+                                <input class="input is-small is-formula" type="text" placeholder="y * 10">
+                            </p>
+                        </div>
+                    </div>
+
+                    <button class="button is-primary is-small is-fullwidth is-light">
+                        Apply Transformation
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="column">
+            <div class="card">
+                <header class="card-header is-view">
+                    <p class="card-header-title has-text-grey-dark is-size-6">
+                        <span class="icon mr-2"><i class="fa fa-solid fa-desktop"></i></span>
+                        Viewport Settings
+                    </p>
+                </header>
+                <div class="card-content pt-4 pb-4">
+
+                    <div class="field mb-3">
+                        <label class="label is-small">Chart Title</label>
+                        <div class="control">
+                            <input class="input is-small" type="text" value="Data Overview">
+                        </div>
+                    </div>
+
+                    <div class="field mb-2">
+                        <label class="label is-small">X-Axis Range</label>
+                        <div class="field has-addons">
+                            <p class="control"><input class="input is-small range-input" placeholder="Min"></p>
+                            <p class="control"><a class="button is-static is-small">-</a></p>
+                            <p class="control"><input class="input is-small range-input" placeholder="Max"></p>
+                        </div>
+                    </div>
+
+                    <div class="field mb-4">
+                        <label class="label is-small">Y-Axis Range</label>
+                        <div class="field has-addons">
+                            <p class="control"><input class="input is-small range-input" placeholder="Min"></p>
+                            <p class="control"><a class="button is-static is-small">-</a></p>
+                            <p class="control"><input class="input is-small range-input" placeholder="Max"></p>
+                        </div>
+                    </div>
+
+                    <button class="button is-small is-fullwidth">
+                        Update View
+                    </button>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-
-<script>
-    // Safer Log Formatter (Prevents crashes on 0 or negative numbers)
-    const toLogString = (e) => {
-        if (e.value <= 0) return "";
-        const val = Math.log10(e.value);
-        const supers = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
-        let valStr = Math.round(val).toString(); // Round to handle floating point errors like 0.99999
-        let result = "10";
-        for(let char of valStr) {
-            result += supers[char] || char;
-        }
-        return result;
-    };
-
-    var chart;
-    initChart();
-    // Run immediately (No window.onload dependency)
-    function initChart() {
-        chart = new CanvasJS.Chart("adevChartContainer", {
-            theme: "light2",
-            animationEnabled: true,
-            zoomEnabled: true,
-            title: { text: "" },
-            axisX: {
-                title: "Averaging Time, τ (s)",
-                titleFontSize: 14,
-                logarithmic: true, // Critical for Allan Deviation
-                gridThickness: 1,
-                gridColor: "#b5b5b5",
-                minorGridThickness: 1,
-                minorGridColor: "#f0f0f0",
-                minorGridDashType: "dot",
-                labelFormatter: toLogString
-            },
-            axisY: {
-                title: "Allan Deviation, σ(τ)",
-                titleFontSize: 14,
-                logarithmic: true, // Critical for Allan Deviation
-                gridThickness: 1,
-                gridColor: "#b5b5b5",
-                minorGridThickness: 1,
-                minorGridColor: "#f0f0f0",
-                minorGridDashType: "dot",
-                labelFormatter: toLogString
-            },
-            data: [{
-                type: "line",
-                lineThickness: 3,
-                color: "#3273dc",
-                markerSize: 0, // Hide dots for cleaner line look
-                dataPoints: []
-            }]
-        });
-        chart.render();
-        regenerateChart();
-    };
-
-    function regenerateChart() {
-        try {
-            const powerStart = parseInt(document.getElementById("tauStart").value) || -1;
-            const powerEnd = parseInt(document.getElementById("tauEnd").value) || 4;
-            const type = document.getElementById("oscType").value;
-
-            let dataPoints = [];
-
-            // Oscillator Parameters (Noise levels)
-            let noiseBase = 1e-11, flickerFloor = 1e-13, driftStart = 1000;
-
-            if (type === 'crystal') { noiseBase = 1e-10; flickerFloor = 1e-11; driftStart = 100; }
-            else if (type === 'cesium') { noiseBase = 5e-12; flickerFloor = 1e-14; driftStart = 50000; }
-
-            // Generate Data Points
-            for (let p = powerStart; p <= powerEnd; p++) {
-                let decadeBase = Math.pow(10, p);
-                // Add points between decades for smooth log lines (1, 2, 4, 7)
-                [1, 2, 4, 7].forEach(step => {
-                    let tau = decadeBase * step;
-                    // Avoid calculating beyond the requested max range
-                    if (tau > Math.pow(10, powerEnd)) return;
-
-                    // ADEV Approximation Formula
-                    let whiteNoise = noiseBase / Math.sqrt(tau);
-                    let drift = (tau > driftStart) ? (flickerFloor * Math.sqrt(tau/driftStart)) : 0;
-                    let sigma = whiteNoise + flickerFloor + drift;
-
-                    dataPoints.push({ x: tau, y: sigma });
-                });
-            }
-
-            // Update Chart
-            chart.options.data[0].dataPoints = dataPoints;
-
-            // Reset Viewport to ensure data is visible
-            chart.options.axisX.minimum = Math.pow(10, powerStart);
-            chart.options.axisX.maximum = Math.pow(10, powerEnd);
-
-            // Force Render
-            chart.render();
-
-        } catch (e) {
-            console.error("Chart Render Error:", e);
-        }
-    }
-</script>
+<div class="level">
+    <div class="level-left">
+        <button class="button" type="button">Adjust to visible</button>
+        <button class="button" type="button">Save to file</button>
+    </div>            
+</div>
+<div class="box" style="height: 600px; display: flex; align-items: center; justify-content: center; background-color: white;">
+    <p class="has-text-grey-light is-size-4">Chart Canvas Area</p>
+</div>
+<div class="box" style="height: 300px; display: flex; align-items: center; justify-content: center; background-color: white;">
+    <p class="has-text-grey-light is-size-4">Allan Canvas Area</p>
+</div>

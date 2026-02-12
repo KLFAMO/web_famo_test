@@ -22,14 +22,14 @@ namespace FamoNET.Components.SubComponents.Chart
             }
         }
 
-        public override async Task LoadData(List<DataPoint<double>> data)
+        public override async Task LoadData(List<DataPoint<double>> data, string title)
         {
             OriginalCollection = new List<DataPoint<double>>();
             foreach (var dp in data)
             {
                 OriginalCollection.Add(new DataPoint<double>(dp));
             }
-
+            await ChartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double>() { Title = title }, false);
             await ChartManagerService.AddDataSet(ChartGuid, data);
             Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
             StateHasChanged();
@@ -92,7 +92,7 @@ namespace FamoNET.Components.SubComponents.Chart
                 allanData.Add(new DataPoint<double>(dp.X - Model.Offset, dp.Y));
             }
 
-            await AllanVariance.LoadData(allanData);
+            await AllanVariance.LoadData(allanData, "Allan deviation");
         }
     }
 }

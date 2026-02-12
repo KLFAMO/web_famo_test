@@ -1,14 +1,19 @@
 ﻿using FamoNET.Components.SubComponents.Chart;
 using FamoNET.Model;
 using FamoNET.Utils;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using NLog;
 
 namespace FamoNET.Components.SubComponents
 {
     public partial class AllanVariance : ChartComponentBase<double>
     {
+        [Inject]
+        private IJSRuntime _jSRuntime { get; set; }
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private List<DataPoint<double>> _data;
+        private List<DataPoint<double>> _allanData;
         private int _tauMode = (int)AllanTauMode.Decade;
         private int _allanType = (int)FamoNET.Model.AllanType.Normal;
 
@@ -21,7 +26,7 @@ namespace FamoNET.Components.SubComponents
 
                 _tauMode = value;
                 
-                _ = LoadData(_data);
+                _ = LoadData(_data, "Allan deviation");
             }
         }
         public int AllanType 
@@ -32,7 +37,7 @@ namespace FamoNET.Components.SubComponents
                 if (value ==  _allanType) return;
                 
                 _allanType = value;
-                _ = LoadData(_data);
+                _ = LoadData(_data, "Allan deviation");
             }
         }
 
@@ -44,11 +49,11 @@ namespace FamoNET.Components.SubComponents
             if (firstRender)
             {
                 _logger.Debug("Allan:" + ChartGuid);
-                await Initialize(new ChartParameters<double>() { Title = "Allan deviation", Logarithmic = true, AxisMode=AxisMode.Mjd, DisableEvents = true });
+                await Initialize(new ChartParameters<double>() { Title = "Allan deviation", Logarithmic = true, AxisMode=AxisMode.Mjd, DisableEvents = false });
             }            
         }
 
-        public override async Task LoadData(List<DataPoint<double>> data)
+        public override async Task LoadData(List<DataPoint<double>> data, string title)
         {
             if (data == null)
                 return;
@@ -83,7 +88,8 @@ namespace FamoNET.Components.SubComponents
             {
                 //expected on init
             }
-
+            
+            _allanData = allanData;
             await ChartManagerService.AddDataSet(ChartGuid, allanData);
 
             try
@@ -106,9 +112,24 @@ namespace FamoNET.Components.SubComponents
             throw new NotSupportedException();
         }
 
+        public async Task SaveToFile()
+        {
+            var ms = new MemoryStream();
+            using var sw = new StreamWriter(ms);
+            foreach(var data in _allanData)
+            {
+                sw.WriteLine($"{data.X} {data.Y}");
+            }
+            await sw.FlushAsync();
+            ms.Position = 0;
+
+            using var streamRef = new DotNetStreamReference(stream: ms);
+
+            await _jSRuntime.InvokeVoidAsync("downloadFileFromStream", "allan.txt", streamRef);
+        }
+
         protected override void ChartManagerService_OnViewportChanged(object sender, EventArgs e)
         {
-            //Events for chart are disabled
             return;
         }
     }

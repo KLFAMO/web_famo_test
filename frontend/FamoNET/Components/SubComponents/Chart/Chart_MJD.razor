@@ -2,10 +2,10 @@
 @inherits ChartWithAllanComponentBase<double>
 
 <div class="box">
-    @if(IsEditable)
-    {                
-            <div class="data-bar">
-                <div class="container">
+    @if (IsEditable)
+    {
+        <div class="data-bar">
+            <div class="container">
                 <div class="level">
                     <div class="level-left">
                         <div class="control-group">
@@ -15,7 +15,7 @@
                                     <InputText class="input" @bind-Value="@Model.Title" id="title" />
                                 </p>
                                 <p class="control">
-                                    
+
                                 </p>
                             </div>
                         </div>
@@ -57,32 +57,38 @@
                         </div>
 
                         <div class="control-group">
-                            <button type="button" class="button is-link has-text-weight-bold">Update</button>                            
-                        </div>
-                        <div class="control-gorup">
-                            <select class="select">
-
-                            </select>
+                            <button type="button" class="button is-link has-text-weight-bold">Update</button>
                         </div>
                     </div>
                 </div>
+                <div class="level">
+                    <div class="level-left">                        
+                        <input type="text" class="input" @bind=MathExpression />
+                        <div class="control-group">
+                            <button type="button" class="button is-link has-text-weight-bold" @onclick=@(() => Calculate())>Calculate</button>
+                        </div>
+                    </div>
                 </div>
-            </div>                   
+            </div>
+            <div class="container">
+                <MathComponent />
+            </div>
+        </div>
     }
-        
+
     <div id="@ChartGuid" style="width: 100%; height: 500px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
-    <div class="field is-grouped">
+    @* <div class="field is-grouped">
         <p class="control">
             <button class="button is-primary" type="button" @onclick=SendToAllan>
                 Load Allan
             </button>
         </p>
-    </div>
+    </div> *@
     @if (EnableAllan)
     {
         <div class="box">
             <AllanVariance @ref="AllanVariance" @key=ChartGuid />
         </div>
     }
-    
+
 </div>

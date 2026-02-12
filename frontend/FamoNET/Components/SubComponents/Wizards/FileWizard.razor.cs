@@ -26,6 +26,9 @@ namespace FamoNET.Components.SubComponents.Wizards
 
         public FileStatus Model { get; set; } = new FileStatus();
         public bool IsVisible { get; set; } = false;
+        public bool IncludeParameters { get; set; } = false;
+        public bool IncludeUnits { get; set; } = false;        
+        public bool IncludeDescription { get; set; } = false;        
 
         private string _dataPath;
         private List<DataPoint<double>> _points;

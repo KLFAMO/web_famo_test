@@ -76,7 +76,7 @@ namespace FamoNET.Services
                     return new ViewportParams<double>() { MinX = values[0].GetDouble(), MaxX = values[1].GetDouble(), MinY = values[2].GetDouble(), MaxY = values[3].GetDouble(), AxisMode = (AxisMode)values[4].GetInt32() };
                 }
             }
-            catch(FormatException fe)
+            catch(FormatException)
             {
                 _logger.Error($"Error while parsing viewport parameters. Values: {values[0]}, {values[1]}, {values[2]}, {values[3]}, {values[4]}");
                 throw;
@@ -137,7 +137,7 @@ namespace FamoNET.Services
                 var limits = await _module.InvokeAsync<List<double>>("PopPreviousViewport", containerGuid.ToString());
                 return new ViewportParams<double>() { MinX = limits[0], MaxX = limits[1], MinY = Convert.ToDouble(limits[2]), MaxY = Convert.ToDouble(limits[3]), AxisMode = (AxisMode)limits[4] };                                
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

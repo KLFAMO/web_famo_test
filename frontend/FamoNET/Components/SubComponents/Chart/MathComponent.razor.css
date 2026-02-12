@@ -1,0 +1,17 @@
+﻿
+.input.is-formula {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+    color: #4a4a4a;
+    letter-spacing: -0.5px;
+}
+
+.math-label {
+    font-family: 'Times New Roman', Times, serif;
+    font-style: italic;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+    color: #5e2d73; /* Dark Purple */
+}

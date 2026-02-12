@@ -50,9 +50,12 @@ else if (Model != null)
                 <div class="card is-warning-mode">
                     <header class="card-header">
                         <p class="card-header-title">Channel @channel.Id</p>
-                        <input type="checkbox" @onchange="(e) => OnChannelLockChange(e, channel)" checked="@channel.IsLocked">
+                        <label class="checkbox card-header-title" style="justify-content: end">
+                            <input type="checkbox" @onchange="(e) => OnChannelLockChange(e, channel)" checked="@channel.IsLocked" />
+                            Lock channel
+                        </label>                        
                     </header>
-                    <div clasDevices="card-content">
+                    <div class="card-content">
                         <div class="field mb-5">
                             <div class="control">
                                 <textarea class="textarea channel-desc-textarea" rows="2" placeholder="Channel description...">@channel.Description</textarea>
