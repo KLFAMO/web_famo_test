@@ -1,0 +1,56 @@
+﻿@using FamoNET.Model
+<div class="card">
+    <header class="card-header is-view">
+        <p class="card-header-title has-text-grey-dark is-size-6">
+            <span class="icon mr-2"><i class="fa fa-solid fa-desktop"></i></span>
+            Viewport Settings
+        </p>
+    </header>
+    @if(ViewportParams != null)
+    {
+        <div class="card-content pt-4 pb-4">
+            <div class="field mb-3">
+                <label class="label is-small">Chart Title</label>
+                <div class="control">
+                    <input class="input is-small" type="text" @bind=Title>
+                </div>
+            </div>
+
+            <div class="field mb-2">
+                <label class="label is-small">X-Axis Range</label>
+                <div class="field has-addons">
+                    <p class="control"><input class="input is-small range-input" placeholder="Min" @bind=ViewportParams.MinX></p>
+                    <p class="control"><a class="button is-static is-small">-</a></p>
+                    <p class="control"><input class="input is-small range-input" placeholder="Max" @bind=ViewportParams.MaxX></p>
+                </div>
+            </div>
+
+            <div class="field mb-4">
+                <label class="label is-small">Y-Axis Range</label>
+                <div class="field has-addons">
+                    <p class="control"><input class="input is-small range-input" placeholder="Min" @bind=ViewportParams.MinY></p>
+                    <p class="control"><a class="button is-static is-small">-</a></p>
+                    <p class="control"><input class="input is-small range-input" placeholder="Max" @bind=ViewportParams.MaxY></p>
+                </div>
+            </div>
+
+            <div class="field mb-4">
+                <label class="label is-small">Mode</label>
+                <div class="field has-addons">
+                    <div class="select">
+                        <select @bind=ViewportParams.AxisMode>
+                            <option value="@AxisMode.Mjd">MJD</option>
+                            <option value="@AxisMode.Date">Date</option>
+                            <option value="@AxisMode.Offset">Seconds</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="button is-small is-fullwidth" @onclick=@(() => ApplyParameters())>
+                Update View
+            </button>
+
+        </div>
+    }    
+</div>

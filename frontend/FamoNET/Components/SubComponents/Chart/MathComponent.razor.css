@@ -1,4 +1,9 @@
-﻿
+﻿.card-header.is-math {
+    background-color: #f3e5f5;
+    border-bottom: 2px solid #8e44ad;
+}
+
+/* Formula Input Styling */
 .input.is-formula {
     font-family: 'Courier New', Courier, monospace;
     font-weight: 600;
@@ -6,12 +11,11 @@
     letter-spacing: -0.5px;
 }
 
+/* Math Labels (x' =, y' =) */
 .math-label {
     font-family: 'Times New Roman', Times, serif;
     font-style: italic;
     font-weight: bold;
-    font-size: 1.1rem;
-    padding-left: 0.75em;
-    padding-right: 0.75em;
-    color: #5e2d73; /* Dark Purple */
+    color: #5e2d73;
+    width: 45px; /* Fixed width for alignment */
 }

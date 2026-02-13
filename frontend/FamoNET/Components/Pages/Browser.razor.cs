@@ -74,8 +74,8 @@ namespace FamoNET.Components.Pages
             else
             {                
                 await Chart_MJD.LoadData(e, DataFetchWizardComponent.SelectedTableName);
-                await Chart_Date.LoadData(e, DataFetchWizardComponent.SelectedTableName);
-                await Chart_Offset.LoadData(e, DataFetchWizardComponent.SelectedTableName);
+                //await Chart_Date.LoadData(e, DataFetchWizardComponent.SelectedTableName);
+                //await Chart_Offset.LoadData(e, DataFetchWizardComponent.SelectedTableName);
             }                
             
             IsFetchingData = false;

@@ -1,94 +1,34 @@
 ﻿@rendermode InteractiveServer
 @inherits ChartWithAllanComponentBase<double>
 
+
 <div class="box">
-    @if (IsEditable)
-    {
-        <div class="data-bar">
-            <div class="container">
-                <div class="level">
-                    <div class="level-left">
-                        <div class="control-group">
-                            <label class="toolbar-label">Title</label>
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <InputText class="input" @bind-Value="@Model.Title" id="title" />
-                                </p>
-                                <p class="control">
-
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="control-group">
-                            <label class="toolbar-label">MJD Range (Start - End)</label>
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <InputNumber class="input" id="limit" @bind-Value="@Model.Viewport.MinX" />
-                                </p>
-
-                                <p class="control">
-                                    <a class="button is-static">
-                                        -
-                                    </a>
-                                </p>
-
-                                <div class="control">
-                                    <InputNumber class="input" id="limit" @bind-Value="@Model.Viewport.MaxX" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="control-group">
-                            <label class="toolbar-label">Values Range (Start - End)</label>
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <InputNumber class="input" @bind-Value="@Model.Viewport.MinY" />
-                                </p>
-                                <p class="control">
-                                    <a class="button is-static">
-                                        -
-                                    </a>
-                                </p>
-                                <p class="control">
-                                    <InputNumber class="input" @bind-Value="@Model.Viewport.MaxY" />
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="control-group">
-                            <button type="button" class="button is-link has-text-weight-bold">Update</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="level">
-                    <div class="level-left">                        
-                        <input type="text" class="input" @bind=MathExpression />
-                        <div class="control-group">
-                            <button type="button" class="button is-link has-text-weight-bold" @onclick=@(() => Calculate())>Calculate</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="container">
-                <MathComponent />
-            </div>
+    <div class="columns">
+        <div class="column">
+            <SeriesListComponent @ref=SeriesListComponent @bind-SelectedSeries=SelectedSeries @bind-SelectedSeries:after=Redraw />
         </div>
-    }
-
-    <div id="@ChartGuid" style="width: 100%; height: 500px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
-    @* <div class="field is-grouped">
-        <p class="control">
-            <button class="button is-primary" type="button" @onclick=SendToAllan>
-                Load Allan
-            </button>
-        </p>
-    </div> *@
-    @if (EnableAllan)
-    {
-        <div class="box">
-            <AllanVariance @ref="AllanVariance" @key=ChartGuid />
+        <div class="column">
+            <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
         </div>
-    }
-
+        <div class="column">
+            <ViewportComponent ChartGuid="ChartGuid" />
+        </div>
+    </div>    
 </div>
+
+<div class="level">
+    <div class="level-left">
+        <button class="button" type="button">Adjust to visible</button>
+        <button class="button" type="button">Save to file</button>
+    </div>
+</div>
+
+<div id="@ChartGuid" style="width: 100%; height: 600px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
+
+@if (EnableAllan)
+{
+    <div class="box">
+        <AllanVariance @ref="AllanVariance" @key=ChartGuid />
+    </div>
+}
+

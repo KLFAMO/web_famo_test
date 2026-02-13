@@ -1,63 +1,40 @@
-﻿<div class="column is-4">
-    <div class="card">
-        <header class="card-header has-background-link-light" style="border-bottom: 2px solid #b86bff;">
-            <p class="card-header-title has-text-link-dark">
-                <span class="icon mr-2"><i class="fa-solid fa-calculator"></i></span>
-                Data Transformation
-            </p>
-        </header>
+﻿<div class="card mb-5">
+    <header class="card-header is-math">
+        <p class="card-header-title has-text-link-dark is-size-6">
+            <span class="icon mr-2 has-text-primary-dark"><i class="fa fa-solid fa-calculator"></i></span>
+            Math
+        </p>
+    </header>
+    <div class="card-content pt-4 pb-4">
+        @if (_lastSeries == null)
+        {
+            <p class="help mb-3 is-italic" id="mathTargetLabel"><strong>Select data series</strong></p>
+        }
+        else
+        {
+            <p class="help mb-3 is-italic" id="mathTargetLabel">Target: <strong>@_lastSeries.Label</strong></p>
 
-        <div class="card-content">
-
-            <div class="field mb-4">
-                <label class="label is-small is-uppercase has-text-grey">Target Series</label>
-                <div class="control has-icons-left">
-                    <div class="select is-fullwidth">
-                        <select id="mathTargetSeries">
-                            <option value="0">Series 1 (Blue)</option>
-                            <option value="1">Series 2 (Red)</option>
-                        </select>
-                    </div>
-                    <span class="icon is-small is-left">
-                        <i class="fa-solid fa-layer-group"></i>
-                    </span>
-                </div>
-            </div>
-
-            <div class="field mb-1">
-                <label class="label is-small is-uppercase has-text-grey">X-Axis Formula</label>
+            <div class="field mb-2">
                 <div class="field has-addons">
-                    <p class="control">
-                        <a class="button is-static math-label">x' =</a>
-                    </p>
+                    <p class="control"><a class="button is-static is-small math-label">x' =</a></p>
                     <p class="control is-expanded">
-                        <input class="input is-formula" type="text" id="mathExprX" placeholder="x (no change)">
+                        <input class="input is-small is-formula" type="text" placeholder="empty (no change)" @bind=@_lastSeries.MathExpressionX @bind:event="oninput">
                     </p>
                 </div>
             </div>
 
-            <div class="field mb-5">
-                <label class="label is-small is-uppercase has-text-grey">Y-Axis Formula</label>
+            <div class="field mb-3">
                 <div class="field has-addons">
-                    <p class="control">
-                        <a class="button is-static math-label">y' =</a>
-                    </p>
+                    <p class="control"><a class="button is-static is-small math-label">y' =</a></p>
                     <p class="control is-expanded">
-                        <input class="input is-formula" type="text" id="mathExprY" placeholder="y * 10">
+                        <input class="input is-small is-formula" type="text" placeholder="y * 10" @bind=@_lastSeries.MathExpressionY @bind:event="oninput">
                     </p>
                 </div>
             </div>
 
-            <button class="button is-link is-outlined is-fullwidth has-text-weight-bold"> @*onclick="applyTransformation()"*@
-                <span class="icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                <span>Apply Math</span>
+            <button class="button is-primary is-small is-fullwidth is-light" type="button" @onclick=ApplyMath>
+                Apply Transformation
             </button>
-
-            <p class="help mt-2">
-                Available variables: <code>x</code>, <code>y</code>, <code>i</code> (index).<br>
-                Example: <code>x + 100</code> or <code>Math.log10(y)</code>
-            </p>
-
-        </div>
+        }        
     </div>
 </div>

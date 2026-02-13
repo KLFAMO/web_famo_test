@@ -3,43 +3,20 @@ using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
-using org.mariuszgromada.math.mxparser;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
     public partial class Chart_MJD : ChartWithAllanComponentBase<double>
     {
         [Inject]
-        private ISystemNotificationService _notificationService { get; set; }
-        public string MathExpression { get; set; }
+        private ISystemNotificationService _notificationService { get; set; }        
+        private DataSeries<double> SelectedSeries { get; set; }
+        private SeriesListComponent SeriesListComponent;
+        
         public Chart_MJD()
         {
             Model = new ChartParameters<double>();
-        }
-
-        private async Task Calculate()
-        {
-            Argument x = new Argument("x");            
-            Expression e = new Expression(MathExpression, x);
-
-            var results = new List<DataPoint<double>>();
-            
-            if (!e.checkSyntax())
-            {
-                string errorMessage = e.getErrorMessage();
-                _notificationService.SendSystemMessage(this, new SystemMessage($"Invalid formula: {errorMessage}", SystemMessageType.Error));
-                return;
-            }
-            
-            foreach (var point in OriginalCollection)
-            {                
-                x.setArgumentValue(point.Y);
-                
-                results.Add(new DataPoint<double>() { X = point.X, Y = e.calculate() });
-            }
-
-            await LoadData(results, null);
-        }
+        }        
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -47,22 +24,29 @@ namespace FamoNET.Components.SubComponents.Chart
 
             if (firstRender)
             {
-                await Initialize(new ChartParameters<double>() { Title = "No data", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Mjd });
+                await Initialize(new ChartParameters<double>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Mjd });
             }
         }
 
-        public override async Task LoadData(List<DataPoint<double>> data, string title)
-        {
-            OriginalCollection = new List<DataPoint<double>>();
-            data.ForEach(dp => OriginalCollection.Add(new DataPoint<double>(dp)));
+        public override Task LoadData(List<DataPoint<double>> data, string label)
+        {                        
+            SeriesListComponent.AddSeries(label, data);            
+            return Task.CompletedTask;
+        }
 
-            if (title != null)
+        public async Task Redraw()
+        {
+            await ChartManagerService.ClearDataSets(ChartGuid, false);
+            for (int i = 0; i < SeriesListComponent.SeriesList.Count; ++i)
             {
-                await ChartManagerService.SetChartParameters(ChartGuid, new ChartParameters<double>() { Title = title }, false);
+                await ChartManagerService.AddDataSet(
+                    ChartGuid,
+                    SeriesListComponent.SeriesList[i].ModifiedData ?? SeriesListComponent.SeriesList[i].OriginalData,
+                    i == SeriesListComponent.SeriesList.Count - 1);
             }
-            
-            await ChartManagerService.AddDataSet(ChartGuid, data);
+
             Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
+
             await SendToAllan();
             StateHasChanged();
         }
@@ -86,8 +70,9 @@ namespace FamoNET.Components.SubComponents.Chart
             }
 
             base.Model.Viewport = eventArgs.Viewport;
+            
             await SendToAllan();
-            base.StateHasChanged();
+            StateHasChanged();
         }
 
         public override async Task SendToAllan()
@@ -95,7 +80,7 @@ namespace FamoNET.Components.SubComponents.Chart
             await AllanVariance.ClearChart();
 
             var allanData = new List<DataPoint<double>>();
-            foreach (var dp in OriginalCollection.Where(dp => dp.X >= Model.Viewport.MinX && dp.X <= Model.Viewport.MaxX))
+            foreach (var dp in SelectedSeries.OriginalData.Where(dp => dp.X >= Model.Viewport.MinX && dp.X <= Model.Viewport.MaxX))
             {
                 allanData.Add(new DataPoint<double>(dp.X, dp.Y));
             }

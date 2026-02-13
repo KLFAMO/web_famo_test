@@ -1,0 +1,20 @@
+﻿.delete-btn {
+    margin-left: auto; /* Pushes trash icon to the right */
+    color: #b5b5b5;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+    .delete-btn:hover {
+        color: #f14668;
+    }
+
+.panel-heading.is-series {
+    background-color: #3e8ed0;
+    color: white;
+}
+
+.panel-block.is-active {
+    background-color: #f0f8ff;
+    border-left: 4px solid #3e8ed0;
+}
