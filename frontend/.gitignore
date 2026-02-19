@@ -10,7 +10,6 @@ FamoNET.Scripts/node_modules/
 FamoNET.Scripts/obj/
 FamoNET.Scripts/out/
 
-FamoNET/appsettings.json
-
 FamoNET.Database/bin
 FamoNET.Database/obj
+FamoNET/Properties/PublishProfiles/

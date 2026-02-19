@@ -16,6 +16,7 @@ using FamoNET.Services.DataServices.Mock;
 using FamoNET.Services.Mock;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using System.Globalization;
@@ -77,14 +78,17 @@ namespace FamoNET
             
             app.CheckDatabase(app.Services.GetRequiredService<IDbContextFactory<MainDbContext>>());
 
-            var supportedCultures = new[] { new CultureInfo("pl-PL"), new CultureInfo("en-US") };
+            //var supportedCultures = new[] { new CultureInfo("pl-PL"), new CultureInfo("en-US") };
+            //var localizationOptions = new RequestLocalizationOptions
+            //{
+            //    DefaultRequestCulture = new RequestCulture("pl-PL"),
+            //    SupportedCultures = supportedCultures,
+            //    SupportedUICultures = supportedCultures,
+            //    ApplyCurrentCultureToResponseHeaders = true
+            //};            
 
-            app.UseRequestLocalization(new RequestLocalizationOptions
-            {                
-                DefaultRequestCulture = new RequestCulture("pl-PL"),             
-                SupportedCultures = supportedCultures,                
-                SupportedUICultures = supportedCultures
-            });
+            //app.UseRequestLocalization(localizationOptions);
+            
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

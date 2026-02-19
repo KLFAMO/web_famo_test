@@ -3,6 +3,7 @@ using FamoNET.Model.Interfaces;
 using Microsoft.VisualBasic.FileIO;
 using NLog;
 using System.Dynamic;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -54,7 +55,9 @@ namespace FamoNET.DataProviders.Mock
                     string[] fields = parser.ReadFields();
                     try
                     {
-                        resultData.Add(new DataPoint<double>(Convert.ToDouble(fields[0]), Convert.ToDouble(fields[1])));
+                        resultData.Add(new DataPoint<double>(
+                            Convert.ToDouble(fields[0], CultureInfo.InvariantCulture), 
+                            Convert.ToDouble(fields[1], CultureInfo.InvariantCulture)));
                     }
                     catch (Exception ex)
                     {

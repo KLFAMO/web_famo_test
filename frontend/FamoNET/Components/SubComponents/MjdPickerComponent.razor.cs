@@ -1,6 +1,7 @@
 ﻿using FamoNET.Utils;
 using Microsoft.AspNetCore.Components;
 using NLog;
+using System.Globalization;
 
 namespace FamoNET.Components.SubComponents
 {
@@ -43,18 +44,18 @@ namespace FamoNET.Components.SubComponents
         
         private async Task OnStartMjdSet(ChangeEventArgs startMjdArgs)
         {
-            var startMjd = Convert.ToDouble(startMjdArgs?.Value.ToString());
-            
-            StartMjd = startMjd;
-            await StartMjdChanged.InvokeAsync(startMjd);
+            //var startMjd = Convert.ToDouble(startMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture);
+
+            //StartMjd = startMjd;
+            await StartMjdChanged.InvokeAsync(Convert.ToDouble(startMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture));
         }
 
         private async Task OnEndMjdSet(ChangeEventArgs endMjdArgs)
         {
-            var endMjd = Convert.ToDouble(endMjdArgs?.Value.ToString());
+            //var endMjd = Convert.ToDouble(endMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture);
             
-            EndMjd = endMjd;
-            await EndMjdChanged.InvokeAsync(endMjd);
+            //EndMjd = endMjd;
+            await EndMjdChanged.InvokeAsync(Convert.ToDouble(endMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture));
         }
     }
 }

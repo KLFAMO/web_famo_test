@@ -19,8 +19,8 @@ namespace FamoNET.Components.SubComponents.Chart
 
         protected override async Task OnInitializedAsync()
         {
-            await base.OnInitializedAsync();
             _chartManagerService.OnViewportChanged += ChartManagerService_OnViewportChanged;
+            await base.OnInitializedAsync();            
         }
 
         protected override async Task OnParametersSetAsync()
@@ -36,17 +36,17 @@ namespace FamoNET.Components.SubComponents.Chart
             StateHasChanged();
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            await base.OnAfterRenderAsync(firstRender);
+        //protected override async Task OnAfterRenderAsync(bool firstRender)
+        //{
+        //    await base.OnAfterRenderAsync(firstRender);
 
-            //component still empty on initial render. Need to populate ViewportParams somehow (after data load). Check why OnViewPortChanged not firing after render.
-            if (_chartManagerService.IsInitialized && ViewportParams == null)
-            {
-                ViewportParams = await _chartManagerService.GetViewportParameters(_currentChartGuid);
-                StateHasChanged();
-            }
-        }
+        //    //component still empty on initial render. Need to populate ViewportParams somehow (after data load). Check why OnViewPortChanged not firing after render.
+        //    if (_chartManagerService.IsInitialized && ViewportParams == null)
+        //    {
+        //        ViewportParams = await _chartManagerService.GetViewportParameters(_currentChartGuid);
+        //        StateHasChanged();
+        //    }
+        //}
         private async Task ApplyParameters()
         {
             await _chartManagerService.SetChartParameters(_currentChartGuid, new ChartParameters<double>() { Title = Title } );
@@ -61,13 +61,13 @@ namespace FamoNET.Components.SubComponents.Chart
                 return;
             }
 
-            if (eventArgs.ChartGuid != ChartGuid)
+            if (eventArgs.ChartGuid != _currentChartGuid)
             {
                 return;
             }
          
             ViewportParams = eventArgs.Viewport;
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         }
     }
 }

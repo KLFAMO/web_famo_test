@@ -18,13 +18,21 @@ namespace FamoNET.Components.SubComponents.Chart
         [Inject]
         protected ChartManagerService ChartManagerService { get; set; }
         public ChartParameters<T> Model { get; set; }
-        protected Guid ChartGuid { get; } = Guid.NewGuid();
+        protected Guid ChartGuid { get; private set; } 
                 
-        public bool IsDataLoaded { get; set; }        
-        protected virtual async Task Initialize(ChartParameters<T> chartParameters)
+        public bool IsDataLoaded { get; set; }
+        protected override async Task OnInitializedAsync()
         {
+            await base.OnInitializedAsync();
+            ChartGuid = Guid.NewGuid();            
+        }
+
+        protected virtual async Task Initialize(ChartParameters<T> chartParameters)
+        {         
             if (_isInitialized)
-                return;            
+            {
+                return;
+            }            
 
             await ChartManagerService.InitializeChart(ChartGuid, chartParameters);
             _isInitialized = true;

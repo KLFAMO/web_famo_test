@@ -11,7 +11,7 @@
             <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
         </div>
         <div class="column">
-            <ViewportComponent ChartGuid="ChartGuid" />
+            <ViewportComponent @ref=ViewportComponent ChartGuid="ChartGuid" />
         </div>
     </div>    
 </div>

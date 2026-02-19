@@ -1,2 +1,4 @@
 backend/config_files/dhcpd.conf
 backend/config_files/hosts
+frontend/FamoNET/appsettings.json
+frontend/FamoNET/Properties/PublishProfiles

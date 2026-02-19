@@ -12,7 +12,7 @@ namespace FamoNET.Components.SubComponents.Chart
         private ISystemNotificationService _notificationService { get; set; }        
         private DataSeries<double> SelectedSeries { get; set; }
         private SeriesListComponent SeriesListComponent;
-        
+        private ViewportComponent ViewportComponent;
         public Chart_MJD()
         {
             Model = new ChartParameters<double>();

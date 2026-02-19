@@ -9,7 +9,7 @@
             </a>
         </p>
         <p class="control">
-            <input class="input" type="number" value="@StartMjd" step="0.0001" oninput="@OnStartMjdSet" placeholder="From" id="title" disabled=@IsUIDisabled />
+            <InputNumber class="input" step="0.0001" @bind-Value=StartMjd @oninput=OnStartMjdSet placeholder="From" id="title" disabled=@IsUIDisabled />
             <p class="is-small">
                 @StartDate
             </p>
@@ -20,7 +20,7 @@
             </a>
         </p>
         <p class="control">
-            <input class="input" type="number" value="@EndMjd" step="0.0001" oninput="@OnEndMjdSet" placeholder="To" id="title" disabled=@IsUIDisabled />
+            <InputNumber class="input" step="0.0001" @bind-Value=EndMjd @oninput=OnEndMjdSet placeholder="To" id="title" disabled=@IsUIDisabled />
             <p class="is-small">
                 @EndDate
             </p>
