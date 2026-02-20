@@ -12,7 +12,7 @@ namespace FamoNET.Components.SubComponents.Chart
         private ISystemNotificationService _notificationService { get; set; }        
         private DataSeries<double> SelectedSeries { get; set; }
         private SeriesListComponent SeriesListComponent;
-        private ViewportComponent ViewportComponent;
+        private MjdViewportComponent ViewportComponent;
         public Chart_MJD()
         {
             Model = new ChartParameters<double>();
@@ -46,6 +46,7 @@ namespace FamoNET.Components.SubComponents.Chart
             }
 
             Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
+            await ViewportComponent.RefreshParameters();
 
             await SendToAllan();
             StateHasChanged();

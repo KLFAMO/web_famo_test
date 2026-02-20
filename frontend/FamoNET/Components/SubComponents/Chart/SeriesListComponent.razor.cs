@@ -29,5 +29,11 @@ namespace FamoNET.Components.SubComponents.Chart
             SeriesList.Remove(SeriesList.FirstOrDefault(s => s.Guid == guid));
             StateHasChanged();
         }
+
+        public async Task SelectSeries(DataSeries<double> selectedSeries)
+        {
+            SelectedSeries = selectedSeries;
+            await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
+        }
     }
 }
