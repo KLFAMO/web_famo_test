@@ -39,6 +39,14 @@ namespace FamoNET.Components.SubComponents.Chart
             StateHasChanged();
         }
 
+
+        protected async Task ApplyParameters()
+        {
+            await ChartManagerService.SetChartParameters(CurrentChartGuid, new ChartParameters<double>() { Title = Title });
+            await ChartManagerService.SetViewportParameters(CurrentChartGuid, MjdViewportParams);
+        }
+
+
         protected abstract void ChartManagerService_OnViewportChanged(object sender, EventArgs e);        
     }
 }

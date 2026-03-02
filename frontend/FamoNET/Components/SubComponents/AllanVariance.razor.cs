@@ -55,7 +55,7 @@ namespace FamoNET.Components.SubComponents
 
         public override async Task LoadData(List<DataPoint<double>> data, string title)
         {
-            if (data == null)
+            if (data == null || data.Count < 2)
                 return;
 
             _data = data;

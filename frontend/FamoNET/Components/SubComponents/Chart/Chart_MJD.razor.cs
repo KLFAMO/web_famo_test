@@ -12,7 +12,7 @@ namespace FamoNET.Components.SubComponents.Chart
         private ISystemNotificationService _notificationService { get; set; }        
         private DataSeries<double> SelectedSeries { get; set; }
         private SeriesListComponent SeriesListComponent;
-        private MjdViewportComponent ViewportComponent;
+        private ViewportComponent ViewportComponent;
         public Chart_MJD()
         {
             Model = new ChartParameters<double>();
@@ -87,6 +87,11 @@ namespace FamoNET.Components.SubComponents.Chart
             }
 
             await AllanVariance.LoadData(allanData, "Allan deviation");
+        }
+
+        public async void OnAxisModeChanged(object sender, AxisMode axisMode)
+        {
+            await Redraw();
         }
     }
 }

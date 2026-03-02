@@ -1,14 +1,22 @@
 ﻿using FamoNET.Model;
+using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
     public partial class ViewportComponent : ComponentBase
-    {
+    {       
+        [Inject]
+        protected ChartManagerService ChartManagerService { get; set; }
         [Parameter]
         public Guid ChartGuid { get; set; }
         private Guid _currentChartGuid { get; set; }
+        [Parameter]
+        public EventHandler<AxisMode> AxisModeChanged { get; set; }
         public AxisMode AxisMode { get; set; }
+        private MjdViewportComponent MjdViewportComponent;
+        private DateViewportComponent DateViewportComponent;
         
         protected override async Task OnParametersSetAsync()
         {
@@ -18,6 +26,34 @@ namespace FamoNET.Components.SubComponents.Chart
                 return;
 
             _currentChartGuid = ChartGuid;
+        }
+
+        public async Task RefreshParameters()
+        {
+            if (AxisMode == AxisMode.Mjd)
+            {
+                await MjdViewportComponent.RefreshParameters();
+            }
+            else if (AxisMode == AxisMode.Date)
+            {
+                await DateViewportComponent.RefreshParameters();
+            }
+        }
+
+        private async Task OnAxisModeChange()
+        {            
+            await RefreshParameters();
+
+            if (AxisMode == AxisMode.Date)
+            {
+                await ChartManagerService.InitializeChart(ChartGuid, new ChartParameters<DateTime>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Date });
+            }
+            else
+            {
+                await ChartManagerService.InitializeChart(ChartGuid, new ChartParameters<double>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Mjd });
+            }
+
+            AxisModeChanged?.Invoke(this, AxisMode);
         }
     }
 }

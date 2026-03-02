@@ -15,18 +15,18 @@
         <div class="field mb-2">
             <label class="label is-small">X-Axis Range</label>
             <div class="field has-addons">
-                <p class="control"><InputDate class="input is-small range-input" placeholder="Min" @bind-Value=MjdViewportParams.MinX /></p>
+                <p class="control"><InputDate class="input is-small range-input" placeholder="Min" @bind-Value=StartDate /></p>
                 <p class="control"><a class="button is-static is-small">-</a></p>
-                <p class="control"><InputDate class="input is-small range-input" placeholder="Max" @bind-Value=MjdViewportParams.MaxX /></p>
+                <p class="control"><InputDate class="input is-small range-input" placeholder="Max" @bind-Value=EndDate /></p>
             </div>
         </div>
 
         <div class="field mb-4">
             <label class="label is-small">Y-Axis Range</label>
             <div class="field has-addons">
-                <p class="control"><InputDate class="input is-small range-input" placeholder="Min" @bind-Value=MjdViewportParams.MinY /></p>
+                <p class="control"><InputNumber class="input is-small range-input" placeholder="Min" @bind-Value=MjdViewportParams.MinY /></p>
                 <p class="control"><a class="button is-static is-small">-</a></p>
-                <p class="control"><InputDate class="input is-small range-input" placeholder="Max" @bind-Value=MjdViewportParams.MaxY /></p>
+                <p class="control"><InputNumber class="input is-small range-input" placeholder="Max" @bind-Value=MjdViewportParams.MaxY /></p>
             </div>
         </div>
 
