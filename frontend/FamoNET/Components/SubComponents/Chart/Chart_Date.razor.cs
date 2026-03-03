@@ -31,7 +31,7 @@ namespace FamoNET.Components.SubComponents.Chart
 
             OriginalCollection = convertedData;
             await ChartManagerService.SetChartParameters(ChartGuid, new ChartParameters<DateTime>() { Title = title }, false);
-            await ChartManagerService.AddDataSet<DateTime>(base.ChartGuid, convertedData);
+            //await ChartManagerService.AddDataSet<DateTime>(base.ChartGuid, convertedData);
             
             var mjdVP = await ChartManagerService.GetViewportParameters(ChartGuid);
             

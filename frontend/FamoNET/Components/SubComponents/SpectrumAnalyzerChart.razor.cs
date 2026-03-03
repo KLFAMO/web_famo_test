@@ -280,10 +280,10 @@ namespace FamoNET.Components.SubComponents
                 AdjustView(points);
 
                 await _chartManagerService.ClearDataSets(ChartGuid, false);
-                await _chartManagerService.AddDataSet(ChartGuid, points, false);
+                await _chartManagerService.AddDataSet(ChartGuid, points, instantRender: false);
                 if (_reference != null)
                 {                    
-                    await _chartManagerService.AddDataSet(ChartGuid, _reference, false);
+                    await _chartManagerService.AddDataSet(ChartGuid, _reference, instantRender:false);
                 }
                 await _chartManagerService.SetViewportParameters(ChartGuid, _viewportParams).ConfigureAwait(false);
 

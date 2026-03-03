@@ -1,6 +1,7 @@
 ﻿using FamoNET.Model;
 using FamoNET.Model.Args;
 using FamoNET.Utils;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.JSInterop;
 using NLog;
 using System.ComponentModel;
@@ -27,9 +28,24 @@ namespace FamoNET.Services
             IsInitialized = true;
         }
 
-        public async Task AddDataSet<T>(Guid containerGuid, List<DataPoint<T>> dataPoints, bool instantRender = true)
-        {                                 
-            await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), dataPoints);
+        public async Task AddDataSet(Guid containerGuid, List<DataPoint<double>> dataPoints, AxisMode axisMode = AxisMode.Mjd, bool instantRender = true)
+        {            
+            if (axisMode == AxisMode.Date)
+            {
+                var datePoints = new List<DataPoint<DateTime>>();
+                dataPoints.ForEach(dp => datePoints.Add(new DataPoint<DateTime>() 
+                { 
+                    X = FamoMath.Convert_MJDToDateTime(dp.X),
+                    Y = dp.Y
+                }));
+
+                await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), datePoints);
+            }
+            else if (axisMode == AxisMode.Mjd)
+            {
+                await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), dataPoints);
+            }
+
             if (instantRender)
                 await Render(containerGuid);
         }       
@@ -181,9 +197,9 @@ namespace FamoNET.Services
             }
             else if (axisMode == (int)AxisMode.Date)
             {
-                OnViewportChanged?.Invoke(this, new DateViewportEventArgs(
+                OnViewportChanged?.Invoke(this, new MjdViewportEventArgs(
                     Guid.Parse(guid),
-                    new ViewportParams<DateTime>() { MinX = DateTime.Parse(minX.GetString()), MaxX = DateTime.Parse(maxX.GetString()), MinY = minY.GetDouble(), MaxY = maxY.GetDouble(), AxisMode = AxisMode.Date }));
+                    new ViewportParams<double>() { MinX = FamoMath.Convert_DateTimeToMjd(DateTime.Parse(minX.GetString())), MaxX = FamoMath.Convert_DateTimeToMjd(DateTime.Parse(maxX.GetString())), MinY = minY.GetDouble(), MaxY = maxY.GetDouble(), AxisMode = AxisMode.Mjd }));
             }            
         }        
     }

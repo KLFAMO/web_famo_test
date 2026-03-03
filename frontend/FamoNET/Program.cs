@@ -19,6 +19,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using org.mariuszgromada.math.mxparser;
+
 using System.Globalization;
 
 namespace FamoNET
@@ -27,6 +29,8 @@ namespace FamoNET
     {
         public static void Main(string[] args)
         {
+            /* Non-Commercial Use Confirmation */
+            var isCallSuccessful = License.iConfirmNonCommercialUse("KLFAMO UMK");
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.Configure<EndpointsOptions>(builder.Configuration.GetSection(EndpointsOptions.SectionName));
             builder.Services.Configure<CredentialsOptions>(builder.Configuration.GetSection(CredentialsOptions.SectionName));

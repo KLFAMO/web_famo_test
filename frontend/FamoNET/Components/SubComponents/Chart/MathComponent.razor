@@ -35,6 +35,11 @@
             <button class="button is-primary is-small is-fullwidth is-light" type="button" @onclick=ApplyMath>
                 Apply Transformation
             </button>
+            @if (IsCalculating)
+            {
+                <progress class="progress is-small is-primary" max="100">15%</progress>
+            }
         }        
     </div>
+    
 </div>

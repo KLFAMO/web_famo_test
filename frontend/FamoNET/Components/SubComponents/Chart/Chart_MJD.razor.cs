@@ -42,6 +42,7 @@ namespace FamoNET.Components.SubComponents.Chart
                 await ChartManagerService.AddDataSet(
                     ChartGuid,
                     SeriesListComponent.SeriesList[i].ModifiedData ?? SeriesListComponent.SeriesList[i].OriginalData,
+                    ViewportComponent.AxisMode,
                     i == SeriesListComponent.SeriesList.Count - 1);
             }
 
@@ -49,8 +50,8 @@ namespace FamoNET.Components.SubComponents.Chart
             await ViewportComponent.RefreshParameters();
 
             await SendToAllan();
-            StateHasChanged();
-        }
+            await InvokeAsync(StateHasChanged);
+        } 
 
         public override async Task SetViewport(ViewportParams<double> viewport)
         {            

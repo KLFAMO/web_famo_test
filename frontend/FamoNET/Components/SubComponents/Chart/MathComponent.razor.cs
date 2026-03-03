@@ -26,8 +26,14 @@ namespace FamoNET.Components.SubComponents.Chart
             StateHasChanged();
         }
 
-        protected void ApplyMath()
+        public bool IsCalculating { get; set; } = false;
+
+        protected async Task ApplyMath()
         {
+            IsCalculating = true;            
+            StateHasChanged();
+            await Task.Delay(200);
+
             Argument x = new Argument("x");
             Argument y = new Argument("y");
             Expression xExpression = null;
@@ -74,7 +80,10 @@ namespace FamoNET.Components.SubComponents.Chart
             Series.ModifiedData = new List<DataPoint<double>>(newData);
             Series.MathExpressionX = _lastSeries.MathExpressionX;
             Series.MathExpressionY = _lastSeries.MathExpressionY;
-            SeriesChanged.InvokeAsync(Series);
+
+            IsCalculating = false;            
+            await SeriesChanged.InvokeAsync(Series);
+            StateHasChanged();
         }        
     }
 }
