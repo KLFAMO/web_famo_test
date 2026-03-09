@@ -21,6 +21,7 @@ namespace FamoNET.Components.SubComponents.Chart
         protected Guid ChartGuid { get; private set; } 
                 
         public bool IsDataLoaded { get; set; }
+        public bool IsDataLoading { get; set; }
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();

@@ -15,7 +15,7 @@
                        @onchange="@(() => SelectSeries(SeriesList[temp]))">
 
                 <span class="ml-2 @(SeriesList.IndexOf(SelectedSeries) == temp ? "has-text-weight-semibold" : "")">
-                    <input type="text" @bind=@SeriesList[temp].Label @bind:event="oninput" />
+                    <input type="text" @bind-value=@SeriesList[temp].Label @bind-value:event="oninput" @onkeydown="@OnLabelChange" />
                 </span>
                 
                 <span class="delete-btn" @onclick="@(() => RemoveSeries(SeriesList[temp].Guid))">

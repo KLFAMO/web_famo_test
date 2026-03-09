@@ -1,5 +1,7 @@
 ﻿using FamoNET.Model;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
@@ -9,24 +11,27 @@ namespace FamoNET.Components.SubComponents.Chart
         public DataSeries<double> SelectedSeries { get; set; }
         [Parameter]
         public EventCallback<DataSeries<double>> SelectedSeriesChanged { get; set; }
+        [Parameter]
+        public EventCallback SeriesDeleted { get; set; }
         public List<DataSeries<double>> SeriesList = new List<DataSeries<double>>();
         
 
-        public void AddSeries(string label, List<DataPoint<double>> data)
+        public async Task AddSeries(string label, List<DataPoint<double>> data)
         {
             SeriesList.Add(new DataSeries<double>(data, label));
             if (SeriesList.Count == 1)
             {
                 SelectedSeries = SeriesList.FirstOrDefault();
-                SelectedSeriesChanged.InvokeAsync(SelectedSeries);
+                await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
             }
 
             StateHasChanged();
         }
 
-        public void RemoveSeries(Guid guid)
+        public async Task RemoveSeries(Guid guid)
         {
             SeriesList.Remove(SeriesList.FirstOrDefault(s => s.Guid == guid));
+            await SeriesDeleted.InvokeAsync();
             StateHasChanged();
         }
 
@@ -34,6 +39,14 @@ namespace FamoNET.Components.SubComponents.Chart
         {
             SelectedSeries = selectedSeries;
             await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
+        }
+
+        private async Task OnLabelChange(KeyboardEventArgs keyboardArgs)
+        {
+            if (keyboardArgs.Code == "Enter" || keyboardArgs.Code == "NumpadEnter")
+            {
+                await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
+            }
         }
     }
 }

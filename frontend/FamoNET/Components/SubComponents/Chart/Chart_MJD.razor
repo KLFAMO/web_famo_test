@@ -5,7 +5,7 @@
 <div class="box">
     <div class="columns">
         <div class="column">
-            <SeriesListComponent @ref=SeriesListComponent @bind-SelectedSeries=SelectedSeries @bind-SelectedSeries:after=Redraw />
+            <SeriesListComponent @ref=SeriesListComponent @bind-SelectedSeries=SelectedSeries @bind-SelectedSeries:after=Redraw @SeriesDeleted=Redraw />
         </div>
         <div class="column">
             <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
@@ -21,6 +21,9 @@
         <button class="button" type="button">Adjust to visible</button>
         <button class="button" type="button">Save to file</button>
     </div>
+</div>
+<div style="display: @(IsDataLoading ? "block" : "none")">
+    <progress class="progress is-small is-primary" max="100">15%</progress>
 </div>
 
 <div id="@ChartGuid" style="width: 100%; height: 600px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>

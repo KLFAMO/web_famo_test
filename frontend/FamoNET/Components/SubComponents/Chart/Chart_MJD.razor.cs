@@ -36,6 +36,9 @@ namespace FamoNET.Components.SubComponents.Chart
 
         public async Task Redraw()
         {
+            IsDataLoading = true;
+            StateHasChanged();
+
             await ChartManagerService.ClearDataSets(ChartGuid, false);
             for (int i = 0; i < SeriesListComponent.SeriesList.Count; ++i)
             {
@@ -49,6 +52,7 @@ namespace FamoNET.Components.SubComponents.Chart
             Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
             await ViewportComponent.RefreshParameters();
 
+            IsDataLoading = false;
             await SendToAllan();
             await InvokeAsync(StateHasChanged);
         } 

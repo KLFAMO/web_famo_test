@@ -62,6 +62,7 @@ namespace FamoNET.Components.SubComponents
             
             IsLoading = true;
             await InvokeAsync(StateHasChanged);
+            await Task.Yield();
 
             List<DataPoint<double>> allanData = null;
             double tau0 = (FamoMath.Convert_MJDToDateTime(data[1].X) - FamoMath.Convert_MJDToDateTime(data[0].X)).TotalSeconds;
