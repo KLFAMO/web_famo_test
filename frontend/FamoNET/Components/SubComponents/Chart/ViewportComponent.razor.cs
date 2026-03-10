@@ -17,6 +17,7 @@ namespace FamoNET.Components.SubComponents.Chart
         public AxisMode AxisMode { get; set; }
         private MjdViewportComponent MjdViewportComponent;
         private DateViewportComponent DateViewportComponent;
+        private SecondsViewportComponent SecondsViewportComponent;
         
         protected override async Task OnParametersSetAsync()
         {

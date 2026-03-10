@@ -19,10 +19,8 @@ namespace FamoNET.Components.Pages
         private ISystemNotificationService _systemNotificationService { get; set; }
 
         #region Components
-        private Chart_MJD Chart_MJD;
-        private Chart_Date Chart_Date;
-        private Chart_Offset Chart_Offset;
-        //private PythonConsole PythonConsoleComponent;
+        private Chart_MJD Chart_MJD;        
+        
         private DataWizard DataFetchWizardComponent;        
         #endregion
 
@@ -73,37 +71,13 @@ namespace FamoNET.Components.Pages
             }
             else
             {                
-                await Chart_MJD.LoadData(e, DataFetchWizardComponent.SelectedTableName);
-                //await Chart_Date.LoadData(e, DataFetchWizardComponent.SelectedTableName);
-                //await Chart_Offset.LoadData(e, DataFetchWizardComponent.SelectedTableName);
+                await Chart_MJD.LoadData(e, DataFetchWizardComponent.SelectedTableName);                
             }                
             
             IsFetchingData = false;
             IsDataLoaded = true;
             DataFetchWizardComponent.IsUIDisabled = false;
             StateHasChanged();
-        }
-
-        protected async Task SwitchMode(AxisMode mode)
-        {
-            CurrentMode = mode;
-            StateHasChanged();
-
-            switch (mode)
-            {
-                case AxisMode.Mjd:
-                    await Chart_MJD.UpdateParameters();
-                    break;
-
-                case AxisMode.Date:
-                    await Chart_Date.UpdateParameters();
-                    break;
-
-                case AxisMode.Offset:
-                    await Chart_Offset.UpdateParameters();
-                    break;
-            }
-
-        }
+        }        
     }
 }

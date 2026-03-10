@@ -1,15 +1,11 @@
 ﻿using FamoNET.Model;
 using FamoNET.Model.Args;
-using FamoNET.Model.Interfaces;
 using FamoNET.Services;
-using Microsoft.AspNetCore.Components;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
     public partial class Chart_MJD : ChartWithAllanComponentBase<double>
-    {
-        [Inject]
-        private ISystemNotificationService _notificationService { get; set; }        
+    {              
         private DataSeries<double> SelectedSeries { get; set; }
         private SeriesListComponent SeriesListComponent;
         private ViewportComponent ViewportComponent;
@@ -28,10 +24,9 @@ namespace FamoNET.Components.SubComponents.Chart
             }
         }
 
-        public override Task LoadData(List<DataPoint<double>> data, string label)
+        public override async Task LoadData(List<DataPoint<double>> data, string label)
         {                        
-            SeriesListComponent.AddSeries(label, data);            
-            return Task.CompletedTask;
+            await SeriesListComponent.AddSeries(label, data);                        
         }
 
         public async Task Redraw()
@@ -49,7 +44,15 @@ namespace FamoNET.Components.SubComponents.Chart
                     i == SeriesListComponent.SeriesList.Count - 1);
             }
 
-            Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
+            if (Model.Viewport == null)
+            {
+                Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
+            }
+            else
+            {
+                await ChartManagerService.SetViewportParameters(ChartGuid, Model.Viewport);
+            }
+            
             await ViewportComponent.RefreshParameters();
 
             IsDataLoading = false;
@@ -83,6 +86,9 @@ namespace FamoNET.Components.SubComponents.Chart
 
         public override async Task SendToAllan()
         {
+            if (!EnableAllan)
+                return;
+
             await AllanVariance.ClearChart();
 
             var allanData = new List<DataPoint<double>>();

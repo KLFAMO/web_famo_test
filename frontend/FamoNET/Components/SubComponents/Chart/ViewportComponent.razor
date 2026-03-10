@@ -12,6 +12,7 @@
                 <select @bind=AxisMode @bind:after=OnAxisModeChange>
                     <option value="@Model.AxisMode.Mjd">MJD</option>
                     <option value="@Model.AxisMode.Date">Date</option>
+                    <option value="@Model.AxisMode.Seconds">Seconds</option>
                 </select>
             </div>
         </div>
@@ -21,6 +22,9 @@
     </div>
     <div style="display: @(AxisMode == Model.AxisMode.Date ? "block" : "none")">
         <DateViewportComponent @ref=DateViewportComponent ChartGuid="ChartGuid" />
+    </div>
+    <div style="display: @(AxisMode == Model.AxisMode.Seconds ? "block" : "none")">
+        <SecondsViewportComponent @ref=SecondsViewportComponent ChartGuid="ChartGuid" />
     </div>
 
 </div>

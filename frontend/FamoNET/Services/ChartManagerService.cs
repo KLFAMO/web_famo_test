@@ -33,17 +33,37 @@ namespace FamoNET.Services
             if (axisMode == AxisMode.Date)
             {
                 var datePoints = new List<DataPoint<DateTime>>();
-                dataPoints.ForEach(dp => datePoints.Add(new DataPoint<DateTime>() 
-                { 
-                    X = FamoMath.Convert_MJDToDateTime(dp.X),
-                    Y = dp.Y
-                }));
+
+                foreach(var dp in dataPoints)
+                {
+                    datePoints.Add(new DataPoint<DateTime>()
+                    {
+                        X = FamoMath.Convert_MJDToDateTime(dp.X),
+                        Y = dp.Y
+                    });
+                }                
 
                 await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), datePoints);
             }
             else if (axisMode == AxisMode.Mjd)
             {
                 await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), dataPoints);
+            }
+            else if (axisMode == AxisMode.Seconds)
+            {
+                var baseMjd = dataPoints[0].X;
+                var secondPoints = new List<DataPoint<double>>();
+
+                foreach(var dp in dataPoints)
+                {
+                    secondPoints.Add(new DataPoint<double>()
+                    {
+                        X = (dp.X - baseMjd) * 84000,
+                        Y = dp.Y
+                    });
+                }                
+
+                await _module.InvokeVoidAsync("AddDataSet", containerGuid.ToString(), secondPoints);
             }
 
             if (instantRender)
@@ -189,7 +209,7 @@ namespace FamoNET.Services
         [JSInvokable]
         public void ViewportChanged(string guid, JsonElement minX, JsonElement maxX, JsonElement minY, JsonElement maxY, int axisMode)
         {            
-            if (axisMode == (int)AxisMode.Mjd || axisMode == (int)AxisMode.Offset)
+            if (axisMode == (int)AxisMode.Mjd || axisMode == (int)AxisMode.Seconds)
             {
                 OnViewportChanged?.Invoke(this, new MjdViewportEventArgs(
                     Guid.Parse(guid), 

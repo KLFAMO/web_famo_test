@@ -10,7 +10,7 @@
     {
         Mjd = 0,
         Date = 1,
-        Offset = 2
+        Seconds = 2
     }
 
     public enum TerminalMessageType

@@ -1,7 +1,6 @@
 ﻿using FamoNET.Model;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
@@ -13,6 +12,8 @@ namespace FamoNET.Components.SubComponents.Chart
         public EventCallback<DataSeries<double>> SelectedSeriesChanged { get; set; }
         [Parameter]
         public EventCallback SeriesDeleted { get; set; }
+        [Parameter]
+        public EventCallback SeriesAdded { get; set; }
         public List<DataSeries<double>> SeriesList = new List<DataSeries<double>>();
         
 
@@ -22,17 +23,31 @@ namespace FamoNET.Components.SubComponents.Chart
             if (SeriesList.Count == 1)
             {
                 SelectedSeries = SeriesList.FirstOrDefault();
-                await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
+                await SelectedSeriesChanged.InvokeAsync(SelectedSeries);                
             }
 
-            StateHasChanged();
+            await SeriesAdded.InvokeAsync();
+            await Task.Yield();
+            await InvokeAsync(StateHasChanged);
         }
 
         public async Task RemoveSeries(Guid guid)
         {
-            SeriesList.Remove(SeriesList.FirstOrDefault(s => s.Guid == guid));
+            var seriesToRemove = SeriesList.FirstOrDefault(s => s.Guid == guid);
+            SeriesList.Remove(seriesToRemove);
+            if (SeriesList.Count>0)
+            {
+                SelectedSeries = SeriesList.First();
+            }
+            else
+            {
+                SelectedSeries = new DataSeries<double>(new List<DataPoint<double>>(), "empty");
+            }
+            await SelectedSeriesChanged.InvokeAsync(SelectedSeries);
             await SeriesDeleted.InvokeAsync();
-            StateHasChanged();
+
+            await Task.Yield();
+            await InvokeAsync(StateHasChanged);
         }
 
         public async Task SelectSeries(DataSeries<double> selectedSeries)

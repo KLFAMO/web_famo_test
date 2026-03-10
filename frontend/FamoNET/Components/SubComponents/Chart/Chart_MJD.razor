@@ -1,24 +1,30 @@
 ﻿@rendermode InteractiveServer
 @inherits ChartWithAllanComponentBase<double>
 
-
-<div class="box">
-    <div class="columns">
-        <div class="column">
-            <SeriesListComponent @ref=SeriesListComponent @bind-SelectedSeries=SelectedSeries @bind-SelectedSeries:after=Redraw @SeriesDeleted=Redraw />
+@if(IsEditable)
+{
+    <div class="box">
+        <div class="columns">
+            <div class="column">
+                <SeriesListComponent @ref=SeriesListComponent @bind-SelectedSeries=SelectedSeries @bind-SelectedSeries:after=SendToAllan SeriesAdded=Redraw SeriesDeleted=Redraw />
+            </div>
+            <div class="column">
+                <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
+            </div>
+            <div class="column">
+                <ViewportComponent @ref=ViewportComponent ChartGuid="ChartGuid" AxisModeChanged="OnAxisModeChanged" />
+            </div>
         </div>
-        <div class="column">
-            <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
-        </div>
-        <div class="column">
-            <ViewportComponent @ref=ViewportComponent ChartGuid="ChartGuid" AxisModeChanged="OnAxisModeChanged" />
-        </div>
-    </div>    
-</div>
+    </div>
+}
 
 <div class="level">
     <div class="level-left">
-        <button class="button" type="button">Adjust to visible</button>
+        @if(IsEditable)
+        {
+            <button class="button" type="button">Adjust to visible</button>
+        }
+        
         <button class="button" type="button">Save to file</button>
     </div>
 </div>
