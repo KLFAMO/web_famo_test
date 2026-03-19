@@ -14,9 +14,9 @@ namespace FamoNET.Components.Pages
 
         [Inject]
         private AndaDataService _andaDataService { get; set; }
-        protected Chart_MJD Chart_MJD { get; set; }
+        protected Chart Chart_MJD { get; set; }
         protected AllanVariance AllanVarianceComponent { get; set; }
-        protected int Points { get; set; } = 300;
+        protected int Interval { get; set; } = 300;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         public List<string> TableNames { get; set; } = new List<string>();     
         public string SelectedTableName { get; set; }
@@ -50,7 +50,7 @@ namespace FamoNET.Components.Pages
                 {
                     var utcNow = DateTime.UtcNow;
                     var mjdNow = TimeService.GetMJD(utcNow);
-                    var mjdPoints = TimeService.GetMJD(utcNow.AddSeconds(Points * (-1)));
+                    var mjdPoints = TimeService.GetMJD(utcNow.AddSeconds(Interval * (-1)));
 
                     var data = await _andaDataService.GetDataAsync(mjdPoints, mjdNow, tableName);
                     AddToAllanCollection(data);

@@ -64,7 +64,7 @@ namespace FamoNET.Components.SubComponents.Chart
                     return;
                 }
             }
-
+            
             foreach (var point in _lastSeries.OriginalData)
             {
                 x.setArgumentValue(point.X);

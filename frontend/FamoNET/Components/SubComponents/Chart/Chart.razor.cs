@@ -1,15 +1,21 @@
 ﻿using FamoNET.Model;
 using FamoNET.Model.Args;
 using FamoNET.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
-    public partial class Chart_MJD : ChartWithAllanComponentBase<double>
-    {              
+    public partial class Chart : ChartWithAllanComponentBase<double>
+    {
+        [Inject]
+        private IJSRuntime _jSRuntime { get; set; }
+
+        private double _zeroPointMjd;
         private DataSeries<double> SelectedSeries { get; set; }
         private SeriesListComponent SeriesListComponent;
         private ViewportComponent ViewportComponent;
-        public Chart_MJD()
+        public Chart()
         {
             Model = new ChartParameters<double>();
         }        
@@ -41,7 +47,8 @@ namespace FamoNET.Components.SubComponents.Chart
                     ChartGuid,
                     SeriesListComponent.SeriesList[i].ModifiedData ?? SeriesListComponent.SeriesList[i].OriginalData,
                     ViewportComponent.AxisMode,
-                    i == SeriesListComponent.SeriesList.Count - 1);
+                    i == SeriesListComponent.SeriesList.Count - 1,
+                    zeroPointMjd:_zeroPointMjd);
             }
 
             if (Model.Viewport == null)
@@ -103,6 +110,28 @@ namespace FamoNET.Components.SubComponents.Chart
         public async void OnAxisModeChanged(object sender, AxisMode axisMode)
         {
             await Redraw();
+        }
+
+        public async Task OnZeroPointMjdChanged(double mjd)
+        {
+            _zeroPointMjd = mjd;
+            await Redraw();
+        }
+
+        private async Task SaveToFile()
+        {
+            var ms = new MemoryStream();
+            using var sw = new StreamWriter(ms);
+            foreach (var data in SeriesListComponent.SelectedSeries.ModifiedData ?? SeriesListComponent.SelectedSeries.OriginalData)
+            {
+                sw.WriteLine($"{data.X} {data.Y}");
+            }
+            await sw.FlushAsync();
+            ms.Position = 0;
+
+            using var streamRef = new DotNetStreamReference(stream: ms);
+
+            await _jSRuntime.InvokeVoidAsync("downloadFileFromStream", "allan.txt", streamRef);
         }
     }
 }

@@ -12,7 +12,7 @@
                 <MathComponent @bind-Series="SelectedSeries" @bind-Series:after=Redraw />
             </div>
             <div class="column">
-                <ViewportComponent @ref=ViewportComponent ChartGuid="ChartGuid" AxisModeChanged="OnAxisModeChanged" />
+                <ViewportComponent @ref=ViewportComponent ChartGuid="ChartGuid" AxisModeChanged="OnAxisModeChanged" ZeroPointMjdChanged="OnZeroPointMjdChanged" />
             </div>
         </div>
     </div>
@@ -22,10 +22,10 @@
     <div class="level-left">
         @if(IsEditable)
         {
-            <button class="button" type="button">Adjust to visible</button>
+            <button class="button" type="button" @onclick=@((e) => ChartManagerService.AdjustToVisible(ChartGuid))>Adjust to visible</button>
         }
         
-        <button class="button" type="button">Save to file</button>
+        <button class="button" type="button" @onclick=SaveToFile>Save to file</button>
     </div>
 </div>
 <div style="display: @(IsDataLoading ? "block" : "none")">

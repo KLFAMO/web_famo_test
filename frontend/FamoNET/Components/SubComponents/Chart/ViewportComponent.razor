@@ -24,7 +24,7 @@
         <DateViewportComponent @ref=DateViewportComponent ChartGuid="ChartGuid" />
     </div>
     <div style="display: @(AxisMode == Model.AxisMode.Seconds ? "block" : "none")">
-        <SecondsViewportComponent @ref=SecondsViewportComponent ChartGuid="ChartGuid" />
+        <SecondsViewportComponent @ref=SecondsViewportComponent ChartGuid="ChartGuid" @bind-ZeroPointMjd=ZeroPointMjd @bind-ZeroPointMjd:after=OnZeroPointMjdChanged />
     </div>
 
 </div>

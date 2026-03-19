@@ -89,6 +89,7 @@ namespace FamoNET.Components.SubComponents.DDS
             if (Double.TryParse(new string(telnetResponse.Response.Where(c => char.IsDigit(c) || c == '.' || c== ',').ToArray()), out var fetchedValue))
             {
                 ddsValue.Value = fetchedValue;
+                _systemNotificationService.SendSystemMessage(this, new SystemMessage("Value fetched", SystemMessageType.Info));
             }
             else
             {

@@ -19,7 +19,7 @@ namespace FamoNET.Components.Pages
         private ISystemNotificationService _systemNotificationService { get; set; }
 
         #region Components
-        private Chart_MJD Chart_MJD;        
+        private Chart Chart_MJD;        
         
         private DataWizard DataFetchWizardComponent;        
         #endregion

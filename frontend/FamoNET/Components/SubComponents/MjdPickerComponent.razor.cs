@@ -46,16 +46,16 @@ namespace FamoNET.Components.SubComponents
         {
             //var startMjd = Convert.ToDouble(startMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture);
 
-            //StartMjd = startMjd;
-            await StartMjdChanged.InvokeAsync(Convert.ToDouble(startMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture));
+            StartMjd = Convert.ToDouble(startMjdArgs?.Value, CultureInfo.InvariantCulture);
+            await StartMjdChanged.InvokeAsync(StartMjd);
         }
 
         private async Task OnEndMjdSet(ChangeEventArgs endMjdArgs)
         {
             //var endMjd = Convert.ToDouble(endMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture);
-            
-            //EndMjd = endMjd;
-            await EndMjdChanged.InvokeAsync(Convert.ToDouble(endMjdArgs?.Value.ToString(), CultureInfo.InvariantCulture));
+
+            EndMjd = Convert.ToDouble(endMjdArgs?.Value, CultureInfo.InvariantCulture);
+            await EndMjdChanged.InvokeAsync(EndMjd);
         }
     }
 }

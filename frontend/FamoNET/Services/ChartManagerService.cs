@@ -28,7 +28,7 @@ namespace FamoNET.Services
             IsInitialized = true;
         }
 
-        public async Task AddDataSet(Guid containerGuid, List<DataPoint<double>> dataPoints, AxisMode axisMode = AxisMode.Mjd, bool instantRender = true)
+        public async Task AddDataSet(Guid containerGuid, List<DataPoint<double>> dataPoints, AxisMode axisMode = AxisMode.Mjd, bool instantRender = true, double? zeroPointMjd = null)
         {            
             if (axisMode == AxisMode.Date)
             {
@@ -51,7 +51,7 @@ namespace FamoNET.Services
             }
             else if (axisMode == AxisMode.Seconds)
             {
-                var baseMjd = dataPoints[0].X;
+                var baseMjd = zeroPointMjd ?? dataPoints[0].X;
                 var secondPoints = new List<DataPoint<double>>();
 
                 foreach(var dp in dataPoints)

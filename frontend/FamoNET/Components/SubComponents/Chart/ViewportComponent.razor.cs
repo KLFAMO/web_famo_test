@@ -14,6 +14,9 @@ namespace FamoNET.Components.SubComponents.Chart
         private Guid _currentChartGuid { get; set; }
         [Parameter]
         public EventHandler<AxisMode> AxisModeChanged { get; set; }
+        public double ZeroPointMjd { get; set; }
+        [Parameter]
+        public EventCallback<double> ZeroPointMjdChanged { get; set; }
         public AxisMode AxisMode { get; set; }
         private MjdViewportComponent MjdViewportComponent;
         private DateViewportComponent DateViewportComponent;
@@ -39,6 +42,10 @@ namespace FamoNET.Components.SubComponents.Chart
             {
                 await DateViewportComponent.RefreshParameters();
             }
+            else if (AxisMode == AxisMode.Seconds)
+            {
+                await SecondsViewportComponent.RefreshParameters();
+            }
         }
 
         private async Task OnAxisModeChange()
@@ -49,12 +56,21 @@ namespace FamoNET.Components.SubComponents.Chart
             {
                 await ChartManagerService.InitializeChart(ChartGuid, new ChartParameters<DateTime>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Date });
             }
-            else
+            else if (AxisMode == AxisMode.Mjd)
             {
                 await ChartManagerService.InitializeChart(ChartGuid, new ChartParameters<double>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Mjd });
             }
+            else if (AxisMode == AxisMode.Seconds)
+            {
+                await ChartManagerService.InitializeChart(ChartGuid, new ChartParameters<double>() { Title = "Data overview", DisableXLabels = false, DisableEvents = false, AxisMode = AxisMode.Seconds });
+            }
 
             AxisModeChanged?.Invoke(this, AxisMode);
+        }
+
+        private async Task OnZeroPointMjdChanged()
+        {             
+            await ZeroPointMjdChanged.InvokeAsync(ZeroPointMjd);
         }
     }
 }

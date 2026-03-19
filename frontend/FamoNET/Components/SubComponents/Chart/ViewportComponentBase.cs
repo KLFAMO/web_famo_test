@@ -40,7 +40,7 @@ namespace FamoNET.Components.SubComponents.Chart
         }
 
 
-        protected async Task ApplyParameters()
+        protected virtual async Task ApplyParameters()
         {
             await ChartManagerService.SetChartParameters(CurrentChartGuid, new ChartParameters<double>() { Title = Title });
             await ChartManagerService.SetViewportParameters(CurrentChartGuid, MjdViewportParams);
