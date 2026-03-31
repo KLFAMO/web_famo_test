@@ -8,20 +8,23 @@ using NLog;
 
 namespace FamoNET.Components.Pages
 {
-    public partial class LiveBrowser : ComponentBase, IAsyncDisposable
+    public partial class LiveBrowser : ComponentBase
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         [Inject]
-        private AndaDataService _andaDataService { get; set; }
-        protected Chart Chart_MJD { get; set; }
-        protected AllanVariance AllanVarianceComponent { get; set; }
-        protected int Interval { get; set; } = 300;
-        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        public List<string> TableNames { get; set; } = new List<string>();     
-        public string SelectedTableName { get; set; }
+        private AndaDataService AndaDataService { get; set; } = default!;
+        protected LiveChart LiveChart { get; set; } = default!;
+        
 
-        private List<DataPoint<double>> AllanCollection = new List<Model.DataPoint<double>>();
+        public List<string> TableNames { get; set; } = new List<string>();
+
+        private int _points = 300;
+        private string _selectedTableName = String.Empty;
+
+        protected int Points { get; set; }
+        public string SelectedTableName { get; set; } = String.Empty;
+        
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -29,75 +32,17 @@ namespace FamoNET.Components.Pages
 
             if (firstRender)
             {
-                TableNames = await _andaDataService.GetTableNamesAsync();
+                TableNames = await AndaDataService.GetTableNamesAsync();
                 StateHasChanged();
             }
-        }
-
-        protected async Task StartLive()
+        }    
+        
+        protected void StartLive()
         {
-            try
-            {
-                AllanCollection.Clear();
-                await _cancellationTokenSource?.CancelAsync();
-                _cancellationTokenSource = new CancellationTokenSource();
-                string tableName = SelectedTableName;
-
-                Chart_MJD.Model.Title = "Live";
-                await Chart_MJD.UpdateParameters();
-
-                while (!_cancellationTokenSource.IsCancellationRequested)
-                {
-                    var utcNow = DateTime.UtcNow;
-                    var mjdNow = TimeService.GetMJD(utcNow);
-                    var mjdPoints = TimeService.GetMJD(utcNow.AddSeconds(Interval * (-1)));
-
-                    var data = await _andaDataService.GetDataAsync(mjdPoints, mjdNow, tableName);
-                    AddToAllanCollection(data);
-
-                    await Chart_MJD.ClearChart(false);
-                    await Chart_MJD.LoadData(data, SelectedTableName);
-
-                    await AllanVarianceComponent.ClearChart();
-                    await AllanVarianceComponent.LoadData(AllanCollection, SelectedTableName);
-                   
-                    await Task.Delay(2000);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex is TaskCanceledException)
-                    return;
-
-                _logger.Error(ex);
-            }
+            Points = _points;
+            SelectedTableName = _selectedTableName;
+            LiveChart.StartLive();
         }
-       
-        private void AddToAllanCollection(List<DataPoint<double>> dataPoints)
-        {
-            if (AllanCollection.Count == 0)
-            {
-                AllanCollection.AddRange(dataPoints);
-            }
-            else
-            {
-                var lastMjd = AllanCollection.Last().X;
-                var indexInReceivedCollection = dataPoints.IndexOf(dataPoints.Last(dp => dp.X == lastMjd));
-                
-                if (indexInReceivedCollection == -1)
-                {
-                    AllanCollection.AddRange(dataPoints);
-                }
-                else
-                {
-                    AllanCollection.AddRange(dataPoints.GetRange(indexInReceivedCollection, dataPoints.Count - indexInReceivedCollection));
-                }
-                
-            }
-        }
-        public async ValueTask DisposeAsync()
-        {
-            await _cancellationTokenSource?.CancelAsync();
-        }
+                       
     }
 }

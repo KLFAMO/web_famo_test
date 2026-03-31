@@ -8,7 +8,7 @@ using NLog;
 namespace FamoNET.Components.SubComponents
 {
     public partial class AllanVariance : ChartComponentBase<double>
-    {
+    {        
         [Inject]
         private IJSRuntime _jSRuntime { get; set; }
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -50,6 +50,9 @@ namespace FamoNET.Components.SubComponents
             {
                 _logger.Debug("Allan:" + ChartGuid);
                 await Initialize(new ChartParameters<double>() { Title = "Allan deviation", Logarithmic = true, AxisMode=AxisMode.Mjd, DisableEvents = false });
+
+                await InvokeAsync(StateHasChanged);
+                await Task.Yield();
             }            
         }
 
@@ -91,6 +94,13 @@ namespace FamoNET.Components.SubComponents
             }
             
             _allanData = allanData;
+            if (_allanData.Count < 1)
+            {
+                IsLoading = false;
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+                
             await ChartManagerService.AddDataSet(ChartGuid, allanData);
 
             try

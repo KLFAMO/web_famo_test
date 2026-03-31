@@ -85,7 +85,7 @@ namespace FamoNET.Components.SubComponents.Chart
                 return;
             }
 
-            base.Model.Viewport = eventArgs.Viewport;
+            Model.Viewport = eventArgs.Viewport;
             
             await SendToAllan();
             StateHasChanged();

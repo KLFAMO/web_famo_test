@@ -1,1 +1,7 @@
 ﻿@inherits ChartWithAllanComponentBase<double>
+
+<div id="@ChartGuid" style="width: 100%; height: 600px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
+
+<div class="box" style="visibility: @(EnableAllan ? "visible" : "hidden");">
+    <AllanVariance @ref="AllanVariance" />
+</div>
