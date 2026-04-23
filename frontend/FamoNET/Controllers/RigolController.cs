@@ -142,7 +142,13 @@ namespace FamoNET.Controllers
 
         private double[] ParseData(string response)
         {
-            string[] parts = response.Split(',').Skip(1).ToArray();
+            string[] parts = response.Split(',');
+
+            if (parts.Length > 1) //that means it's data
+            {
+                parts = parts.Skip(1).ToArray(); //there is a trash value at the beginning
+            }
+
             double[] values = new double[parts.Length];
 
             for (int i = 0; i < parts.Length; i++)

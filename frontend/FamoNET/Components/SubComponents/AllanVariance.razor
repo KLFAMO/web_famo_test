@@ -59,4 +59,4 @@
     </div>    
 }
 <h1 class="title" style="@(_allanData?.Count < 1 ? "display:block;" : "display:none;")">No valid allan data</h1>
-<div id="@ChartGuid" style="width: 100%; height: 500px; @(_data == null || _allanData?.Count < 1 ? "display:none;" : "display:block;")"></div>
+<div id="@ChartGuid" @oncontextmenu:preventDefault="true" style="width: 100%; height: 500px; @(_data == null || _allanData?.Count < 1 ? "display:none;" : "display:block;")"></div>

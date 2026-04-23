@@ -2,6 +2,7 @@
 using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using FamoNET.Services;
+using FamoNET.Utils;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Threading.Tasks;
@@ -20,9 +21,12 @@ namespace FamoNET.Components.SubComponents.Chart
         [Parameter]
         public int Points { get; set; } = 100;
 
+
+        private MathComponent _mathComponent;
+
         private string _tableName = String.Empty;
-        private List<DataPoint<double>>? CurrentSeries;
-        
+        private DataSeries<double>? CurrentSeries;
+
         private Task? _liveTask;
         private CancellationTokenSource? _cancellationTokenSource;
         
@@ -77,38 +81,45 @@ namespace FamoNET.Components.SubComponents.Chart
         {
             try
             {
+                IsDataLoading = true;
                 var interval = await CheckSampligRateForTable();
                 Logger.Trace($"Interval found: {interval}");
                 
                 while (!_cancellationTokenSource!.IsCancellationRequested)
                 {
+                    IsDataLoading = true;
+                    await Task.Yield();
+                    await InvokeAsync(StateHasChanged);
+
                     var dateNow = DateTime.UtcNow;
                     var mjdEnd = TimeService.GetMJD(dateNow.AddSeconds(-interval*Points));
 
-                    //CurrentSeries = await AndaDataProvider.GetData(mjdEnd, TimeService.GetMJD(dateNow), _tableName);
-                    var rand = new Random();
-                    CurrentSeries = new List<DataPoint<double>>() 
-                    { 
-                        new DataPoint<double>(0, rand.Next()), 
-                        new DataPoint<double>(1, rand.Next()), 
-                        new DataPoint<double>(2, rand.Next()),
-                        new DataPoint<double>(3, rand.Next()),
-                        new DataPoint<double>(4, rand.Next()),
-                        new DataPoint<double>(5, rand.Next()),
-                        new DataPoint<double>(6, rand.Next()),
-                        new DataPoint<double>(7, rand.Next()),
-                        new DataPoint<double>(8, rand.Next()),
-                        new DataPoint<double>(9, rand.Next()),
-                        new DataPoint<double>(10, rand.Next()),
-                        new DataPoint<double>(11, rand.Next()),
-                    };
+                    var data = new DataSeries<double>(await AndaDataProvider.GetData(mjdEnd, TimeService.GetMJD(dateNow), _tableName), "Live data");
+                    
+                    if (CurrentSeries == null)
+                    {
+                        CurrentSeries = data;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            CurrentSeries = FamoMath.ApplyMathFormulaToDataSeries(CurrentSeries.MathExpressionX, CurrentSeries.MathExpressionY, ref data);
+                        }
+                        catch(InvalidDataException)
+                        {
+                            CurrentSeries = data;
+                        }
+                    }                        
                     
                     await ChartManagerService.ClearDataSets(ChartGuid, false);
-                    await ChartManagerService.AddDataSet(ChartGuid, CurrentSeries);
+                    await ChartManagerService.AddDataSet(ChartGuid, CurrentSeries.ModifiedData ?? CurrentSeries.OriginalData);
 
                     Model.Viewport = await ChartManagerService.GetViewportParameters(ChartGuid);
 
-                    await SendToAllan();                    
+                    await SendToAllan();
+
+                    IsDataLoading = false;
                     await InvokeAsync(StateHasChanged);
                     
                     await Task.Delay(2000, _cancellationTokenSource.Token);                                  
@@ -189,12 +200,23 @@ namespace FamoNET.Components.SubComponents.Chart
             await AllanVariance.ClearChart();
 
             var allanData = new List<DataPoint<double>>();
-            foreach (var dp in CurrentSeries.Where(dp => dp.X >= Model.Viewport.MinX && dp.X <= Model.Viewport.MaxX))
+            
+            foreach (var dp in CurrentSeries.ModifiedData?.Where(dp => dp.X >= Model.Viewport.MinX && dp.X <= Model.Viewport.MaxX) ?? 
+                               CurrentSeries.OriginalData.Where(dp => dp.X >= Model.Viewport.MinX && dp.X <= Model.Viewport.MaxX))
             {
                 allanData.Add(new DataPoint<double>(dp.X, dp.Y));
             }
 
             await AllanVariance.LoadData(allanData, "Allan deviation");
+        }
+
+        public void OnDataSeriesChanged(DataSeries<double> e)
+        {
+            if (CurrentSeries == null)
+                return;
+
+            CurrentSeries.MathExpressionX = e.MathExpressionX;
+            CurrentSeries.MathExpressionY = e.MathExpressionY;
         }
     }
 }

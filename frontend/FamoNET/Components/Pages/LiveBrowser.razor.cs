@@ -1,7 +1,4 @@
-﻿using FamoNET.Components.SubComponents;
-using FamoNET.Components.SubComponents.Chart;
-using FamoNET.Model;
-using FamoNET.Services;
+﻿using FamoNET.Components.SubComponents.Chart;
 using FamoNET.Services.DataServices;
 using Microsoft.AspNetCore.Components;
 using NLog;
@@ -20,7 +17,7 @@ namespace FamoNET.Components.Pages
         public List<string> TableNames { get; set; } = new List<string>();
 
         private int _points = 300;
-        private string _selectedTableName = String.Empty;
+        private string _selectedTableName = "Choose data";
 
         protected int Points { get; set; }
         public string SelectedTableName { get; set; } = String.Empty;

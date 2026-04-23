@@ -1,6 +1,13 @@
 ﻿@inherits ChartWithAllanComponentBase<double>
 
-<div id="@ChartGuid" style="width: 100%; height: 600px" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
+<div style="visibility: @(_liveTask == null ? "hidden" : "visible")">    
+    <MathComponent Series="CurrentSeries" SeriesChanged="OnDataSeriesChanged" @ref=_mathComponent></MathComponent>
+    <div id="@ChartGuid" style="width: 100%; height: 600px;" @oncontextmenu:preventDefault="true" @oncontextmenu="OnChartClick"></div>
+    <div style="display: @(IsDataLoading ? "block" : "none")">
+        <progress class="progress is-small is-primary" max="100">15%</progress>
+    </div>
+</div>
+
 
 <div class="box" style="visibility: @(EnableAllan ? "visible" : "hidden");">
     <AllanVariance @ref="AllanVariance" />

@@ -1,9 +1,12 @@
 ﻿using FamoNET.Model;
+using NLog;
+using org.mariuszgromada.math.mxparser;
 
 namespace FamoNET.Utils
 {
     public static class FamoMath
     {
+        private static Logger _logger = LogManager.GetCurrentClassLogger();
         public static DateTime Convert_MJDToDateTime(double mjd)
         {
             DateTime mjdEpoch = new DateTime(1858, 11, 17, 0, 0, 0, DateTimeKind.Utc);
@@ -233,6 +236,53 @@ namespace FamoNET.Utils
             }
 
             return result;
+        }    
+        public static DataSeries<double> ApplyMathFormulaToDataSeries(string xFormula, string yFormula, ref DataSeries<double> dataSeries)
+        {                        
+            Argument x = new Argument("x");
+            Argument y = new Argument("y");
+            var xe = new Expression(xFormula, x);
+            var ye = new Expression(yFormula, y);
+
+            if ((!string.IsNullOrWhiteSpace(xFormula) && !xe.checkSyntax()) || (!string.IsNullOrWhiteSpace(xFormula) && !ye.checkSyntax()))
+            {
+                throw new InvalidDataException("Invalid math exception");
+            }
+                
+
+            dataSeries.ModifiedData = new List<DataPoint<double>>();
+
+            foreach (var point in dataSeries.OriginalData)
+            {
+                var modifiedDataPoint = new DataPoint<double>();
+
+                if (!string.IsNullOrWhiteSpace(xFormula))
+                {
+                    x.setArgumentValue(point.X);
+                    modifiedDataPoint.X = xe.calculate();
+                }
+                else
+                {
+                    modifiedDataPoint.X = point.X;
+                }
+
+                if (!string.IsNullOrWhiteSpace(yFormula))
+                {
+                    y.setArgumentValue(point.Y);
+                    modifiedDataPoint.Y = ye.calculate();
+                }
+                else
+                {
+                    modifiedDataPoint.Y = point.Y;
+                }
+
+                dataSeries.ModifiedData.Add(modifiedDataPoint);
+            }
+
+            dataSeries.MathExpressionX = xFormula;
+            dataSeries.MathExpressionY = yFormula;
+
+            return dataSeries;
         }
     }
 }
