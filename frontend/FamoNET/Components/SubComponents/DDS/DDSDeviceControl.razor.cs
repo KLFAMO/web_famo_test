@@ -1,9 +1,12 @@
 ﻿using FamoNET.Database.Model.Interfaces;
+using FamoNET.Database.Repositories.Implementations;
 using FamoNET.Model;
 using FamoNET.Model.Args;
 using FamoNET.Model.Interfaces;
 using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore.Migrations.Internal;
 using NLog;
+using System.Reflection.Metadata.Ecma335;
 
 namespace FamoNET.Components.SubComponents.DDS
 {
@@ -11,14 +14,16 @@ namespace FamoNET.Components.SubComponents.DDS
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         [Inject]
-        private IDDSDataService _ddsDataService { get; set; }
+        private IDDSDataService _ddsDataService { get; set; } = default!;
         [Inject]
-        private IDDSDevicesRepository _ddsDevicesRepository { get; set; }
+        private IDDSDevicesRepository _ddsDevicesRepository { get; set; } = default!;
         [Inject]
-        private ITelnetService _telnetService { get; set; }
+        private IDDSChannelsRepository _ddsChannelsRepository { get; set; } = default!;
         [Inject]
-        private ISystemNotificationService _systemNotificationService { get; set; }
-        public Model.DDSDevice Model { get; set; }
+        private ITelnetService _telnetService { get; set; } = default!;
+        [Inject]
+        private ISystemNotificationService _systemNotificationService { get; set; } = default!;
+        public Model.DDSDevice Model { get; set; } 
 
         [Parameter]
         public int DeviceId { get; set; } = -1;
@@ -59,6 +64,25 @@ namespace FamoNET.Components.SubComponents.DDS
                 IsLoading = true;
                 Model = await _ddsDataService.GetById(DeviceId);
                 Model.IsLocked = rep_device?.IsLocked ?? false;
+                var rep_channels = await _ddsChannelsRepository.GetByApiDeviceIdAsync(DeviceId);
+
+                if (Model.Channels?.Count > 0)
+                {
+                    for (int i = 0; i < Model.Channels.Count; ++i)
+                    {
+                        if (Model.IsLocked)
+                        {
+                            Model.Channels[i].IsLocked = true;
+                            continue;
+                        }
+
+                        var rep_channel = rep_channels?.FirstOrDefault(c => c.Name == Model.Channels[i].Name);
+                        if (rep_channel == null)
+                            continue;
+
+                        Model.Channels[i].IsLocked = rep_channel.IsLocked;
+                    }
+                }                                
             }
             catch (Exception ex)
             {

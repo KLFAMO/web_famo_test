@@ -57,7 +57,7 @@ else if (Model != null)
                                 <p class="control"><a class="button is-static"></a></p>
                                 <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Frequency.Value placeholder="0"></p>
                                 <p class="control"><button class="button is-info is-light action-btn" @onclick="(e) => ReadCommand(channel.Frequency)">GET</button></p>
-                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Frequency)" disabled="@Model.IsLocked">SET</button></p>
+                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Frequency)" disabled="@channel.IsLocked">SET</button></p>
                             </div>
                             <div class="min-max-tag">
                                 <span>Range: @channel.Frequency.Min-@channel.Frequency.Max</span>
@@ -73,7 +73,7 @@ else if (Model != null)
                                 <p class="control"><a class="button is-static"></a></p>
                                 <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Phase.Value placeholder="0"></p>
                                 <p class="control"><button class="button is-info is-light action-btn" @onclick="(e) => ReadCommand(channel.Phase)">GET</button></p>
-                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Phase)" disabled="@Model.IsLocked">SET</button></p>
+                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Phase)" disabled="@channel.IsLocked">SET</button></p>
                             </div>
                             <div class="min-max-tag">
                                 <span>Range: @channel.Phase.Min-@channel.Phase.Max</span>                                
@@ -89,7 +89,7 @@ else if (Model != null)
                                 <p class="control"><a class="button is-static"></a></p>
                                 <p class="control is-expanded"><input class="input" type="number" @bind=@channel.Amplitude.Value placeholder="0"></p>
                                 <p class="control"><button class="button is-info is-light action-btn" @onclick="(e) => ReadCommand(channel.Amplitude)">GET</button></p>
-                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Amplitude)" disabled="@Model.IsLocked">SET</button></p>
+                                <p class="control"><button class="button is-link action-btn" @onclick="(e) => SendCommand(channel.Amplitude)" disabled="@channel.IsLocked">SET</button></p>
                             </div>
                             <div class="min-max-tag">
                                 <span>Range: @channel.Amplitude.Min-@channel.Amplitude.Max</span>

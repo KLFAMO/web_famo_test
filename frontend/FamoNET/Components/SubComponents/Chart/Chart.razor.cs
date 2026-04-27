@@ -3,6 +3,7 @@ using FamoNET.Model.Args;
 using FamoNET.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System.Globalization;
 
 namespace FamoNET.Components.SubComponents.Chart
 {
@@ -124,14 +125,14 @@ namespace FamoNET.Components.SubComponents.Chart
             using var sw = new StreamWriter(ms);
             foreach (var data in SeriesListComponent.SelectedSeries.ModifiedData ?? SeriesListComponent.SelectedSeries.OriginalData)
             {
-                sw.WriteLine($"{data.X} {data.Y}");
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0} {1}", data.X, data.Y));
             }
             await sw.FlushAsync();
             ms.Position = 0;
 
             using var streamRef = new DotNetStreamReference(stream: ms);
 
-            await _jSRuntime.InvokeVoidAsync("downloadFileFromStream", "allan.txt", streamRef);
+            await _jSRuntime.InvokeVoidAsync("downloadFileFromStream", "data.txt", streamRef);
         }
     }
 }

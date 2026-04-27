@@ -4,6 +4,7 @@ using FamoNET.Utils;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using NLog;
+using System.Globalization;
 
 namespace FamoNET.Components.SubComponents
 {
@@ -129,7 +130,7 @@ namespace FamoNET.Components.SubComponents
             using var sw = new StreamWriter(ms);
             foreach(var data in _allanData)
             {
-                sw.WriteLine($"{data.X} {data.Y}");
+                sw.WriteLine(string.Format(CultureInfo.InvariantCulture, "{0:0.######} {1}", data.X, data.Y));
             }
             await sw.FlushAsync();
             ms.Position = 0;
